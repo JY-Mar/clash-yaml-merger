@@ -195,30 +195,40 @@ jobs:
                     <h3>📋 使用方法</h3>
                     <p>在 Clash 客户端中添加以下订阅链接：</p>
                     <div class="url-box" id="config-url">
-                        https://zzzkp.github.io/clash-pages/clash-${AUTH_TOKEN}.yaml
+                        https://zzzkp.github.io/clash-pages/clash-{your-token}.yaml
                     </div>
-                    <p><small>此链接包含认证信息，请勿分享</small></p>
+                    <p><small>请将 {your-token} 替换为您的实际token</small></p>
                 </div>
                 
                 <div style="text-align: center; margin-top: 30px;">
-                    <a href="clash-${AUTH_TOKEN}.yaml" class="btn">📥 下载配置文件</a>
+                    <button class="btn" onclick="showDownloadLink()" id="download-btn">📥 显示下载链接</button>
                     <a href="stats.json" class="btn">📈 查看统计信息</a>
+                </div>
+
+                <div id="download-section" style="display: none; text-align: center; margin-top: 20px;">
+                    <p>配置文件下载链接：</p>
+                    <div class="url-box">
+                        <a href="clash-${AUTH_TOKEN}.yaml" id="download-link">clash-{your-token}.yaml</a>
+                    </div>
+                    <p><small>点击上方链接下载配置文件</small></p>
                 </div>
             </div>
             
             <script>
-                // 检查认证参数
-                function checkAuth() {
-                    const urlParams = new URLSearchParams(window.location.search);
-                    const token = urlParams.get('token');
-                    
-                    if (!token || token !== 'your-auth-token') {
-                        alert('访问被拒绝：需要有效的认证参数');
-                        return false;
+                // 显示下载链接
+                function showDownloadLink() {
+                    const downloadSection = document.getElementById('download-section');
+                    const downloadBtn = document.getElementById('download-btn');
+
+                    if (downloadSection.style.display === 'none') {
+                        downloadSection.style.display = 'block';
+                        downloadBtn.textContent = '🔒 隐藏下载链接';
+                    } else {
+                        downloadSection.style.display = 'none';
+                        downloadBtn.textContent = '📥 显示下载链接';
                     }
-                    return true;
                 }
-                
+
                 // 加载统计信息
                 fetch('stats.json')
                     .then(response => response.json())
@@ -230,11 +240,6 @@ jobs:
                             <p><strong>规则数量：</strong> ${data.rule_count}</p>
                             <p><strong>最后更新：</strong> ${new Date(data.generated_at).toLocaleString('zh-CN')}</p>
                         `;
-                        
-                        // 更新配置URL
-                        const configUrl = document.getElementById('config-url');
-                        const currentUrl = window.location.origin + window.location.pathname.replace('/index.html', '');
-                        configUrl.textContent = currentUrl + '/clash-${AUTH_TOKEN}.yaml';
                     })
                     .catch(error => {
                         document.getElementById('stats').innerHTML = '<p style="color: red;">加载统计信息失败</p>';
@@ -244,8 +249,8 @@ jobs:
         </html>
         HTMLEOF
 
-        # 替换HTML中的token变量
-        sed -i "s/\${AUTH_TOKEN}/${AUTH_TOKEN}/g" docs/index.html
+        # 只替换下载链接中的token，保持显示文本为占位符
+        sed -i "s|href=\"clash-\${AUTH_TOKEN}\.yaml\"|href=\"clash-${AUTH_TOKEN}.yaml\"|g" docs/index.html
     
     - name: Create authentication wrapper
       env:
