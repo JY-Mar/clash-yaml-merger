@@ -146,63 +146,94 @@ class ClashConfigMerger:
         logger.info(f"合并了 {len(merged_proxies)} 个代理节点")
         return merged_proxies
     
-    def merge_rules(self, configs: List[Dict[str, Any]], rule_files: List[str]) -> List[str]:
+    def merge_rules(self, rule_files: List[str]) -> List[str]:
         """
-        合并规则列表
-        
+        合并规则列表（只使用rule目录下的规则文件）
+
         Args:
-            configs: 配置文件列表
             rule_files: 规则文件路径列表
-            
+
         Returns:
             合并后的规则列表
         """
         merged_rules = []
         seen_rules = set()
-        
-        # 从规则文件中加载规则
+
+        # 只从规则文件中加载规则，忽略sub文件中的规则
         for rule_file_path in rule_files:
             content = self.get_file_content(rule_file_path)
             if content:
                 rule_data = self.load_yaml_content(content)
                 if rule_data and 'payload' in rule_data:
+                    rule_file_name = os.path.basename(rule_file_path).replace('.yaml', '')
+                    logger.info(f"处理规则文件: {rule_file_name}")
+
                     for rule in rule_data['payload']:
                         if isinstance(rule, str) and rule not in seen_rules:
-                            # 将规则格式化为Clash格式
-                            if not rule.endswith(',PROXY') and not rule.endswith(',DIRECT'):
-                                rule = f"{rule},PROXY"
+                            # 将规则指向对应的规则组
+                            if ',' in rule:
+                                # 如果规则已经有目标，替换为规则组名
+                                rule_parts = rule.split(',')
+                                if len(rule_parts) >= 2:
+                                    rule = f"{rule_parts[0]},{rule_file_name}"
+                            else:
+                                # 如果规则没有目标，添加规则组名
+                                rule = f"{rule},{rule_file_name}"
+
                             merged_rules.append(rule)
                             seen_rules.add(rule)
-        
-        # 从配置文件中加载规则
-        for config in configs:
-            if 'rules' in config and isinstance(config['rules'], list):
-                for rule in config['rules']:
-                    if isinstance(rule, str) and rule not in seen_rules:
-                        merged_rules.append(rule)
-                        seen_rules.add(rule)
-        
+
         logger.info(f"合并了 {len(merged_rules)} 条规则")
         return merged_rules
     
-    def create_proxy_groups(self, proxies: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    def create_proxy_groups(self, proxies: List[Dict[str, Any]], sub_files: List[str], rule_files: List[str]) -> List[Dict[str, Any]]:
         """
-        创建代理组
-        
+        创建代理组结构
+
         Args:
             proxies: 代理节点列表
-            
+            sub_files: 订阅文件路径列表
+            rule_files: 规则文件路径列表
+
         Returns:
             代理组配置列表
         """
         proxy_names = [proxy['name'] for proxy in proxies if 'name' in proxy]
-        
-        proxy_groups = [
-            {
-                'name': 'PROXY',
-                'type': 'select',
-                'proxies': ['自动选择', '故障转移'] + proxy_names
-            },
+
+        # 按订阅文件分组代理节点
+        sub_groups = {}
+        for file_path in sub_files:
+            # 从文件路径提取文件名作为分组名
+            file_name = os.path.basename(file_path).replace('.yaml', '')
+            sub_groups[file_name] = []
+
+        # 将代理节点分配到对应的订阅分组（这里简化处理，实际可以根据代理名称或其他标识来分组）
+        # 由于我们合并了所有代理，这里按顺序平均分配，或者可以根据代理名称特征来分组
+        proxies_per_sub = len(proxy_names) // len(sub_files) if sub_files else 0
+
+        for i, (sub_name, _) in enumerate(sub_groups.items()):
+            start_idx = i * proxies_per_sub
+            if i == len(sub_groups) - 1:  # 最后一组包含剩余的所有代理
+                sub_groups[sub_name] = proxy_names[start_idx:]
+            else:
+                sub_groups[sub_name] = proxy_names[start_idx:start_idx + proxies_per_sub]
+
+        # 创建代理组列表
+        proxy_groups = []
+
+        # 1. 创建主网络代理组
+        sub_group_names = list(sub_groups.keys())
+        rule_group_names = [os.path.basename(f).replace('.yaml', '') for f in rule_files]
+
+        network_proxy_options = ['自动选择', '故障转移'] + sub_group_names + rule_group_names
+        proxy_groups.append({
+            'name': '网络代理',
+            'type': 'select',
+            'proxies': network_proxy_options
+        })
+
+        # 2. 创建自动选择和故障转移组
+        proxy_groups.extend([
             {
                 'name': '自动选择',
                 'type': 'url-test',
@@ -217,32 +248,26 @@ class ClashConfigMerger:
                 'url': 'http://www.gstatic.com/generate_204',
                 'interval': 300
             }
-        ]
-        
-        # 按地区分组
-        regions = {}
-        for proxy in proxies:
-            name = proxy.get('name', '')
-            if '🇭🇰' in name or '香港' in name:
-                regions.setdefault('香港', []).append(name)
-            elif '🇨🇳' in name or '台湾' in name:
-                regions.setdefault('台湾', []).append(name)
-            elif '🇸🇬' in name or '新加坡' in name:
-                regions.setdefault('新加坡', []).append(name)
-            elif '🇯🇵' in name or '日本' in name:
-                regions.setdefault('日本', []).append(name)
-            elif '🇺🇸' in name or '美国' in name:
-                regions.setdefault('美国', []).append(name)
-        
-        # 为每个地区创建代理组
-        for region, region_proxies in regions.items():
-            if region_proxies:
+        ])
+
+        # 3. 为每个订阅文件创建代理组
+        for sub_name, sub_proxies in sub_groups.items():
+            if sub_proxies:
                 proxy_groups.append({
-                    'name': f'{region}节点',
+                    'name': sub_name,
                     'type': 'select',
-                    'proxies': region_proxies
+                    'proxies': ['自动选择', '故障转移'] + sub_proxies
                 })
-        
+
+        # 4. 为每个规则文件创建代理组
+        for rule_file in rule_files:
+            rule_name = os.path.basename(rule_file).replace('.yaml', '')
+            proxy_groups.append({
+                'name': rule_name,
+                'type': 'select',
+                'proxies': ['自动选择', '故障转移'] + proxy_names
+            })
+
         logger.info(f"创建了 {len(proxy_groups)} 个代理组")
         return proxy_groups
 
@@ -320,12 +345,12 @@ class ClashConfigMerger:
         merged_proxies = self.merge_proxies(configs)
         merged_config['proxies'] = merged_proxies
 
-        # 创建代理组
-        proxy_groups = self.create_proxy_groups(merged_proxies)
+        # 创建代理组（传入文件列表用于创建对应的分组）
+        proxy_groups = self.create_proxy_groups(merged_proxies, sub_files, rule_files)
         merged_config['proxy-groups'] = proxy_groups
 
-        # 合并规则
-        merged_rules = self.merge_rules(configs, rule_files)
+        # 合并规则（只使用rule目录下的规则）
+        merged_rules = self.merge_rules(rule_files)
 
         # 添加默认规则
         default_rules = [
@@ -337,7 +362,7 @@ class ClashConfigMerger:
             'IP-CIDR,17.0.0.0/8,DIRECT',
             'IP-CIDR,100.64.0.0/10,DIRECT',
             'GEOIP,CN,DIRECT',
-            'MATCH,PROXY'
+            'MATCH,网络代理'  # 默认流量走网络代理组
         ]
 
         merged_config['rules'] = merged_rules + default_rules
@@ -359,8 +384,15 @@ class ClashConfigMerger:
         try:
             os.makedirs(os.path.dirname(output_path), exist_ok=True)
 
-            with open(output_path, 'w', encoding='utf-8') as f:
-                yaml.dump(config, f, default_flow_style=False, allow_unicode=True, sort_keys=False)
+            with open(output_path, 'w', encoding='utf-8', newline='\n') as f:
+                # 使用自定义的YAML输出格式，确保中文正确显示
+                yaml.dump(config, f,
+                         default_flow_style=False,
+                         allow_unicode=True,
+                         sort_keys=False,
+                         encoding=None,  # 让PyYAML使用文件的编码
+                         width=1000,     # 避免长行被折断
+                         indent=2)
 
             logger.info(f"配置文件已保存到: {output_path}")
             return True

@@ -63,6 +63,9 @@ jobs:
         REPO_OWNER: ${{ secrets.CLASH_REPO_OWNER }}
         REPO_NAME: ${{ secrets.CLASH_REPO_NAME }}
         OUTPUT_DIR: docs
+        PYTHONIOENCODING: utf-8
+        LC_ALL: C.UTF-8
+        LANG: C.UTF-8
       run: |
         python scripts/merge_clash_config.py
     
