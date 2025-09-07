@@ -19,65 +19,91 @@ import logging
 import locale
 import codecs
 
+# 强制设置UTF-8编码
+os.environ['PYTHONIOENCODING'] = 'utf-8'
+os.environ['PYTHONUTF8'] = '1'
+
 # 确保UTF-8编码
-if sys.stdout.encoding != 'utf-8':
-    sys.stdout = codecs.getwriter('utf-8')(sys.stdout.buffer, 'strict')
-if sys.stderr.encoding != 'utf-8':
-    sys.stderr = codecs.getwriter('utf-8')(sys.stderr.buffer, 'strict')
+try:
+    if hasattr(sys.stdout, 'buffer') and sys.stdout.encoding != 'utf-8':
+        sys.stdout = codecs.getwriter('utf-8')(sys.stdout.buffer, 'strict')
+    if hasattr(sys.stderr, 'buffer') and sys.stderr.encoding != 'utf-8':
+        sys.stderr = codecs.getwriter('utf-8')(sys.stderr.buffer, 'strict')
+except:
+    pass  # 在某些环境下可能会失败，忽略错误
 
 # 配置日志
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 class ClashConfigMerger:
-    def __init__(self, github_token: str, repo_owner: str, repo_name: str):
+    def __init__(self, github_token: str = None, repo_owner: str = None, repo_name: str = None, local_mode: bool = False):
         """
         初始化Clash配置合并器
-        
+
         Args:
             github_token: GitHub访问令牌
             repo_owner: 仓库所有者
             repo_name: 仓库名称
+            local_mode: 是否使用本地模式
         """
+        self.local_mode = local_mode
         self.github_token = github_token
         self.repo_owner = repo_owner
         self.repo_name = repo_name
-        self.headers = {
-            'Authorization': f'token {github_token}',
-            'Accept': 'application/vnd.github.v3+json'
-        }
-        self.base_url = f'https://api.github.com/repos/{repo_owner}/{repo_name}/contents'
+
+        if not local_mode:
+            self.headers = {
+                'Authorization': f'token {github_token}',
+                'Accept': 'application/vnd.github.v3+json'
+            }
+            self.base_url = f'https://api.github.com/repos/{repo_owner}/{repo_name}/contents'
         
     def get_file_content(self, file_path: str) -> Optional[str]:
         """
-        从GitHub仓库获取文件内容
-        
+        获取文件内容（支持本地和GitHub模式）
+
         Args:
             file_path: 文件路径
-            
+
         Returns:
             文件内容字符串，失败返回None
         """
-        try:
-            url = f'{self.base_url}/{file_path}'
-            response = requests.get(url, headers=self.headers)
-            response.raise_for_status()
-            
-            file_data = response.json()
-            if file_data['encoding'] == 'base64':
-                content = base64.b64decode(file_data['content']).decode('utf-8')
-                logger.info(f"成功获取文件: {file_path}")
-                return content
-            else:
-                logger.error(f"不支持的编码格式: {file_data['encoding']}")
+        if self.local_mode:
+            # 本地模式：直接读取文件
+            try:
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    content = f.read()
+                    logger.info(f"成功读取本地文件: {file_path}")
+                    return content
+            except FileNotFoundError:
+                logger.error(f"本地文件不存在: {file_path}")
                 return None
-                
-        except requests.exceptions.RequestException as e:
-            logger.error(f"获取文件失败 {file_path}: {e}")
-            return None
-        except Exception as e:
-            logger.error(f"解析文件失败 {file_path}: {e}")
-            return None
+            except Exception as e:
+                logger.error(f"读取本地文件失败 {file_path}: {e}")
+                return None
+        else:
+            # GitHub模式：通过API获取
+            try:
+                url = f'{self.base_url}/{file_path}'
+                response = requests.get(url, headers=self.headers)
+                response.raise_for_status()
+
+                file_data = response.json()
+                if file_data['encoding'] == 'base64':
+                    content = base64.b64decode(file_data['content']).decode('utf-8')
+                    logger.info(f"成功获取文件: {file_path}")
+                    return content
+                else:
+                    logger.error(f"不支持的编码格式: {file_data['encoding']}")
+                    return None
+
+            except requests.exceptions.RequestException as e:
+                logger.error(f"获取文件失败 {file_path}: {e}")
+                return None
+            except Exception as e:
+                logger.error(f"解析文件失败 {file_path}: {e}")
+                return None
     
     def load_yaml_content(self, content: str) -> Optional[Dict[str, Any]]:
         """
@@ -97,32 +123,53 @@ class ClashConfigMerger:
     
     def get_directory_files(self, directory_path: str) -> List[str]:
         """
-        获取目录下的所有文件列表
-        
+        获取目录下的所有文件列表（支持本地和GitHub模式）
+
         Args:
             directory_path: 目录路径
-            
+
         Returns:
             文件路径列表
         """
-        try:
-            url = f'{self.base_url}/{directory_path}'
-            response = requests.get(url, headers=self.headers)
-            response.raise_for_status()
-            
-            files = response.json()
-            file_paths = []
-            
-            for file_info in files:
-                if file_info['type'] == 'file' and file_info['name'].endswith('.yaml'):
-                    file_paths.append(file_info['path'])
-                    
-            logger.info(f"发现 {len(file_paths)} 个YAML文件在目录: {directory_path}")
-            return file_paths
-            
-        except requests.exceptions.RequestException as e:
-            logger.error(f"获取目录文件列表失败 {directory_path}: {e}")
-            return []
+        if self.local_mode:
+            # 本地模式：扫描本地目录
+            try:
+                if not os.path.exists(directory_path):
+                    logger.warning(f"本地目录不存在: {directory_path}")
+                    return []
+
+                file_paths = []
+                for filename in os.listdir(directory_path):
+                    if filename.endswith('.yaml') or filename.endswith('.yml'):
+                        file_path = os.path.join(directory_path, filename)
+                        file_paths.append(file_path)
+
+                logger.info(f"发现 {len(file_paths)} 个YAML文件在本地目录: {directory_path}")
+                return file_paths
+
+            except Exception as e:
+                logger.error(f"扫描本地目录失败 {directory_path}: {e}")
+                return []
+        else:
+            # GitHub模式：通过API获取
+            try:
+                url = f'{self.base_url}/{directory_path}'
+                response = requests.get(url, headers=self.headers)
+                response.raise_for_status()
+
+                files = response.json()
+                file_paths = []
+
+                for file_info in files:
+                    if file_info['type'] == 'file' and file_info['name'].endswith('.yaml'):
+                        file_paths.append(file_info['path'])
+
+                logger.info(f"发现 {len(file_paths)} 个YAML文件在目录: {directory_path}")
+                return file_paths
+
+            except requests.exceptions.RequestException as e:
+                logger.error(f"获取目录文件列表失败 {directory_path}: {e}")
+                return []
     
     def merge_proxies(self, configs: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """
@@ -181,17 +228,11 @@ class ClashConfigMerger:
 
                     for rule in rule_data['payload']:
                         if isinstance(rule, str) and rule not in seen_rules:
-                            # 确保规则格式正确，指向对应的规则组
+                            # 确保规则格式正确，所有规则都指向"网络代理"
                             rule = rule.strip()
                             if rule:
-                                # 如果规则没有指定目标，添加规则组名
-                                if not (',' in rule and any(rule.endswith(f',{target}') for target in ['DIRECT', 'REJECT', 'PROXY'])):
-                                    # 添加规则组名作为目标
-                                    formatted_rule = f"{rule},{rule_file_name}"
-                                else:
-                                    # 如果已有目标，保持原样或替换为规则组名
-                                    formatted_rule = rule
-
+                                # 所有规则都指向"网络代理"组
+                                formatted_rule = f"{rule},网络代理"
                                 merged_rules.append(formatted_rule)
                                 seen_rules.add(formatted_rule)
 
@@ -233,11 +274,10 @@ class ClashConfigMerger:
         # 创建代理组列表
         proxy_groups = []
 
-        # 1. 创建主网络代理组
+        # 1. 创建主网络代理组（只包含sub分组，不包含rule分组）
         sub_group_names = list(sub_groups.keys())
-        rule_group_names = [os.path.basename(f).replace('.yaml', '') for f in rule_files]
 
-        network_proxy_options = ['自动选择', '故障转移'] + sub_group_names + rule_group_names
+        network_proxy_options = ['自动选择', '故障转移'] + sub_group_names
         proxy_groups.append({
             'name': '网络代理',
             'type': 'select',
@@ -262,7 +302,7 @@ class ClashConfigMerger:
             }
         ])
 
-        # 3. 为每个订阅文件创建代理组
+        # 3. 为每个订阅文件创建代理组（只为sub文件创建，不为rule文件创建）
         for sub_name, sub_proxies in sub_groups.items():
             if sub_proxies:
                 proxy_groups.append({
@@ -270,15 +310,6 @@ class ClashConfigMerger:
                     'type': 'select',
                     'proxies': ['自动选择', '故障转移'] + sub_proxies
                 })
-
-        # 4. 为每个规则文件创建代理组
-        for rule_file in rule_files:
-            rule_name = os.path.basename(rule_file).replace('.yaml', '')
-            proxy_groups.append({
-                'name': rule_name,
-                'type': 'select',
-                'proxies': ['自动选择', '故障转移'] + proxy_names
-            })
 
         logger.info(f"创建了 {len(proxy_groups)} 个代理组")
         return proxy_groups
@@ -364,16 +395,8 @@ class ClashConfigMerger:
         # 合并规则（只使用rule目录下的规则）
         merged_rules = self.merge_rules(rule_files)
 
-        # 添加默认规则
+        # 只添加最基本的默认规则
         default_rules = [
-            'DOMAIN-SUFFIX,local,DIRECT',
-            'IP-CIDR,127.0.0.0/8,DIRECT',
-            'IP-CIDR,172.16.0.0/12,DIRECT',
-            'IP-CIDR,192.168.0.0/16,DIRECT',
-            'IP-CIDR,10.0.0.0/8,DIRECT',
-            'IP-CIDR,17.0.0.0/8,DIRECT',
-            'IP-CIDR,100.64.0.0/10,DIRECT',
-            'GEOIP,CN,DIRECT',
             'MATCH,网络代理'  # 默认流量走网络代理组
         ]
 
@@ -398,13 +421,15 @@ class ClashConfigMerger:
 
             with open(output_path, 'w', encoding='utf-8', newline='\n') as f:
                 # 使用自定义的YAML输出格式，确保中文正确显示
-                yaml.dump(config, f,
-                         default_flow_style=False,
-                         allow_unicode=True,
-                         sort_keys=False,
-                         encoding=None,  # 让PyYAML使用文件的编码
-                         width=1000,     # 避免长行被折断
-                         indent=2)
+                yaml_content = yaml.dump(config,
+                                        default_flow_style=False,
+                                        allow_unicode=True,
+                                        sort_keys=False,
+                                        encoding=None,  # 返回字符串而不是字节
+                                        width=1000,     # 避免长行被折断
+                                        indent=2)
+                # 确保写入UTF-8编码的内容
+                f.write(yaml_content)
 
             logger.info(f"配置文件已保存到: {output_path}")
             return True
@@ -416,21 +441,35 @@ class ClashConfigMerger:
 
 def main():
     """主函数"""
-    # 从环境变量获取配置
-    github_token = os.getenv('GITHUB_TOKEN')
-    repo_owner = os.getenv('REPO_OWNER', 'your-username')
-    repo_name = os.getenv('REPO_NAME', 'clash-config')
-    output_dir = os.getenv('OUTPUT_DIR', 'docs')
+    # 检查是否为本地测试模式
+    local_mode = len(sys.argv) > 1 and sys.argv[1] == '--local'
 
-    if not github_token:
-        logger.error("未设置GITHUB_TOKEN环境变量")
-        sys.exit(1)
+    if local_mode:
+        logger.info("🧪 本地测试模式")
+        # 本地模式配置
+        merger = ClashConfigMerger(local_mode=True)
+        output_dir = 'output'
+        sub_dir = 'sub'
+        rule_dir = 'rule'
+    else:
+        logger.info("☁️ GitHub模式")
+        # 从环境变量获取配置
+        github_token = os.getenv('GITHUB_TOKEN')
+        repo_owner = os.getenv('REPO_OWNER', 'your-username')
+        repo_name = os.getenv('REPO_NAME', 'clash-config')
+        output_dir = os.getenv('OUTPUT_DIR', 'docs')
+        sub_dir = 'sub'
+        rule_dir = 'rule'
 
-    # 创建合并器实例
-    merger = ClashConfigMerger(github_token, repo_owner, repo_name)
+        if not github_token:
+            logger.error("未设置GITHUB_TOKEN环境变量")
+            sys.exit(1)
+
+        # 创建合并器实例
+        merger = ClashConfigMerger(github_token, repo_owner, repo_name, local_mode=False)
 
     # 生成合并配置
-    merged_config = merger.generate_merged_config()
+    merged_config = merger.generate_merged_config(sub_dir, rule_dir)
 
     if not merged_config:
         logger.error("生成配置失败")
@@ -451,13 +490,16 @@ def main():
 
     stats_path = os.path.join(output_dir, 'stats.json')
     try:
+        os.makedirs(output_dir, exist_ok=True)
         with open(stats_path, 'w', encoding='utf-8') as f:
             json.dump(stats, f, indent=2, ensure_ascii=False)
         logger.info(f"统计信息已保存到: {stats_path}")
     except Exception as e:
         logger.warning(f"保存统计信息失败: {e}")
 
-    logger.info(f"任务完成! 代理节点: {stats['proxy_count']}, 规则: {stats['rule_count']}")
+    logger.info(f"✅ 任务完成! 代理节点: {stats['proxy_count']}, 规则: {stats['rule_count']}")
+    if local_mode:
+        logger.info(f"📁 输出文件: {output_path}")
 
 
 if __name__ == '__main__':

@@ -48,13 +48,15 @@ jobs:
         python-version: '3.11'
         cache: 'pip'
 
-    - name: Set up locale
+    - name: Set up locale and encoding
       run: |
         sudo apt-get update
-        sudo apt-get install -y locales
+        sudo apt-get install -y locales language-pack-zh-hans
         sudo locale-gen zh_CN.UTF-8
+        sudo update-locale LANG=zh_CN.UTF-8
         echo "LANG=zh_CN.UTF-8" >> $GITHUB_ENV
         echo "LC_ALL=zh_CN.UTF-8" >> $GITHUB_ENV
+        echo "PYTHONIOENCODING=utf-8" >> $GITHUB_ENV
 
     - name: Install dependencies
       run: |
@@ -72,9 +74,14 @@ jobs:
         REPO_NAME: ${{ secrets.CLASH_REPO_NAME }}
         OUTPUT_DIR: docs
         PYTHONIOENCODING: utf-8
-        LC_ALL: C.UTF-8
-        LANG: C.UTF-8
+        PYTHONLEGACYWINDOWSFSENCODING: utf-8
+        PYTHONUTF8: 1
+        LC_ALL: zh_CN.UTF-8
+        LANG: zh_CN.UTF-8
       run: |
+        export PYTHONIOENCODING=utf-8
+        export PYTHONUTF8=1
+        python -c "import sys; print('Python encoding:', sys.stdout.encoding)"
         python scripts/merge_clash_config.py
     
     - name: Generate index page with authentication
