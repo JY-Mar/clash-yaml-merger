@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 Clash配置文件整合工具
 从GitHub私有仓库读取多个订阅YAML文件，整合代理节点和规则，生成统一的Clash配置
@@ -13,6 +14,16 @@ import json
 from datetime import datetime
 from typing import Dict, List, Any, Optional
 import logging
+
+# 设置默认编码
+import locale
+import codecs
+
+# 确保UTF-8编码
+if sys.stdout.encoding != 'utf-8':
+    sys.stdout = codecs.getwriter('utf-8')(sys.stdout.buffer, 'strict')
+if sys.stderr.encoding != 'utf-8':
+    sys.stderr = codecs.getwriter('utf-8')(sys.stderr.buffer, 'strict')
 
 # 配置日志
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -170,18 +181,19 @@ class ClashConfigMerger:
 
                     for rule in rule_data['payload']:
                         if isinstance(rule, str) and rule not in seen_rules:
-                            # 将规则指向对应的规则组
-                            if ',' in rule:
-                                # 如果规则已经有目标，替换为规则组名
-                                rule_parts = rule.split(',')
-                                if len(rule_parts) >= 2:
-                                    rule = f"{rule_parts[0]},{rule_file_name}"
-                            else:
-                                # 如果规则没有目标，添加规则组名
-                                rule = f"{rule},{rule_file_name}"
+                            # 确保规则格式正确，指向对应的规则组
+                            rule = rule.strip()
+                            if rule:
+                                # 如果规则没有指定目标，添加规则组名
+                                if not (',' in rule and any(rule.endswith(f',{target}') for target in ['DIRECT', 'REJECT', 'PROXY'])):
+                                    # 添加规则组名作为目标
+                                    formatted_rule = f"{rule},{rule_file_name}"
+                                else:
+                                    # 如果已有目标，保持原样或替换为规则组名
+                                    formatted_rule = rule
 
-                            merged_rules.append(rule)
-                            seen_rules.add(rule)
+                                merged_rules.append(formatted_rule)
+                                seen_rules.add(formatted_rule)
 
         logger.info(f"合并了 {len(merged_rules)} 条规则")
         return merged_rules
