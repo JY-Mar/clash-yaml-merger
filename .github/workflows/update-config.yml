@@ -72,6 +72,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.CLASH_GITHUB_TOKEN }}
         REPO_OWNER: ${{ secrets.CLASH_REPO_OWNER }}
         REPO_NAME: ${{ secrets.CLASH_REPO_NAME }}
+        AUTH_TOKEN: ${{ secrets.CLASH_AUTH_TOKEN }}
         OUTPUT_DIR: docs
         PYTHONIOENCODING: utf-8
         PYTHONLEGACYWINDOWSFSENCODING: utf-8
@@ -83,12 +84,19 @@ jobs:
         export PYTHONUTF8=1
         python -c "import sys; print('Python encoding:', sys.stdout.encoding)"
         python scripts/merge_clash_config.py
+
+        # 验证生成的文件编码
+        echo "=== 检查生成的文件 ==="
+        ls -la docs/
+        file docs/clash.yaml
+        head -5 docs/clash.yaml
     
     - name: Generate index page with authentication
       env:
         AUTH_TOKEN: ${{ secrets.CLASH_AUTH_TOKEN }}
       run: |
-        cat > docs/index.html << 'EOF'
+        # 生成带有实际token的HTML页面
+        cat > docs/index.html << EOF
         <!DOCTYPE html>
         <html lang="zh-CN">
         <head>
@@ -180,13 +188,13 @@ jobs:
                     <h3>📋 使用方法</h3>
                     <p>在 Clash 客户端中添加以下订阅链接：</p>
                     <div class="url-box" id="config-url">
-                        https://your-username.github.io/your-repo/clash.yaml?token=your-auth-token
+                        https://zzzkp.github.io/clash-pages/clash-${AUTH_TOKEN}.yaml
                     </div>
-                    <p><small>请将上述链接中的参数替换为实际值</small></p>
+                    <p><small>此链接包含认证信息，请勿分享</small></p>
                 </div>
                 
                 <div style="text-align: center; margin-top: 30px;">
-                    <a href="clash.yaml" class="btn" onclick="return checkAuth()">📥 下载配置文件</a>
+                    <a href="clash-${AUTH_TOKEN}.yaml" class="btn">📥 下载配置文件</a>
                     <a href="stats.json" class="btn">📈 查看统计信息</a>
                 </div>
             </div>
@@ -219,7 +227,7 @@ jobs:
                         // 更新配置URL
                         const configUrl = document.getElementById('config-url');
                         const currentUrl = window.location.origin + window.location.pathname.replace('/index.html', '');
-                        configUrl.textContent = currentUrl + '/clash.yaml?token=your-auth-token';
+                        configUrl.textContent = currentUrl + '/clash-${AUTH_TOKEN}.yaml';
                     })
                     .catch(error => {
                         document.getElementById('stats').innerHTML = '<p style="color: red;">加载统计信息失败</p>';

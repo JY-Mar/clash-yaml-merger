@@ -419,7 +419,8 @@ class ClashConfigMerger:
         try:
             os.makedirs(os.path.dirname(output_path), exist_ok=True)
 
-            with open(output_path, 'w', encoding='utf-8', newline='\n') as f:
+            # 使用UTF-8 BOM编码写入文件，确保GitHub Pages正确识别
+            with open(output_path, 'w', encoding='utf-8-sig', newline='\n') as f:
                 # 使用自定义的YAML输出格式，确保中文正确显示
                 yaml_content = yaml.dump(config,
                                         default_flow_style=False,
@@ -451,6 +452,7 @@ def main():
         output_dir = 'output'
         sub_dir = 'sub'
         rule_dir = 'rule'
+        auth_token = 'local-test'
     else:
         logger.info("☁️ GitHub模式")
         # 从环境变量获取配置
@@ -458,6 +460,7 @@ def main():
         repo_owner = os.getenv('REPO_OWNER', 'your-username')
         repo_name = os.getenv('REPO_NAME', 'clash-config')
         output_dir = os.getenv('OUTPUT_DIR', 'docs')
+        auth_token = os.getenv('AUTH_TOKEN', 'default-token')
         sub_dir = 'sub'
         rule_dir = 'rule'
 
@@ -475,8 +478,9 @@ def main():
         logger.error("生成配置失败")
         sys.exit(1)
 
-    # 保存配置文件
-    output_path = os.path.join(output_dir, 'clash.yaml')
+    # 使用token作为文件名的一部分进行认证
+    config_filename = f'clash-{auth_token}.yaml'
+    output_path = os.path.join(output_dir, config_filename)
     if not merger.save_config_to_file(merged_config, output_path):
         sys.exit(1)
 
