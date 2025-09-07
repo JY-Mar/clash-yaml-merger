@@ -201,34 +201,11 @@ jobs:
                 </div>
                 
                 <div style="text-align: center; margin-top: 30px;">
-                    <button class="btn" onclick="showDownloadLink()" id="download-btn">📥 显示下载链接</button>
                     <a href="stats.json" class="btn">📈 查看统计信息</a>
-                </div>
-
-                <div id="download-section" style="display: none; text-align: center; margin-top: 20px;">
-                    <p>配置文件下载链接：</p>
-                    <div class="url-box">
-                        <a href="clash-${AUTH_TOKEN}.yaml" id="download-link">clash-{your-token}.yaml</a>
-                    </div>
-                    <p><small>点击上方链接下载配置文件</small></p>
                 </div>
             </div>
             
             <script>
-                // 显示下载链接
-                function showDownloadLink() {
-                    const downloadSection = document.getElementById('download-section');
-                    const downloadBtn = document.getElementById('download-btn');
-
-                    if (downloadSection.style.display === 'none') {
-                        downloadSection.style.display = 'block';
-                        downloadBtn.textContent = '🔒 隐藏下载链接';
-                    } else {
-                        downloadSection.style.display = 'none';
-                        downloadBtn.textContent = '📥 显示下载链接';
-                    }
-                }
-
                 // 加载统计信息
                 fetch('stats.json')
                     .then(response => response.json())
@@ -248,9 +225,6 @@ jobs:
         </body>
         </html>
         HTMLEOF
-
-        # 只替换下载链接中的token，保持显示文本为占位符
-        sed -i "s|href=\"clash-\${AUTH_TOKEN}\.yaml\"|href=\"clash-${AUTH_TOKEN}.yaml\"|g" docs/index.html
     
     - name: Create authentication wrapper
       env:
