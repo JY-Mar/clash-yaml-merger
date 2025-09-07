@@ -397,7 +397,7 @@ class ClashConfigMerger:
 
         # 只添加最基本的默认规则
         default_rules = [
-            'MATCH,网络代理'  # 默认流量走网络代理组
+            'MATCH,DIRECT'  # 默认流量走网络代理组
         ]
 
         merged_config['rules'] = merged_rules + default_rules
