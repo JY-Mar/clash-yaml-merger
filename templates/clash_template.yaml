@@ -1,0 +1,74 @@
+# Clash配置文件模板
+# 此文件展示了标准的Clash配置结构
+
+# 基础配置
+mixed-port: 7890
+allow-lan: true
+bind-address: '*'
+mode: rule
+log-level: info
+external-controller: '127.0.0.1:9090'
+
+# DNS配置
+dns:
+  enable: true
+  ipv6: false
+  default-nameserver:
+    - 223.5.5.5
+    - 119.29.29.29
+    - 114.114.114.114
+  enhanced-mode: fake-ip
+  fake-ip-range: 198.18.0.1/16
+  use-hosts: true
+  nameserver:
+    - 223.5.5.5
+    - 119.29.29.29
+    - 114.114.114.114
+  fallback:
+    - 1.1.1.1
+    - 8.8.8.8
+  fallback-filter:
+    geoip: true
+    geoip-code: CN
+    ipcidr:
+      - 240.0.0.0/4
+
+# 代理节点（将由脚本自动填充）
+proxies: []
+
+# 代理组（将由脚本自动生成）
+proxy-groups:
+  - name: PROXY
+    type: select
+    proxies:
+      - 自动选择
+      - 故障转移
+  
+  - name: 自动选择
+    type: url-test
+    proxies: []
+    url: 'http://www.gstatic.com/generate_204'
+    interval: 300
+  
+  - name: 故障转移
+    type: fallback
+    proxies: []
+    url: 'http://www.gstatic.com/generate_204'
+    interval: 300
+
+# 规则列表（将由脚本自动填充）
+rules:
+  # 本地网络直连
+  - DOMAIN-SUFFIX,local,DIRECT
+  - IP-CIDR,127.0.0.0/8,DIRECT
+  - IP-CIDR,172.16.0.0/12,DIRECT
+  - IP-CIDR,192.168.0.0/16,DIRECT
+  - IP-CIDR,10.0.0.0/8,DIRECT
+  - IP-CIDR,17.0.0.0/8,DIRECT
+  - IP-CIDR,100.64.0.0/10,DIRECT
+  
+  # 中国大陆直连
+  - GEOIP,CN,DIRECT
+  
+  # 其他流量走代理
+  - MATCH,PROXY

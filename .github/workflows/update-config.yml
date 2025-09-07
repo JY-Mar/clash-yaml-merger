@@ -1,0 +1,281 @@
+name: Update Clash Config
+
+on:
+  # 定时触发 - 每小时检查一次
+  schedule:
+    - cron: '0 * * * *'
+  
+  # 手动触发
+  workflow_dispatch:
+    inputs:
+      force_update:
+        description: '强制更新配置'
+        required: false
+        default: 'false'
+        type: boolean
+  
+  # 当脚本文件更新时触发
+  push:
+    paths:
+      - 'scripts/**'
+      - '.github/workflows/update-config.yml'
+      - 'config/**'
+
+# 设置权限
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 确保只有一个部署任务同时运行
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  generate-config:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install PyYAML requests
+    
+    - name: Create output directory
+      run: |
+        mkdir -p docs
+        
+    - name: Generate merged config
+      env:
+        GITHUB_TOKEN: ${{ secrets.CLASH_GITHUB_TOKEN }}
+        REPO_OWNER: ${{ secrets.CLASH_REPO_OWNER }}
+        REPO_NAME: ${{ secrets.CLASH_REPO_NAME }}
+        OUTPUT_DIR: docs
+      run: |
+        python scripts/merge_clash_config.py
+    
+    - name: Generate index page with authentication
+      env:
+        AUTH_TOKEN: ${{ secrets.CLASH_AUTH_TOKEN }}
+      run: |
+        cat > docs/index.html << 'EOF'
+        <!DOCTYPE html>
+        <html lang="zh-CN">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Clash 配置服务</title>
+            <style>
+                body {
+                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                    max-width: 800px;
+                    margin: 0 auto;
+                    padding: 20px;
+                    background-color: #f5f5f5;
+                }
+                .container {
+                    background: white;
+                    padding: 30px;
+                    border-radius: 10px;
+                    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                }
+                .header {
+                    text-align: center;
+                    margin-bottom: 30px;
+                }
+                .config-info {
+                    background: #f8f9fa;
+                    padding: 20px;
+                    border-radius: 8px;
+                    margin: 20px 0;
+                }
+                .url-box {
+                    background: #e9ecef;
+                    padding: 15px;
+                    border-radius: 5px;
+                    font-family: monospace;
+                    word-break: break-all;
+                    margin: 10px 0;
+                }
+                .warning {
+                    color: #dc3545;
+                    background: #f8d7da;
+                    padding: 15px;
+                    border-radius: 5px;
+                    margin: 20px 0;
+                }
+                .success {
+                    color: #155724;
+                    background: #d4edda;
+                    padding: 15px;
+                    border-radius: 5px;
+                    margin: 20px 0;
+                }
+                .btn {
+                    display: inline-block;
+                    padding: 10px 20px;
+                    background: #007bff;
+                    color: white;
+                    text-decoration: none;
+                    border-radius: 5px;
+                    margin: 5px;
+                }
+                .btn:hover {
+                    background: #0056b3;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>🚀 Clash 配置整合服务</h1>
+                    <p>自动整合多个订阅源的 Clash 配置文件</p>
+                </div>
+                
+                <div class="config-info">
+                    <h3>📊 配置统计</h3>
+                    <div id="stats">加载中...</div>
+                </div>
+                
+                <div class="warning">
+                    <h3>⚠️ 重要提醒</h3>
+                    <ul>
+                        <li>此服务仅供个人使用，请勿分享配置链接</li>
+                        <li>配置文件每小时自动更新一次</li>
+                        <li>访问配置需要正确的认证参数</li>
+                    </ul>
+                </div>
+                
+                <div class="success">
+                    <h3>📋 使用方法</h3>
+                    <p>在 Clash 客户端中添加以下订阅链接：</p>
+                    <div class="url-box" id="config-url">
+                        https://your-username.github.io/your-repo/clash.yaml?token=your-auth-token
+                    </div>
+                    <p><small>请将上述链接中的参数替换为实际值</small></p>
+                </div>
+                
+                <div style="text-align: center; margin-top: 30px;">
+                    <a href="clash.yaml" class="btn" onclick="return checkAuth()">📥 下载配置文件</a>
+                    <a href="stats.json" class="btn">📈 查看统计信息</a>
+                </div>
+            </div>
+            
+            <script>
+                // 检查认证参数
+                function checkAuth() {
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const token = urlParams.get('token');
+                    
+                    if (!token || token !== 'your-auth-token') {
+                        alert('访问被拒绝：需要有效的认证参数');
+                        return false;
+                    }
+                    return true;
+                }
+                
+                // 加载统计信息
+                fetch('stats.json')
+                    .then(response => response.json())
+                    .then(data => {
+                        const statsDiv = document.getElementById('stats');
+                        statsDiv.innerHTML = `
+                            <p><strong>代理节点数量：</strong> ${data.proxy_count}</p>
+                            <p><strong>代理组数量：</strong> ${data.proxy_group_count}</p>
+                            <p><strong>规则数量：</strong> ${data.rule_count}</p>
+                            <p><strong>最后更新：</strong> ${new Date(data.generated_at).toLocaleString('zh-CN')}</p>
+                        `;
+                        
+                        // 更新配置URL
+                        const configUrl = document.getElementById('config-url');
+                        const currentUrl = window.location.origin + window.location.pathname.replace('/index.html', '');
+                        configUrl.textContent = currentUrl + '/clash.yaml?token=your-auth-token';
+                    })
+                    .catch(error => {
+                        document.getElementById('stats').innerHTML = '<p style="color: red;">加载统计信息失败</p>';
+                    });
+            </script>
+        </body>
+        </html>
+        EOF
+    
+    - name: Create authentication wrapper
+      env:
+        AUTH_TOKEN: ${{ secrets.CLASH_AUTH_TOKEN }}
+      run: |
+        # 创建一个简单的认证包装器
+        cat > docs/clash.yaml.php << 'EOF'
+        <?php
+        // 简单的认证检查
+        $required_token = getenv('AUTH_TOKEN') ?: 'your-auth-token';
+        $provided_token = $_GET['token'] ?? '';
+        
+        if ($provided_token !== $required_token) {
+            http_response_code(404);
+            echo "Not Found";
+            exit;
+        }
+        
+        // 返回配置文件
+        header('Content-Type: application/x-yaml');
+        header('Content-Disposition: attachment; filename="clash.yaml"');
+        readfile('clash.yaml');
+        ?>
+        EOF
+        
+        # 由于GitHub Pages不支持PHP，我们创建一个JavaScript版本
+        cat > docs/get-config.html << 'EOF'
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Clash Config</title>
+        </head>
+        <body>
+            <script>
+                const urlParams = new URLSearchParams(window.location.search);
+                const token = urlParams.get('token');
+                
+                // 这里应该是您的认证token
+                const validToken = 'your-auth-token';
+                
+                if (token === validToken) {
+                    // 重定向到实际的配置文件
+                    window.location.href = 'clash.yaml';
+                } else {
+                    // 返回404
+                    document.body.innerHTML = '<h1>404 Not Found</h1>';
+                    document.title = '404 Not Found';
+                }
+            </script>
+        </body>
+        </html>
+        EOF
+    
+    - name: Upload artifact
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: ./docs
+  
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: generate-config
+    
+    steps:
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v4
