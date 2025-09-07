@@ -103,7 +103,7 @@ jobs:
         AUTH_TOKEN: ${{ secrets.CLASH_AUTH_TOKEN }}
       run: |
         # 生成带有实际token的HTML页面
-        cat > docs/index.html << EOF
+        cat > docs/index.html << 'HTMLEOF'
         <!DOCTYPE html>
         <html lang="zh-CN">
         <head>
@@ -242,7 +242,10 @@ jobs:
             </script>
         </body>
         </html>
-        EOF
+        HTMLEOF
+
+        # 替换HTML中的token变量
+        sed -i "s/\${AUTH_TOKEN}/${AUTH_TOKEN}/g" docs/index.html
     
     - name: Create authentication wrapper
       env:
