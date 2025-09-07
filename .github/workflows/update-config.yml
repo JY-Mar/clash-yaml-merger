@@ -88,8 +88,15 @@ jobs:
         # 验证生成的文件编码
         echo "=== 检查生成的文件 ==="
         ls -la docs/
-        file docs/clash.yaml
-        head -5 docs/clash.yaml
+        CONFIG_FILE="docs/clash-${AUTH_TOKEN}.yaml"
+        if [ -f "$CONFIG_FILE" ]; then
+          file "$CONFIG_FILE"
+          head -5 "$CONFIG_FILE"
+          echo "配置文件生成成功: $CONFIG_FILE"
+        else
+          echo "错误: 配置文件未生成"
+          exit 1
+        fi
     
     - name: Generate index page with authentication
       env:

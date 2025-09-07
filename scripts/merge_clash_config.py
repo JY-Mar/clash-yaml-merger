@@ -489,7 +489,8 @@ def main():
         'generated_at': datetime.now().isoformat(),
         'proxy_count': len(merged_config.get('proxies', [])),
         'proxy_group_count': len(merged_config.get('proxy-groups', [])),
-        'rule_count': len(merged_config.get('rules', []))
+        'rule_count': len(merged_config.get('rules', [])),
+        'config_filename': config_filename  # 添加配置文件名信息
     }
 
     stats_path = os.path.join(output_dir, 'stats.json')
@@ -502,8 +503,9 @@ def main():
         logger.warning(f"保存统计信息失败: {e}")
 
     logger.info(f"✅ 任务完成! 代理节点: {stats['proxy_count']}, 规则: {stats['rule_count']}")
+    logger.info(f"📁 配置文件: {config_filename}")
     if local_mode:
-        logger.info(f"📁 输出文件: {output_path}")
+        logger.info(f"📁 输出路径: {output_path}")
 
 
 if __name__ == '__main__':
