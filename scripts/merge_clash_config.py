@@ -171,36 +171,38 @@ class ClashConfigMerger:
                 logger.error(f"获取目录文件列表失败 {directory_path}: {e}")
                 return []
     
-    def merge_proxies(self, configs: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    def merge_proxies(self, configs_with_sources: List[tuple]) -> List[Dict[str, Any]]:
         """
         合并多个配置文件的代理节点
-        
+
         Args:
-            configs: 配置文件列表
-            
+            configs_with_sources: 配置文件和来源信息的元组列表 [(config, source_file), ...]
+
         Returns:
-            合并后的代理节点列表
+            合并后的代理节点列表（包含来源信息）
         """
         merged_proxies = []
         seen_names = set()
-        
-        for config in configs:
+
+        for config, source_file in configs_with_sources:
             if 'proxies' in config and isinstance(config['proxies'], list):
+                source_name = os.path.basename(source_file).replace('.yaml', '')
                 for proxy in config['proxies']:
                     if isinstance(proxy, dict) and 'name' in proxy:
                         # 避免重复的代理节点名称
                         original_name = proxy['name']
                         name = original_name
                         counter = 1
-                        
+
                         while name in seen_names:
                             name = f"{original_name}_{counter}"
                             counter += 1
-                        
+
                         proxy['name'] = name
+                        proxy['_source_file'] = source_name  # 添加来源标识
                         seen_names.add(name)
                         merged_proxies.append(proxy)
-        
+
         logger.info(f"合并了 {len(merged_proxies)} 个代理节点")
         return merged_proxies
     
@@ -253,23 +255,20 @@ class ClashConfigMerger:
         """
         proxy_names = [proxy['name'] for proxy in proxies if 'name' in proxy]
 
-        # 按订阅文件分组代理节点
+        # 按订阅文件分组代理节点 - 基于来源信息进行精确分组
         sub_groups = {}
         for file_path in sub_files:
             # 从文件路径提取文件名作为分组名
             file_name = os.path.basename(file_path).replace('.yaml', '')
             sub_groups[file_name] = []
 
-        # 将代理节点分配到对应的订阅分组（这里简化处理，实际可以根据代理名称或其他标识来分组）
-        # 由于我们合并了所有代理，这里按顺序平均分配，或者可以根据代理名称特征来分组
-        proxies_per_sub = len(proxy_names) // len(sub_files) if sub_files else 0
-
-        for i, (sub_name, _) in enumerate(sub_groups.items()):
-            start_idx = i * proxies_per_sub
-            if i == len(sub_groups) - 1:  # 最后一组包含剩余的所有代理
-                sub_groups[sub_name] = proxy_names[start_idx:]
-            else:
-                sub_groups[sub_name] = proxy_names[start_idx:start_idx + proxies_per_sub]
+        # 根据代理的来源信息进行精确分组
+        for proxy in proxies:
+            if isinstance(proxy, dict) and '_source_file' in proxy:
+                source_name = proxy['_source_file']
+                proxy_name = proxy.get('name', '')
+                if source_name in sub_groups and proxy_name:
+                    sub_groups[source_name].append(proxy_name)
 
         # 创建代理组列表
         proxy_groups = []
@@ -369,15 +368,15 @@ class ClashConfigMerger:
             logger.warning(f"未找到规则文件在目录: {rule_directory}")
 
         # 加载所有订阅配置
-        configs = []
+        configs_with_sources = []
         for file_path in sub_files:
             content = self.get_file_content(file_path)
             if content:
                 config = self.load_yaml_content(content)
                 if config:
-                    configs.append(config)
+                    configs_with_sources.append((config, file_path))
 
-        if not configs:
+        if not configs_with_sources:
             logger.error("未能加载任何有效的订阅配置文件")
             return {}
 
@@ -385,7 +384,7 @@ class ClashConfigMerger:
         merged_config = self.create_base_config()
 
         # 合并代理节点
-        merged_proxies = self.merge_proxies(configs)
+        merged_proxies = self.merge_proxies(configs_with_sources)
         merged_config['proxies'] = merged_proxies
 
         # 创建代理组（传入文件列表用于创建对应的分组）
@@ -401,6 +400,11 @@ class ClashConfigMerger:
         ]
 
         merged_config['rules'] = merged_rules + default_rules
+
+        # 清理代理节点中的临时字段
+        for proxy in merged_config.get('proxies', []):
+            if isinstance(proxy, dict) and '_source_file' in proxy:
+                del proxy['_source_file']
 
         logger.info("配置合并完成")
         return merged_config
