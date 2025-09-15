@@ -61,7 +61,7 @@ class ClashConfigMerger:
         
     def load_config() -> Dict[str, Any]:
         """加载配置文件"""
-        config_path = "config/settings.yaml"
+        config_path = "../config/settings.yaml"
         try:
             with open(config_path, 'r', encoding='utf-8') as f:
                 return yaml.safe_load(f)
@@ -484,11 +484,11 @@ def main():
         rules_directory = loadedConfig['github']['rules_directory']
         
         sub_dir = 'sub'
-        if not subscription_directory
+        if not subscription_directory:
             sub_dir = subscription_directory
         
         rule_dir = 'rule'
-        if not rules_directory
+        if not rules_directory:
             rule_dir = rules_directory
 
         if not github_token:
