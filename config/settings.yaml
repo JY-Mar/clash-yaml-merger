@@ -7,9 +7,9 @@ github:
   # 私有仓库名称
   repository: "clash-config"
   # 订阅文件目录
-  subscription_directory: "sub"
+  subscription_directory: "Clash/subscriptions"
   # 规则文件目录
-  rules_directory: "rule"
+  rules_directory: "Clash/rules"
 
 # 输出配置
 output:
@@ -43,12 +43,22 @@ proxy:
       keywords: ["🇸🇬", "新加坡", "SG", "Singapore"]
     - name: "日本"
       keywords: ["🇯🇵", "日本", "JP", "Japan"]
+    - name: "韩国"
+      keywords: ["🇰🇷", "韩国", "KR", "Korea"]
     - name: "美国"
       keywords: ["🇺🇸", "美国", "US", "United States"]
     - name: "英国"
       keywords: ["🇬🇧", "英国", "UK", "United Kingdom"]
+    - name: "法国"
+      keywords: ["🇫🇷", "法国", "FR", "France"]
     - name: "德国"
       keywords: ["🇩🇪", "德国", "DE", "Germany"]
+    - name: "意大利"
+      keywords: ["🇮🇹", "意大利", "IT", "Italy"]
+    - name: "荷兰"
+      keywords: ["🇳🇱", "荷兰", "NL", "Holland", "Netherlands"]
+    - name: "卢森堡"
+      keywords: ["🇱🇺", "卢森堡", "LU", "Luxembourg", "Luxemburg"]
 
 # 规则配置
 rules:

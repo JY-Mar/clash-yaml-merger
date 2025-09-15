@@ -484,7 +484,9 @@ def main():
 
     # 使用token作为文件名的一部分进行认证
     config_filename = f'clash-{auth_token}.yaml'
+    config_filename_dot = f'clash-xxxxxx.yaml'
     output_path = os.path.join(output_dir, config_filename)
+    output_path_dot = os.path.join(output_dir, config_filename_dot)
     if not merger.save_config_to_file(merged_config, output_path):
         sys.exit(1)
 
@@ -507,9 +509,9 @@ def main():
         logger.warning(f"保存统计信息失败: {e}")
 
     logger.info(f"✅ 任务完成! 代理节点: {stats['proxy_count']}, 规则: {stats['rule_count']}")
-    logger.info(f"📁 配置文件: {config_filename}")
+    logger.info(f"📁 配置文件: {config_filename_dot}")
     if local_mode:
-        logger.info(f"📁 输出路径: {output_path}")
+        logger.info(f"📁 输出路径: {output_path_dot}")
 
 
 if __name__ == '__main__':
