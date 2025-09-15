@@ -36,6 +36,19 @@ except:
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
+def load_config() -> Dict[str, Any]:
+    """加载配置文件"""
+    config_path = "../config/settings.yaml"
+    try:
+        with open(config_path, 'r', encoding='utf-8') as f:
+            return yaml.safe_load(f)
+    except FileNotFoundError:
+        print(f"❌ 配置文件不存在: {config_path}")
+        sys.exit(1)
+    except yaml.YAMLError as e:
+        print(f"❌ 配置文件格式错误: {e}")
+        sys.exit(1)
+
 class ClashConfigMerger:
     def __init__(self, github_token: str = None, repo_owner: str = None, repo_name: str = None, local_mode: bool = False):
         """
@@ -58,19 +71,6 @@ class ClashConfigMerger:
                 'Accept': 'application/vnd.github.v3+json'
             }
             self.base_url = f'https://api.github.com/repos/{repo_owner}/{repo_name}/contents'
-        
-    def load_config() -> Dict[str, Any]:
-        """加载配置文件"""
-        config_path = "../config/settings.yaml"
-        try:
-            with open(config_path, 'r', encoding='utf-8') as f:
-                return yaml.safe_load(f)
-        except FileNotFoundError:
-            print(f"❌ 配置文件不存在: {config_path}")
-            sys.exit(1)
-        except yaml.YAMLError as e:
-            print(f"❌ 配置文件格式错误: {e}")
-            sys.exit(1)
 
     def get_file_content(self, file_path: str) -> Optional[str]:
         """
