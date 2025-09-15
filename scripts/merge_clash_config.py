@@ -36,19 +36,6 @@ except:
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-def load_config() -> Dict[str, Any]:
-    """加载配置文件"""
-    config_path = "config/settings.yaml"
-    try:
-        with open(config_path, 'r', encoding='utf-8') as f:
-            return yaml.safe_load(f)
-    except FileNotFoundError:
-        print(f"❌ 配置文件不存在: {config_path}")
-        sys.exit(1)
-    except yaml.YAMLError as e:
-        print(f"❌ 配置文件格式错误: {e}")
-        sys.exit(1)
-
 class ClashConfigMerger:
     def __init__(self, github_token: str = None, repo_owner: str = None, repo_name: str = None, local_mode: bool = False):
         """
@@ -456,7 +443,18 @@ class ClashConfigMerger:
             logger.error(f"保存配置文件失败: {e}")
             return False
 
-
+def load_config() -> Dict[str, Any]:
+    """加载配置文件"""
+    config_path = "config/settings.yaml"
+    try:
+        with open(config_path, 'r', encoding='utf-8') as f:
+            return yaml.safe_load(f)
+    except FileNotFoundError:
+        print(f"❌ 配置文件不存在: {config_path}")
+        sys.exit(1)
+    except yaml.YAMLError as e:
+        print(f"❌ 配置文件格式错误: {e}")
+        sys.exit(1)
 def main():
     """主函数"""
     # 检查是否为本地测试模式
@@ -479,17 +477,17 @@ def main():
         output_dir = os.getenv('OUTPUT_DIR', 'docs')
         auth_token = os.getenv('AUTH_TOKEN', 'default-token')
         
-        loadedConfig = load_config()
-        subscription_directory = loadedConfig['github']['subscription_directory']
-        rules_directory = loadedConfig['github']['rules_directory']
+        config = load_config()
+        subscription_directory = config['github']['subscription_directory']
+        rules_directory = config['github']['rules_directory']
         
         sub_dir = 'sub'
-        if not subscription_directory:
-            sub_dir = subscription_directory
+        if subscription_directory:
+            sub_dir = subscription_directory.strip()
         
         rule_dir = 'rule'
-        if not rules_directory:
-            rule_dir = rules_directory
+        if rules_directory:
+            rule_dir = rules_directory.strip()
 
         if not github_token:
             logger.error("未设置GITHUB_TOKEN环境变量")
