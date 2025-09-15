@@ -18,8 +18,6 @@ output:
   # 配置文件名
   config_filename: "clash.yaml"
   # 统计文件名
-  stats_mask_filename: "stats.json"
-  # 统计文件名
   stats_filename: "stats.json"
 
 # 认证配置
