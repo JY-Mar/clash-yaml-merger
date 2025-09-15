@@ -59,6 +59,19 @@ class ClashConfigMerger:
             }
             self.base_url = f'https://api.github.com/repos/{repo_owner}/{repo_name}/contents'
         
+    def load_config() -> Dict[str, Any]:
+        """加载配置文件"""
+        config_path = "config/settings.yaml"
+        try:
+            with open(config_path, 'r', encoding='utf-8') as f:
+                return yaml.safe_load(f)
+        except FileNotFoundError:
+            print(f"❌ 配置文件不存在: {config_path}")
+            sys.exit(1)
+        except yaml.YAMLError as e:
+            print(f"❌ 配置文件格式错误: {e}")
+            sys.exit(1)
+
     def get_file_content(self, file_path: str) -> Optional[str]:
         """
         获取文件内容（支持本地和GitHub模式）
@@ -465,8 +478,18 @@ def main():
         repo_name = os.getenv('REPO_NAME', 'clash-config')
         output_dir = os.getenv('OUTPUT_DIR', 'docs')
         auth_token = os.getenv('AUTH_TOKEN', 'default-token')
+        
+        loadedConfig = load_config()
+        subscription_directory = loadedConfig['github']['subscription_directory']
+        rules_directory = loadedConfig['github']['rules_directory']
+        
         sub_dir = 'sub'
+        if not subscription_directory
+            sub_dir = subscription_directory
+        
         rule_dir = 'rule'
+        if not rules_directory
+            rule_dir = rules_directory
 
         if not github_token:
             logger.error("未设置GITHUB_TOKEN环境变量")
