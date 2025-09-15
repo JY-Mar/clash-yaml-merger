@@ -38,7 +38,7 @@ logger = logging.getLogger(__name__)
 
 def load_config() -> Dict[str, Any]:
     """加载配置文件"""
-    config_path = "../config/settings.yaml"
+    config_path = "config/settings.yaml"
     try:
         with open(config_path, 'r', encoding='utf-8') as f:
             return yaml.safe_load(f)
