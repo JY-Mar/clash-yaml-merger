@@ -562,13 +562,24 @@ def main():
         sys.exit(1)
 
     # 生成统计信息
-    stats = {
-        'generated_at': datetime.now().isoformat(),
-        'proxy_count': 0 if not isinstance(merged_config, object) else len(merged_config.get('proxies', [])),
-        'proxy_group_count': 0 if not isinstance(merged_config, object) else len(merged_config.get('proxy-groups', [])),
-        'rule_count': 0 if not isinstance(merged_config, object) else len(merged_config.get('rules', [])),
-        'config_filename': config_filename  # 添加配置文件名信息
-    }
+    try:
+        stats = {
+            'generated_at': datetime.now().isoformat(),
+            'proxy_count': len(merged_config.get('proxies', [])),
+            'proxy_group_count': len(merged_config.get('proxy-groups', [])),
+            'rule_count': len(merged_config.get('rules', [])),
+            'config_filename': config_filename  # 添加配置文件名信息
+        }
+    except Exception as e:
+        stats = {
+            'generated_at': datetime.now().isoformat(),
+            'proxy_count': 0,
+            'proxy_group_count': 0,
+            'rule_count': 0,
+            'config_filename': config_filename  # 添加配置文件名信息
+        }
+        logger.error(f"生成统计信息失败: {e}")
+
 
     stats_path = os.path.join(output_dir, 'stats.json')
     try:
