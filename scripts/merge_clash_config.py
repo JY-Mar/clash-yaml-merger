@@ -444,9 +444,10 @@ class ClashConfigMerger:
             merged_config['rules'] = merged_rules + default_rules
 
         # 清理代理节点中的临时字段
-        for proxy in merged_config.get('proxies', []):
-            if isinstance(proxy, dict) and '_source_file' in proxy:
-                del proxy['_source_file']
+        if isinstance(merged_config, object):
+            for proxy in merged_config.get('proxies', []):
+                if isinstance(proxy, dict) and '_source_file' in proxy:
+                    del proxy['_source_file']
 
         logger.info("配置合并完成")
         return merged_config
@@ -561,9 +562,9 @@ def main():
     # 生成统计信息
     stats = {
         'generated_at': datetime.now().isoformat(),
-        'proxy_count': len(merged_config.get('proxies', [])),
-        'proxy_group_count': len(merged_config.get('proxy-groups', [])),
-        'rule_count': len(merged_config.get('rules', [])),
+        'proxy_count': 0 if not isinstance(merged_config, object) else len(merged_config.get('proxies', [])),
+        'proxy_group_count': 0 if not isinstance(merged_config, object) else len(merged_config.get('proxy-groups', [])),
+        'rule_count': 0 if not isinstance(merged_config, object) else len(merged_config.get('rules', [])),
         'config_filename': config_filename  # 添加配置文件名信息
     }
 
