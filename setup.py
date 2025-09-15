@@ -50,6 +50,10 @@ def setup_github_config():
     if repo:
         config['github']['repository'] = repo
     
+    fconf_dir = input(f"订阅文件目录 [{config['github']['fullconf_directory']}]: ").strip()
+    if fconf_dir:
+        config['github']['fullconf_directory'] = fconf_dir
+    
     sub_dir = input(f"订阅文件目录 [{config['github']['subscription_directory']}]: ").strip()
     if sub_dir:
         config['github']['subscription_directory'] = sub_dir

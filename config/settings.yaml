@@ -6,6 +6,8 @@ github:
   owner: "your-username"
   # 私有仓库名称
   repository: "clash-config"
+  # 基础配置文件目录
+  fullconf_directory: "Clash/fullconf"
   # 订阅文件目录
   subscription_directory: "Clash/subscriptions"
   # 规则文件目录

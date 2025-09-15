@@ -14,7 +14,6 @@ import json
 from datetime import datetime
 from typing import Dict, List, Any, Optional
 import logging
-
 # 设置默认编码
 import locale
 import codecs
@@ -35,6 +34,25 @@ except:
 # 配置日志
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
+
+def deep_merge(obj1, obj2):
+    if isinstance(obj1, dict) and isinstance(obj2, dict):
+        merged = obj1.copy()
+        for key, value in obj2.items():
+            if key in merged:
+                merged[key] = deep_merge(merged[key], value)
+            else:
+                merged[key] = value
+        return merged
+
+    elif isinstance(obj1, list) and isinstance(obj2, list):
+        return obj1 + obj2
+
+    elif isinstance(obj1, set) and isinstance(obj2, set):
+        return obj1 | obj2
+
+    else:
+        return obj2  # 默认后者覆盖前者
 
 class ClashConfigMerger:
     def __init__(self, github_token: str = None, repo_owner: str = None, repo_name: str = None, local_mode: bool = False):
@@ -345,18 +363,24 @@ class ClashConfigMerger:
             }
         }
 
-    def generate_merged_config(self, sub_directory: str = 'sub', rule_directory: str = 'rule') -> Dict[str, Any]:
+    def generate_merged_config(self, fconf_directory: str = 'fconf', sub_directory: str = 'sub', rule_directory: str = 'rule') -> Dict[str, Any]:
         """
         生成合并后的配置文件
 
         Args:
+            fconf_directory: 基础配置文件目录
             sub_directory: 订阅文件目录
             rule_directory: 规则文件目录
 
         Returns:
-            合并后的完整配置
+            合并后的基础配置
         """
         logger.info("开始生成合并配置...")
+
+        # 获取基础配置文件列表
+        fconf_files = self.get_directory_files(fconf_directory)
+        if not fconf_files:
+            logger.warning(f"未找到基础配置文件在目录: {fconf_directory}")
 
         # 获取订阅文件列表
         sub_files = self.get_directory_files(sub_directory)
@@ -367,6 +391,18 @@ class ClashConfigMerger:
         rule_files = self.get_directory_files(rule_directory)
         if not rule_files:
             logger.warning(f"未找到规则文件在目录: {rule_directory}")
+
+        # 加载所有基础配置
+        configs_as_full = []
+        for file_path in fconf_files:
+            content = self.get_file_content(file_path)
+            if content:
+                config = self.load_yaml_content(content)
+                if config:
+                    configs_as_full.append((config, file_path))
+        if not configs_as_full:
+            logger.error("未能加载任何有效的基础配置文件")
+            return {}
 
         # 加载所有订阅配置
         configs_with_sources = []
@@ -379,28 +415,33 @@ class ClashConfigMerger:
 
         if not configs_with_sources:
             logger.error("未能加载任何有效的订阅配置文件")
-            return {}
+            # return {}
 
         # 创建基础配置
         merged_config = self.create_base_config()
 
+        if configs_as_full:
+            for config_full in configs_as_full:
+                merged_config = deep_merge(merged_config, config_full)
+
         # 合并代理节点
-        merged_proxies = self.merge_proxies(configs_with_sources)
-        merged_config['proxies'] = merged_proxies
-
-        # 创建代理组（传入文件列表用于创建对应的分组）
-        proxy_groups = self.create_proxy_groups(merged_proxies, sub_files, rule_files)
-        merged_config['proxy-groups'] = proxy_groups
-
+        if configs_with_sources:
+            merged_proxies = self.merge_proxies(configs_with_sources)
+            merged_config['proxies'] = merged_proxies
+            # 创建代理组（传入文件列表用于创建对应的分组）
+            proxy_groups = self.create_proxy_groups(merged_proxies, sub_files, rule_files)
+            merged_config['proxy-groups'] = proxy_groups
+        
         # 合并规则（只使用rule目录下的规则）
         merged_rules = self.merge_rules(rule_files)
 
-        # 只添加最基本的默认规则
-        default_rules = [
-            'MATCH,DIRECT'  # 默认流量走网络代理组
-        ]
+        if merged_rules:
+            # 只添加最基本的默认规则
+            default_rules = [
+                'MATCH,DIRECT'  # 默认流量走网络代理组
+            ]
 
-        merged_config['rules'] = merged_rules + default_rules
+            merged_config['rules'] = merged_rules + default_rules
 
         # 清理代理节点中的临时字段
         for proxy in merged_config.get('proxies', []):
@@ -466,6 +507,7 @@ def main():
         # 本地模式配置
         merger = ClashConfigMerger(local_mode=True)
         output_dir = 'output'
+        fconf_dir = 'fullconf'
         sub_dir = 'sub'
         rule_dir = 'rule'
         auth_token = 'local-test'
@@ -479,16 +521,21 @@ def main():
         auth_token = os.getenv('AUTH_TOKEN', 'default-token')
         
         config = load_config()
-        subscription_directory = config['github']['subscription_directory']
-        rules_directory = config['github']['rules_directory']
+        fconf_directory = config['github']['fullconf_directory']
+        sub_directory = config['github']['subscription_directory']
+        rule_directory = config['github']['rules_directory']
         
+        fconf_dir = 'fconf'
+        if fconf_directory:
+            fconf_dir = fconf_directory.strip()
+
         sub_dir = 'sub'
-        if subscription_directory:
-            sub_dir = subscription_directory.strip()
+        if sub_directory:
+            sub_dir = sub_directory.strip()
         
         rule_dir = 'rule'
-        if rules_directory:
-            rule_dir = rules_directory.strip()
+        if rule_directory:
+            rule_dir = rule_directory.strip()
 
         if not github_token:
             logger.error("未设置GITHUB_TOKEN环境变量")
@@ -498,7 +545,7 @@ def main():
         merger = ClashConfigMerger(github_token, repo_owner, repo_name, local_mode=False)
 
     # 生成合并配置
-    merged_config = merger.generate_merged_config(sub_dir, rule_dir)
+    merged_config = merger.generate_merged_config(fconf_dir, sub_dir, rule_dir)
 
     if not merged_config:
         logger.error("生成配置失败")
