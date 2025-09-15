@@ -223,7 +223,9 @@ class ClashConfigMerger:
         for rule_file_path in rule_files:
             content = self.get_file_content(rule_file_path)
             if content:
+                logger.info(f"规则文件 {rule_file_path} 内容 {content}")
                 rule_data = self.load_yaml_content(content)
+                logger.info(f"规则文件 {rule_file_path} JSON格式化 {content}")
                 if rule_data and 'payload' in rule_data:
                     rule_file_name = os.path.basename(rule_file_path).replace('.yaml', '')
                     logger.info(f"处理规则文件: {rule_file_name}")
