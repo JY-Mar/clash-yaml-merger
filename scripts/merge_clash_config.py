@@ -444,10 +444,12 @@ class ClashConfigMerger:
             merged_config['rules'] = merged_rules + default_rules
 
         # 清理代理节点中的临时字段
-        if isinstance(merged_config, object):
+        try:
             for proxy in merged_config.get('proxies', []):
                 if isinstance(proxy, dict) and '_source_file' in proxy:
                     del proxy['_source_file']
+        except Exception as e:
+            logger.error(f"清理代理节点中的临时字段失败: {e}")
 
         logger.info("配置合并完成")
         return merged_config
