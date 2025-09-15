@@ -195,7 +195,7 @@ jobs:
                     <h3>📋 使用方法</h3>
                     <p>在 Clash 客户端中添加以下订阅链接：</p>
                     <div class="url-box" id="config-url">
-                        https://zzzkp.github.io/clash-pages/clash-{your-token}.yaml
+                        https://jy-mar.github.io/clash-pages/clash-{your-token}.yaml
                     </div>
                     <p><small>请将 {your-token} 替换为您的实际token</small></p>
                 </div>
