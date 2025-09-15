@@ -199,10 +199,6 @@ jobs:
                     </div>
                     <p><small>请将 {your-token} 替换为您的实际token</small></p>
                 </div>
-                
-                # <div style="text-align: center; margin-top: 30px;">
-                #     <a href="stats.json" class="btn">📈 查看统计信息</a>
-                # </div>
             </div>
             
             <script>
