@@ -12,7 +12,7 @@ import yaml
 import requests
 import base64
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, List, Any, Optional, overload, Union
 import logging
 from collections.abc import Mapping
@@ -654,7 +654,7 @@ def main():
         sys.exit(1)
 
     # 生成统计信息
-    now_date_formatted = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    now_date_formatted = datetime.now(timezone.utc).isoformat()
     stats = {
         "generated_at": now_date_formatted,
         "proxy_providers_count": 0,

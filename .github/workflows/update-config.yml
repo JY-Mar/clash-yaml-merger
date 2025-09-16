@@ -211,11 +211,16 @@ jobs:
                           const generateDate = new Date(data.generated_at)
                           if (typeof generateDate === 'object' && generateDate instanceof Date) {
                               const yyyy = generateDate.getFullYear()
-                              const MM = generateDate.getMonth() + 1
-                              const dd = generateDate.getDate()
-                              const HH = generateDate.getHours()
-                              const mm = generateDate.getMinutes()
-                              const ss = generateDate.getSeconds()
+                              let MM = generateDate.getMonth() + 1
+                              MM = MM < 10 ? '0' + MM : MM
+                              let dd = generateDate.getDate()
+                              dd = dd < 10 ? '0' + dd : dd
+                              let HH = generateDate.getHours()
+                              HH = HH < 10 ? '0' + HH : HH
+                              let mm = generateDate.getMinutes()
+                              mm = mm < 10 ? '0' + mm : mm
+                              let ss = generateDate.getSeconds()
+                              ss = ss < 10 ? '0' + ss : ss
                               dateStr = `${yyyy}-${MM}-${dd} ${HH}:${mm}:${ss}`
                           } else {
                               dateStr = String(data.generated_at)
