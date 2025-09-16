@@ -143,13 +143,15 @@ class ClashConfigMerger:
             # GitHub模式：通过API获取
             try:
                 if re.fullmatch(remote_yaml_pattern, file_path) is not None:
+                    # 是yaml文件路径直接读取
                     url = file_path
                     response = requests.get(url)
                     try:
                         yaml_raw_content = response.text
-                        file_data = yaml.safe_load(yaml_raw_content)
                     except json.JSONDecodeError as e:
+                        yaml_raw_content = None
                         logger.error(f"解析失败：不是合法的 JSON 格式: {e}")
+                    return yaml_raw_content
                 else:
                     url = f"{self.base_url}/{file_path}"
                     response = requests.get(url, headers=self.headers)
