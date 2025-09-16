@@ -146,7 +146,8 @@ class ClashConfigMerger:
                     url = file_path
                     response = requests.get(url)
                     try:
-                        file_data = json.loads(response.text)
+                        yaml_raw_content = response.text
+                        file_data = yaml.safe_load(yaml_raw_content)
                     except json.JSONDecodeError as e:
                         logger.error(f"解析失败：不是合法的 JSON 格式: {e}")
                 else:
