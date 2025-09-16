@@ -151,6 +151,10 @@ class ClashConfigMerger:
                     except json.JSONDecodeError as e:
                         yaml_raw_content = None
                         logger.error(f"解析失败：不是合法的 JSON 格式: {e}")
+
+                    if yaml_raw_content:
+                        logger.info(f"成功获取文件: {file_path}")
+
                     return yaml_raw_content
                 else:
                     url = f"{self.base_url}/{file_path}"

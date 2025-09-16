@@ -6,7 +6,7 @@ github:
   owner: "your-username"
   # 私有仓库名称
   repository: "clash-config"
-  # 基础配置文件目录
+  # 基础配置文件目录，支持多个目录或远程公开仓库的yaml文件
   fconf_directory: "https://raw.githubusercontent.com/JY-Mar/scat-proxy/refs/heads/main/Clash/kelee.yaml,Clash/fconfs"
   # 订阅文件目录
   sub_directory: "Clash/subs"
