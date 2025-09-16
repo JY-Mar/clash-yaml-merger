@@ -426,7 +426,7 @@ class ClashConfigMerger:
             logger.error("未能加载任何有效的基础配置文件")
             return {}
         
-        logger.info(f"基础配置文件: {configs_as_full}")
+        logger.info(f"基础配置文件:\n{configs_as_full}")
 
         # 加载所有订阅配置
         configs_with_sources = []
@@ -446,6 +446,8 @@ class ClashConfigMerger:
 
         if configs_as_full:
             merged_config = reduce(deep_merge, configs_as_full)
+        
+        logger.info(f"基础配置文件merged:\n{merged_config}")
 
         # 合并代理节点
         if configs_with_sources:
