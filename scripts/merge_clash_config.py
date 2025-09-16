@@ -421,7 +421,7 @@ class ClashConfigMerger:
             if content:
                 config = self.load_yaml_content(content)
                 if config:
-                    configs_as_full.append((config, file_path))
+                    configs_as_full.append((config))
         if not configs_as_full:
             logger.error("未能加载任何有效的基础配置文件")
             return {}
