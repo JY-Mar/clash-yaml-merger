@@ -5,6 +5,7 @@ Clash配置文件整合工具
 从GitHub私有仓库读取多个订阅YAML文件，整合代理节点和规则，生成统一的Clash配置
 """
 
+from copy import deepcopy
 import os
 import re
 import sys
@@ -16,9 +17,6 @@ from datetime import datetime, timezone
 from typing import Dict, List, Any, Optional
 import logging
 from functools import reduce
-
-from utils.merge import deep_merge
-from utils.config import load_config
 
 # 设置默认编码
 import locale
@@ -42,6 +40,67 @@ logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
+
+def deep_merge(a: Any, b: Any) -> Any:
+    """
+    深合并，将b合并到a中
+
+    Args:
+        a: 合并对象1
+        b: 合并对象2
+
+    Returns:
+        文件内容字符串，失败返回None
+    """
+    # 类型一致才合并
+    if type(a) != type(b):
+        return deepcopy(b)
+
+    # 合并 dict（Map）
+    if isinstance(a, dict):
+        result = deepcopy(a)
+        for key, value in b.items():
+            if key in result:
+                result[key] = deep_merge(result[key], value)
+            else:
+                result[key] = deepcopy(value)
+        return result
+
+    # 合并 list
+    elif isinstance(a, list):
+        return deepcopy(a) + deepcopy(b)
+
+    # 合并 set
+    elif isinstance(a, set):
+        return deepcopy(a) | deepcopy(b)
+
+    # 合并对象（自定义类）
+    elif hasattr(a, "__dict__") and hasattr(b, "__dict__"):
+        result = deepcopy(a)
+        for attr in b.__dict__:
+            if hasattr(result, attr):
+                merged_value = deep_merge(getattr(result, attr), getattr(b, attr))
+                setattr(result, attr, merged_value)
+            else:
+                setattr(result, attr, deepcopy(getattr(b, attr)))
+        return result
+
+    # 基础类型直接替换
+    else:
+        return deepcopy(b)
+
+def load_config() -> Dict[str, Any]:
+    """加载配置文件"""
+    config_path = "config/settings.yaml"
+    try:
+        with open(config_path, "r", encoding="utf-8") as f:
+            return yaml.safe_load(f)
+    except FileNotFoundError:
+        print(f"❌ 配置文件不存在: {config_path}")
+        sys.exit(1)
+    except yaml.YAMLError as e:
+        print(f"❌ 配置文件格式错误: {e}")
+        sys.exit(1)
 
 remote_yaml_pattern = r"^https:\/\/.+\.yaml$"
 

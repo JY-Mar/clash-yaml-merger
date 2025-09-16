@@ -10,8 +10,30 @@ import yaml
 import getpass
 from typing import Dict, Any
 
-from utils.config import load_config,save_config
+def save_config(config: Dict[str, Any]) -> None:
+    """保存配置文件"""
+    config_path = "config/settings.yaml"
+    try:
+        with open(config_path, "w", encoding="utf-8") as f:
+            yaml.dump(
+                config, f, default_flow_style=False, allow_unicode=True, sort_keys=False
+            )
+        print(f"✅ 配置已保存到: {config_path}")
+    except Exception as e:
+        print(f"❌ 保存配置失败: {e}")
 
+def load_config() -> Dict[str, Any]:
+    """加载配置文件"""
+    config_path = "config/settings.yaml"
+    try:
+        with open(config_path, "r", encoding="utf-8") as f:
+            return yaml.safe_load(f)
+    except FileNotFoundError:
+        print(f"❌ 配置文件不存在: {config_path}")
+        sys.exit(1)
+    except yaml.YAMLError as e:
+        print(f"❌ 配置文件格式错误: {e}")
+        sys.exit(1)
 def setup_github_config():
     """设置GitHub相关配置"""
     print("\n🔧 GitHub配置设置")
