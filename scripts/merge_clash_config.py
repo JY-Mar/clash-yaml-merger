@@ -571,12 +571,6 @@ def main():
     # 生成合并配置
     merged_config = merger.generate_merged_config(fconf_dir, sub_dir, rule_dir)
 
-    logger.info(f"基础配置文件:\n{merged_config}")
-    try:
-        logger.info(f"基础配置文件:\n{merged_config.get('proxy-providers', {})}")
-    except Exception as e:
-        logger.error(e)
-
     if not merged_config:
         logger.error("生成配置失败")
         sys.exit(1)
@@ -591,7 +585,7 @@ def main():
     # 生成统计信息
     try:
         stats = {
-            'generated_at': datetime.now().isoformat(),
+            'generated_at': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             'proxy_count': len(merged_config.get('proxies', [])),
             'proxy_group_count': len(merged_config.get('proxy-groups', [])),
             'rule_count': len(merged_config.get('rules', [])),
@@ -599,7 +593,7 @@ def main():
         }
     except Exception as e:
         stats = {
-            'generated_at': datetime.now().isoformat(),
+            'generated_at': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             'proxy_count': 0,
             'proxy_group_count': 0,
             'rule_count': 0,
