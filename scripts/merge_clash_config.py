@@ -661,6 +661,9 @@ def main():
         "proxies_count": 0,
         "proxy_groups_count": 0,
         "rules_count": 0,
+        "config_filename": config_filename_mask
+    }
+    stats_genfile = {
         "config_filename": config_filename,  # 添加配置文件名信息
     }
     try:
@@ -680,10 +683,13 @@ def main():
         logger.error(f"生成统计信息失败: {e}")
 
     stats_path = os.path.join(output_dir, "stats.json")
+    stats_genfile_path = os.path.join(output_dir, "stats_genfile.json")
     try:
         os.makedirs(output_dir, exist_ok=True)
         with open(stats_path, "w", encoding="utf-8") as f:
             json.dump(stats, f, indent=2, ensure_ascii=False)
+        with open(stats_genfile_path, "w", encoding="utf-8") as f:
+            json.dump(stats_genfile, f, indent=2, ensure_ascii=False)
         logger.info(f"统计信息已保存到: {stats_path}")
     except Exception as e:
         logger.warning(f"保存统计信息失败: {e}")
