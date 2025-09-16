@@ -35,11 +35,11 @@
 2. **创建私有仓库**存放您的Clash订阅文件，目录结构如下：
    ```
    your-private-repo/
-   ├── sub/                    # 订阅文件目录
+   ├── subs/                    # 订阅文件目录
    │   ├── provider1.yaml
    │   ├── provider2.yaml
    │   └── provider3.yaml
-   └── rule/                   # 规则文件目录
+   └── rules/                   # 规则文件目录
        ├── rules_proxy_basic.yaml
        └── rules_proxy_custom.yaml
    ```

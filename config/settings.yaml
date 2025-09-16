@@ -7,11 +7,11 @@ github:
   # 私有仓库名称
   repository: "clash-config"
   # 基础配置文件目录
-  fullconf_directory: "Clash/fullconf"
+  fconf_directory: "https://raw.githubusercontent.com/JY-Mar/scat-proxy/refs/heads/main/Clash/kelee.yaml,Clash/fconfs"
   # 订阅文件目录
-  subscription_directory: "Clash/subscriptions"
+  sub_directory: "Clash/subs"
   # 规则文件目录
-  rules_directory: "Clash/rules"
+  rule_directory: "Clash/rules"
 
 # 输出配置
 output:

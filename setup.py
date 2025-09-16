@@ -50,17 +50,17 @@ def setup_github_config():
     if repo:
         config['github']['repository'] = repo
     
-    fconf_dir = input(f"订阅文件目录 [{config['github']['fullconf_directory']}]: ").strip()
+    fconf_dir = input(f"订阅文件目录 [{config['github']['fconf_directory']}]: ").strip()
     if fconf_dir:
-        config['github']['fullconf_directory'] = fconf_dir
+        config['github']['fconf_directory'] = fconf_dir
     
-    sub_dir = input(f"订阅文件目录 [{config['github']['subscription_directory']}]: ").strip()
+    sub_dir = input(f"订阅文件目录 [{config['github']['sub_directory']}]: ").strip()
     if sub_dir:
-        config['github']['subscription_directory'] = sub_dir
+        config['github']['sub_directory'] = sub_dir
     
-    rule_dir = input(f"规则文件目录 [{config['github']['rules_directory']}]: ").strip()
+    rule_dir = input(f"规则文件目录 [{config['github']['rule_directory']}]: ").strip()
     if rule_dir:
-        config['github']['rules_directory'] = rule_dir
+        config['github']['rule_directory'] = rule_dir
     
     # 认证配置
     print("\n🔐 认证配置:")
@@ -146,9 +146,9 @@ def show_next_steps():
     
     steps = [
         "1. 创建GitHub私有仓库存放您的Clash配置文件",
-        "2. 在私有仓库中创建 sub/ 和 rule/ 目录",
-        "3. 将您的订阅文件放入 sub/ 目录",
-        "4. 将您的规则文件放入 rule/ 目录",
+        "2. 在私有仓库中创建 subs/ 和 rules/ 目录",
+        "3. 将您的订阅文件放入 subs/ 目录",
+        "4. 将您的规则文件放入 rules/ 目录",
         "5. 获取GitHub Personal Access Token（需要repo权限）",
         "6. 在当前仓库设置中添加上述GitHub Secrets",
         "7. 启用GitHub Pages（Source选择GitHub Actions）",
