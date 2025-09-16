@@ -144,13 +144,17 @@ class ClashConfigMerger:
             try:
                 if re.fullmatch(remote_yaml_pattern, file_path) is not None:
                     url = file_path
+                    response = requests.get(url)
+                    try:
+                        file_data = json.loads(response.text)
+                    except json.JSONDecodeError as e:
+                        logger.error(f"解析失败：不是合法的 JSON 格式: {e}")
                 else:
                     url = f"{self.base_url}/{file_path}"
+                    response = requests.get(url, headers=self.headers)
+                    response.raise_for_status()
+                    file_data = response.json()
 
-                response = requests.get(url, headers=self.headers)
-                response.raise_for_status()
-
-                file_data = response.json()
                 if file_data["encoding"] == "base64":
                     content = base64.b64decode(file_data["content"]).decode("utf-8")
                     logger.info(f"成功获取文件: {file_path}")
@@ -291,7 +295,7 @@ class ClashConfigMerger:
             content = self.get_file_content(rule_file_path)
             if content:
                 rule_data = self.load_yaml_content(content)
-                logger.info(f"规则文件 {rule_file_path} JSON格式化 {rule_data}")
+                logger.info(f"规则文件 {rule_file_path}")
                 if rule_data and "payload" in rule_data:
                     rule_file_name = os.path.basename(rule_file_path).replace(
                         ".yaml", ""
@@ -460,12 +464,14 @@ class ClashConfigMerger:
 
         # 加载所有基础配置
         configs_as_full = []
+        logger.info(f"基础配置文件: {fconf_files}")
         for file_path in fconf_files:
             content = self.get_file_content(file_path)
             if content:
                 config = self.load_yaml_content(content)
                 if config:
                     configs_as_full.append((config))
+
         if not configs_as_full:
             logger.error("未能加载任何有效的基础配置文件")
             return {}
