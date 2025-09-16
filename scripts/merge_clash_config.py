@@ -425,8 +425,6 @@ class ClashConfigMerger:
         if not configs_as_full:
             logger.error("未能加载任何有效的基础配置文件")
             return {}
-        
-        logger.info(f"基础配置文件:\n{configs_as_full}")
 
         # 加载所有订阅配置
         configs_with_sources = []
@@ -447,8 +445,6 @@ class ClashConfigMerger:
         if configs_as_full:
             merged_config = reduce(deep_merge, configs_as_full)
         
-        logger.info(f"基础配置文件merged:\n{merged_config}")
-
         # 合并代理节点
         if configs_with_sources:
             merged_proxies = self.merge_proxies(configs_with_sources)
@@ -574,6 +570,12 @@ def main():
 
     # 生成合并配置
     merged_config = merger.generate_merged_config(fconf_dir, sub_dir, rule_dir)
+
+    logger.info(f"基础配置文件:\n{merged_config}")
+    try:
+        logger.info(f"基础配置文件:\n{merged_config.get('proxy-providers', {})}")
+    except Exception as e:
+        logger.error(e)
 
     if not merged_config:
         logger.error("生成配置失败")
