@@ -17,8 +17,8 @@ from typing import Dict, List, Any, Optional
 import logging
 from functools import reduce
 
-from ..utils.merge import deep_merge
-from ..utils.config import load_config
+from utils.merge import deep_merge
+from utils.config import load_config
 
 # 设置默认编码
 import locale
