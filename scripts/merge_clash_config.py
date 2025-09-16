@@ -12,8 +12,11 @@ import requests
 import base64
 import json
 from datetime import datetime
-from typing import Dict, List, Any, Optional
+from typing import Dict, List, Any, Optional, overload, Union
 import logging
+from collections.abc import Mapping
+from copy import deepcopy
+from functools import reduce
 # 设置默认编码
 import locale
 import codecs
@@ -35,24 +38,43 @@ except:
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-def deep_merge(obj1, obj2):
-    if isinstance(obj1, dict) and isinstance(obj2, dict):
-        merged = obj1.copy()
-        for key, value in obj2.items():
-            if key in merged:
-                merged[key] = deep_merge(merged[key], value)
+def deep_merge(a: Any, b: Any) -> Any:
+    # 类型一致才合并
+    if type(a) != type(b):
+        return deepcopy(b)
+
+    # 合并 dict（Map）
+    if isinstance(a, dict):
+        result = deepcopy(a)
+        for key, value in b.items():
+            if key in result:
+                result[key] = deep_merge(result[key], value)
             else:
-                merged[key] = value
-        return merged
+                result[key] = deepcopy(value)
+        return result
 
-    elif isinstance(obj1, list) and isinstance(obj2, list):
-        return obj1 + obj2
+    # 合并 list
+    elif isinstance(a, list):
+        return deepcopy(a) + deepcopy(b)
 
-    elif isinstance(obj1, set) and isinstance(obj2, set):
-        return obj1 | obj2
+    # 合并 set
+    elif isinstance(a, set):
+        return deepcopy(a) | deepcopy(b)
 
+    # 合并对象（自定义类）
+    elif hasattr(a, '__dict__') and hasattr(b, '__dict__'):
+        result = deepcopy(a)
+        for attr in b.__dict__:
+            if hasattr(result, attr):
+                merged_value = deep_merge(getattr(result, attr), getattr(b, attr))
+                setattr(result, attr, merged_value)
+            else:
+                setattr(result, attr, deepcopy(getattr(b, attr)))
+        return result
+
+    # 基础类型直接替换
     else:
-        return obj2  # 默认后者覆盖前者
+        return deepcopy(b)
 
 class ClashConfigMerger:
     def __init__(self, github_token: str = None, repo_owner: str = None, repo_name: str = None, local_mode: bool = False):
@@ -403,6 +425,8 @@ class ClashConfigMerger:
         if not configs_as_full:
             logger.error("未能加载任何有效的基础配置文件")
             return {}
+        
+        logger.info(f"基础配置文件: {configs_as_full}")
 
         # 加载所有订阅配置
         configs_with_sources = []
@@ -421,8 +445,7 @@ class ClashConfigMerger:
         merged_config = self.create_base_config()
 
         if configs_as_full:
-            for config_full in configs_as_full:
-                merged_config = deep_merge(merged_config, config_full)
+            merged_config = reduce(deep_merge, configs_as_full)
 
         # 合并代理节点
         if configs_with_sources:
