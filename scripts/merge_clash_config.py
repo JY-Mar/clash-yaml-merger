@@ -13,11 +13,12 @@ import requests
 import base64
 import json
 from datetime import datetime, timezone
-from typing import Dict, List, Any, Optional, overload, Union
+from typing import Dict, List, Any, Optional
 import logging
-from collections.abc import Mapping
-from copy import deepcopy
 from functools import reduce
+
+from ..utils.merge import deep_merge
+from ..utils.config import load_config
 
 # 设置默认编码
 import locale
@@ -42,48 +43,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-
-def deep_merge(a: Any, b: Any) -> Any:
-    # 类型一致才合并
-    if type(a) != type(b):
-        return deepcopy(b)
-
-    # 合并 dict（Map）
-    if isinstance(a, dict):
-        result = deepcopy(a)
-        for key, value in b.items():
-            if key in result:
-                result[key] = deep_merge(result[key], value)
-            else:
-                result[key] = deepcopy(value)
-        return result
-
-    # 合并 list
-    elif isinstance(a, list):
-        return deepcopy(a) + deepcopy(b)
-
-    # 合并 set
-    elif isinstance(a, set):
-        return deepcopy(a) | deepcopy(b)
-
-    # 合并对象（自定义类）
-    elif hasattr(a, "__dict__") and hasattr(b, "__dict__"):
-        result = deepcopy(a)
-        for attr in b.__dict__:
-            if hasattr(result, attr):
-                merged_value = deep_merge(getattr(result, attr), getattr(b, attr))
-                setattr(result, attr, merged_value)
-            else:
-                setattr(result, attr, deepcopy(getattr(b, attr)))
-        return result
-
-    # 基础类型直接替换
-    else:
-        return deepcopy(b)
-
-
 remote_yaml_pattern = r"^https:\/\/.+\.yaml$"
-
 
 class ClashConfigMerger:
     def __init__(
@@ -567,21 +527,6 @@ class ClashConfigMerger:
         except Exception as e:
             logger.error(f"保存配置文件失败: {e}")
             return False
-
-
-def load_config() -> Dict[str, Any]:
-    """加载配置文件"""
-    config_path = "config/settings.yaml"
-    try:
-        with open(config_path, "r", encoding="utf-8") as f:
-            return yaml.safe_load(f)
-    except FileNotFoundError:
-        print(f"❌ 配置文件不存在: {config_path}")
-        sys.exit(1)
-    except yaml.YAMLError as e:
-        print(f"❌ 配置文件格式错误: {e}")
-        sys.exit(1)
-
 
 def main():
     """主函数"""
