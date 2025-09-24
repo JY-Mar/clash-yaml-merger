@@ -6,6 +6,7 @@ Clash配置文件整合工具
 """
 
 from copy import deepcopy
+import getpass
 import os
 import re
 import sys
@@ -101,7 +102,44 @@ def load_config() -> Dict[str, Any]:
     config_path = "config/settings.yaml"
     try:
         with open(config_path, "r", encoding="utf-8") as f:
-            return yaml.safe_load(f)
+            config = yaml.safe_load(f)
+            owner = f"{config['github']['owner']}".strip()
+            if owner:
+                config["github"]["owner"] = owner
+
+            repo = f"{config['github']['repository']}".strip()
+            if repo:
+                config["github"]["repository"] = repo
+
+            fconf_r_fs = f"{config['github']['fconf_remote_files']}".strip()
+
+            fconf_dirs = f"{config['github']['fconf_directories']}".strip()
+            if fconf_dirs and fconf_r_fs:
+                config["github"]["fconf_directories"] = ",".join(
+                    list(dict.fromkeys(fconf_r_fs.split(",") + fconf_dirs.split(",")))
+                )
+            elif fconf_dirs and not fconf_r_fs:
+                config["github"]["fconf_directories"] = fconf_dirs
+
+            fconf_ex_dirs = f"{config['github']['fconf_ex_directories']}".strip()
+            if fconf_ex_dirs and fconf_r_fs:
+                config["github"]["fconf_ex_directories"] = ",".join(
+                    list(
+                        dict.fromkeys(fconf_r_fs.split(",") + fconf_ex_dirs.split(","))
+                    )
+                )
+            elif fconf_ex_dirs and not fconf_r_fs:
+                config["github"]["fconf_ex_directories"] = fconf_ex_dirs
+
+            sub_dir = f"{config['github']['sub_directory']}".strip()
+            if sub_dir:
+                config["github"]["sub_directory"] = sub_dir
+
+            rule_dir = f"{config['github']['rule_directory']}".strip()
+            if rule_dir:
+                config["github"]["rule_directory"] = rule_dir
+
+            return config
     except FileNotFoundError:
         print(f"❌ 配置文件不存在: {config_path}")
         sys.exit(1)
