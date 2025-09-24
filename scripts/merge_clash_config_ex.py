@@ -46,6 +46,7 @@ is_ex: bool = True
 # ex版本标识
 ex_flag = "[ex]" if is_ex else ""
 
+
 def deep_merge(a: Any, b: Any) -> Any:
     """
     深合并，将b合并到a中
@@ -460,7 +461,7 @@ class ClashConfigMerger:
         self,
         fconf_directories: List[str] = ["fconfs"],
         sub_directory: str = "subs",
-        rule_directory: str = "rules"
+        rule_directory: str = "rules",
     ) -> Dict[str, Any]:
         """
         生成合并后的配置文件
@@ -597,12 +598,44 @@ class ClashConfigMerger:
             return False
 
 
-def merger_init() -> Dict[str, Any]:
+class ClashConfigInitParams:
+    def __init__(
+        self,
+        local_mode: bool = False,
+        merger: ClashConfigMerger = None,
+        auth_token: str = None,
+        output_dir: str = None,
+        fconf_dirs: list[str] = [],
+        sub_dir: str = None,
+        rule_dir: str = None,
+    ):
+        """
+        初始化Clash配置初始化参数
+
+        Args:
+            local_mode: 是否使用本地模式
+            merger: Clash配置合并对象
+            auth_token: 用户鉴权令牌
+            output_dir: 输出目录
+            fconf_dirs: 基础配置目录列表
+            sub_dir: 订阅目录
+            rule_dir: 规则目录
+        """
+        self.local_mode = local_mode
+        self.merger = merger
+        self.output_dir = output_dir
+        self.fconf_dirs = fconf_dirs
+        self.sub_dir = sub_dir
+        self.rule_dir = rule_dir
+        self.auth_token = auth_token
+
+
+def merger_init() -> ClashConfigInitParams:
     """
     初始化merger、output_dir、fconf_dirs、sub_dir、rule_dir、auth_token等重要参数
 
     Returns:
-        参数对象
+        初始化参数对象
     """
 
     # 检查是否为本地测试模式
@@ -661,15 +694,15 @@ def merger_init() -> Dict[str, Any]:
             github_token, repo_owner, repo_name, local_mode=False
         )
 
-    return {
-        "local_mode": local_mode,
-        "merger": merger,
-        "output_dir": output_dir,
-        "fconf_dirs": fconf_dirs,
-        "sub_dir": sub_dir,
-        "rule_dir": rule_dir,
-        "auth_token": auth_token,
-    }
+    return ClashConfigInitParams(
+        local_mode=local_mode,
+        merger=merger,
+        output_dir=output_dir,
+        fconf_dirs=fconf_dirs,
+        sub_dir=sub_dir,
+        rule_dir=rule_dir,
+        auth_token=auth_token
+    )
 
 
 def merger_gen_config():
