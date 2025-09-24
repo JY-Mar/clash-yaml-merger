@@ -147,6 +147,8 @@ def load_config() -> Dict[str, Any]:
         print(f"❌ 配置文件格式错误: {e}")
         sys.exit(1)
 
+# settings.yaml 配置
+settings_config = load_config()
 
 remote_yaml_pattern = r"^https:\/\/.+\.yaml$"
 
@@ -633,7 +635,7 @@ class ClashConfigMerger:
                     f"# Last Update: {datetime.now(timezone.utc).isoformat()}",
                 ]
                 # 合并为最终文本
-                final_yaml_content = "\n".join(header) + "\n" + yaml_content
+                final_yaml_content = "\n".join(header) + "\n\n" + yaml_content
 
                 # 确保写入UTF-8编码的内容
                 f.write(final_yaml_content)
@@ -707,12 +709,11 @@ def merger_init() -> ClashConfigInitParams:
         output_dir = os.getenv("OUTPUT_DIR", "docs")
         auth_token = os.getenv("AUTH_TOKEN", "default-token")
 
-        config = load_config()
-        fconf_directories = config["github"][
+        fconf_directories = settings_config["github"][
             "fconf_ex_directories" if is_ex else "fconf_directories"
         ]
-        sub_directory = config["github"]["sub_directory"]
-        rule_directory = config["github"]["rule_directory"]
+        sub_directory = settings_config["github"]["sub_directory"]
+        rule_directory = settings_config["github"]["rule_directory"]
 
         fconf_dirs = ["fconfs_ex" if is_ex else "fconfs"]
         if fconf_directories and isinstance(fconf_directories, str):
@@ -768,7 +769,7 @@ def merger_gen_config():
         sys.exit(1)
 
     # 使用token作为文件名的一部分进行认证
-    config_filename = f"clash{'-ex' if is_ex else ''}-{ida.auth_token}.yaml"
+    config_filename = f"{settings_config['output']['config_filename']}{'-ex' if is_ex else ''}-{ida.auth_token}.yaml"
     output_path = os.path.join(ida.output_dir, config_filename)
     if not ida.merger.save_config_to_file(merged_config, output_path):
         sys.exit(1)
@@ -798,7 +799,7 @@ def merger_gen_config():
     except Exception as e:
         logger.error(f"{ex_flag}生成统计信息失败: {e}")
 
-    stats_path = os.path.join(ida.output_dir, f"stats{'-ex' if is_ex else ''}.json")
+    stats_path = os.path.join(ida.output_dir, f"{settings_config['output']['stats_filename']}{'-ex' if is_ex else ''}.json")
 
     try:
         os.makedirs(ida.output_dir, exist_ok=True)

@@ -22,10 +22,9 @@ output:
   # 输出目录
   directory: 'docs'
   # 配置文件名
-  config_filename: 'clash.yaml'
+  config_filename: 'clash'
   # 统计文件名
-  stats_filename: 'stats.json'
-  stats_ex_filename: 'stats_ex.json'
+  stats_filename: 'stats'
 
 # 认证配置
 authentication:
