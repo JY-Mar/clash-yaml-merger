@@ -44,7 +44,7 @@ logger = logging.getLogger(__name__)
 # 是否ex版本
 is_ex: bool = True
 # ex版本标识
-ex_flag = "[ex]" if is_ex else ""
+ex_flag = ""
 
 
 def deep_merge(a: Any, b: Any) -> Any:
@@ -587,8 +587,18 @@ class ClashConfigMerger:
                     width=1000,  # 避免长行被折断
                     indent=2,
                 )
+
+                # 插入头部内容
+                header = [
+                    "# Automatically generated `Clash` yaml file",
+                    "# Do not modify manually",
+                    f"# Last Update: {datetime.now(timezone.utc).isoformat()}",
+                ]
+                # 合并为最终文本
+                final_yaml_content = "\n".join(header) + "\n" + yaml_content
+
                 # 确保写入UTF-8编码的内容
-                f.write(yaml_content)
+                f.write(final_yaml_content)
 
             logger.info(f"{ex_flag}配置文件已保存到: {output_path}")
             return True
@@ -701,7 +711,7 @@ def merger_init() -> ClashConfigInitParams:
         fconf_dirs=fconf_dirs,
         sub_dir=sub_dir,
         rule_dir=rule_dir,
-        auth_token=auth_token
+        auth_token=auth_token,
     )
 
 

@@ -51,7 +51,7 @@ def setup_github_config():
     if repo:
         config['github']['repository'] = repo
     
-    fconf_r_fs = input(f"远程订阅文件 [{config['github']['fconf_remote_files']}]: ").strip()
+    fconf_r_fs = input(f"远程订阅文件 [{config['fconf_remote_files']}]: ").strip()
     
     fconf_dir = input(f"订阅文件目录 [{config['github']['fconf_directory']}]: ").strip()
     if fconf_dir:

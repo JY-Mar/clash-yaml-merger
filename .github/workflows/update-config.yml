@@ -91,7 +91,7 @@ jobs:
           CONFIG_FILE="docs/clash-${AUTH_TOKEN}.yaml"
           if [ -f "$CONFIG_FILE" ]; then
             file "$CONFIG_FILE"
-            head -5 "$CONFIG_FILE"
+            head -3 "$CONFIG_FILE"
             echo "配置文件生成成功: $CONFIG_FILE"
           else
             echo "错误: 配置文件未生成"
@@ -117,15 +117,15 @@ jobs:
           python scripts/merge_clash_config_ex.py
 
           # 验证生成的文件编码
-          echo "=== [ex]检查生成的文件 ==="
+          echo "=== 检查生成的文件 ==="
           ls -la docs/
           CONFIG_FILE="docs/clash-ex-${AUTH_TOKEN}.yaml"
           if [ -f "$CONFIG_FILE" ]; then
             file "$CONFIG_FILE"
-            head -5 "$CONFIG_FILE"
-            echo "[ex]配置文件生成成功: $CONFIG_FILE"
+            head -3 "$CONFIG_FILE"
+            echo "配置文件生成成功: $CONFIG_FILE"
           else
-            echo "[ex]错误: 配置文件未生成"
+            echo "错误: 配置文件未生成"
             exit 1
           fi
 
