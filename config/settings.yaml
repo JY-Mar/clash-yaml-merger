@@ -1,31 +1,37 @@
 # Clash配置整合工具设置文件
 
+# 基础配置文件，优先级低于github.fconf_directory配置，支持多个远程公开仓库的yaml文件，以“,”符号分隔
+fconf_remote_files: 'https://raw.githubusercontent.com/JY-Mar/scat-proxy/refs/heads/main/Clash/kelee.yaml'
+
 # GitHub仓库配置
 github:
   # 私有仓库所有者用户名
-  owner: "your-username"
+  owner: 'your-username'
   # 私有仓库名称
-  repository: "clash-config"
-  # 基础配置文件目录，支持多个目录或远程公开仓库的yaml文件
-  fconf_directory: "https://raw.githubusercontent.com/JY-Mar/scat-proxy/refs/heads/main/Clash/kelee.yaml,Clash/fconfs"
+  repository: 'clash-config'
+  # 基础配置文件目录，支持多个目录或远程公开仓库的yaml文件，以“,”符号分隔
+  fconf_directory: 'Clash/fconfs'
+  # 基础配置文件目录ex，支持多个目录或远程公开仓库的yaml文件，以“,”符号分隔
+  fconf_ex_directory: 'Clash/fconfs-ex'
   # 订阅文件目录
-  sub_directory: "Clash/subs"
+  sub_directory: 'Clash/subs'
   # 规则文件目录
-  rule_directory: "Clash/rules"
+  rule_directory: 'Clash/rules'
 
 # 输出配置
 output:
   # 输出目录
-  directory: "docs"
+  directory: 'docs'
   # 配置文件名
-  config_filename: "clash.yaml"
+  config_filename: 'clash.yaml'
   # 统计文件名
-  stats_filename: "stats.json"
+  stats_filename: 'stats.json'
+  stats_ex_filename: 'stats_ex.json'
 
 # 认证配置
 authentication:
   # 认证token（建议使用GitHub Secrets）
-  token: "your-secret-auth-token"
+  token: 'your-secret-auth-token'
   # 是否启用认证
   enabled: true
 
@@ -37,83 +43,83 @@ proxy:
   group_by_region: true
   # 支持的地区列表
   regions:
-    - name: "香港"
-      keywords: ["🇭🇰", "香港", "HK", "Hong Kong"]
-    - name: "台湾"
-      keywords: ["🇨🇳", "台湾", "TW", "Taiwan"]
-    - name: "新加坡"
-      keywords: ["🇸🇬", "新加坡", "SG", "Singapore"]
-    - name: "日本"
-      keywords: ["🇯🇵", "日本", "JP", "Japan"]
-    - name: "韩国"
-      keywords: ["🇰🇷", "韩国", "KR", "Korea"]
-    - name: "美国"
-      keywords: ["🇺🇸", "美国", "US", "United States"]
-    - name: "英国"
-      keywords: ["🇬🇧", "英国", "UK", "United Kingdom"]
-    - name: "法国"
-      keywords: ["🇫🇷", "法国", "FR", "France"]
-    - name: "德国"
-      keywords: ["🇩🇪", "德国", "DE", "Germany"]
-    - name: "意大利"
-      keywords: ["🇮🇹", "意大利", "IT", "Italy"]
-    - name: "荷兰"
-      keywords: ["🇳🇱", "荷兰", "NL", "Holland", "Netherlands"]
-    - name: "卢森堡"
-      keywords: ["🇱🇺", "卢森堡", "LU", "Luxembourg", "Luxemburg"]
+    - name: '香港'
+      keywords: ['🇭🇰', '香港', 'HK', 'Hong Kong']
+    - name: '台湾'
+      keywords: ['🇨🇳', '台湾', 'TW', 'Taiwan']
+    - name: '新加坡'
+      keywords: ['🇸🇬', '新加坡', 'SG', 'Singapore']
+    - name: '日本'
+      keywords: ['🇯🇵', '日本', 'JP', 'Japan']
+    - name: '韩国'
+      keywords: ['🇰🇷', '韩国', 'KR', 'Korea']
+    - name: '美国'
+      keywords: ['🇺🇸', '美国', 'US', 'United States']
+    - name: '英国'
+      keywords: ['🇬🇧', '英国', 'UK', 'United Kingdom']
+    - name: '法国'
+      keywords: ['🇫🇷', '法国', 'FR', 'France']
+    - name: '德国'
+      keywords: ['🇩🇪', '德国', 'DE', 'Germany']
+    - name: '意大利'
+      keywords: ['🇮🇹', '意大利', 'IT', 'Italy']
+    - name: '荷兰'
+      keywords: ['🇳🇱', '荷兰', 'NL', 'Holland', 'Netherlands']
+    - name: '卢森堡'
+      keywords: ['🇱🇺', '卢森堡', 'LU', 'Luxembourg', 'Luxemburg']
 
 # 规则配置
 rules:
   # 是否去重规则
   deduplicate: true
   # 默认代理组名称
-  default_proxy_group: "PROXY"
+  default_proxy_group: 'PROXY'
   # 是否添加默认规则
   add_default_rules: true
   # 默认规则列表
   default_rules:
-    - "DOMAIN-SUFFIX,local,DIRECT"
-    - "IP-CIDR,127.0.0.0/8,DIRECT"
-    - "IP-CIDR,172.16.0.0/12,DIRECT"
-    - "IP-CIDR,192.168.0.0/16,DIRECT"
-    - "IP-CIDR,10.0.0.0/8,DIRECT"
-    - "IP-CIDR,17.0.0.0/8,DIRECT"
-    - "IP-CIDR,100.64.0.0/10,DIRECT"
-    - "GEOIP,CN,DIRECT"
-    - "MATCH,PROXY"
+    - 'DOMAIN-SUFFIX,local,DIRECT'
+    - 'IP-CIDR,127.0.0.0/8,DIRECT'
+    - 'IP-CIDR,172.16.0.0/12,DIRECT'
+    - 'IP-CIDR,192.168.0.0/16,DIRECT'
+    - 'IP-CIDR,10.0.0.0/8,DIRECT'
+    - 'IP-CIDR,17.0.0.0/8,DIRECT'
+    - 'IP-CIDR,100.64.0.0/10,DIRECT'
+    - 'GEOIP,CN,DIRECT'
+    - 'MATCH,PROXY'
 
 # DNS配置
 dns:
   enable: true
   ipv6: false
-  enhanced_mode: "fake-ip"
-  fake_ip_range: "198.18.0.1/16"
+  enhanced_mode: 'fake-ip'
+  fake_ip_range: '198.18.0.1/16'
   use_hosts: true
   default_nameserver:
-    - "223.5.5.5"
-    - "119.29.29.29"
-    - "114.114.114.114"
+    - '223.5.5.5'
+    - '119.29.29.29'
+    - '114.114.114.114'
   nameserver:
-    - "223.5.5.5"
-    - "119.29.29.29"
-    - "114.114.114.114"
+    - '223.5.5.5'
+    - '119.29.29.29'
+    - '114.114.114.114'
   fallback:
-    - "1.1.1.1"
-    - "8.8.8.8"
+    - '1.1.1.1'
+    - '8.8.8.8'
   fallback_filter:
     geoip: true
-    geoip_code: "CN"
+    geoip_code: 'CN'
     ipcidr:
-      - "240.0.0.0/4"
+      - '240.0.0.0/4'
 
 # 基础配置
 base_config:
   mixed_port: 7890
   allow_lan: true
-  bind_address: "*"
-  mode: "rule"
-  log_level: "info"
-  external_controller: "127.0.0.1:9090"
+  bind_address: '*'
+  mode: 'rule'
+  log_level: 'info'
+  external_controller: '127.0.0.1:9090'
 
 # 更新配置
 update:
@@ -126,5 +132,5 @@ update:
 
 # 日志配置
 logging:
-  level: "INFO"
-  format: "%(asctime)s - %(levelname)s - %(message)s"
+  level: 'INFO'
+  format: '%(asctime)s - %(levelname)s - %(message)s'

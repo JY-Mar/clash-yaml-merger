@@ -88,8 +88,8 @@ config/local.yaml
 .env.local
 
 # Generated files
-docs/clash.yaml
-docs/stats.json
+docs/clash*.yaml
+docs/stats*.json
 docs/index.html
 
 # Backup files

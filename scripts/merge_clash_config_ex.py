@@ -42,7 +42,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # 是否ex版本
-is_ex: bool = False
+is_ex: bool = True
 # ex版本标识
 ex_flag = "[ex]" if is_ex else ""
 

@@ -98,6 +98,37 @@ jobs:
             exit 1
           fi
 
+      - name: '[ex]Generate merged config'
+        env:
+          GITHUB_TOKEN: ${{ secrets.CLASH_GITHUB_TOKEN }}
+          REPO_OWNER: ${{ secrets.CLASH_REPO_OWNER }}
+          REPO_NAME: ${{ secrets.CLASH_REPO_NAME }}
+          AUTH_TOKEN: ${{ secrets.CLASH_AUTH_TOKEN }}
+          OUTPUT_DIR: docs
+          PYTHONIOENCODING: utf-8
+          PYTHONLEGACYWINDOWSFSENCODING: utf-8
+          PYTHONUTF8: 1
+          LC_ALL: zh_CN.UTF-8
+          LANG: zh_CN.UTF-8
+        run: |
+          export PYTHONIOENCODING=utf-8
+          export PYTHONUTF8=1
+          python -c "import sys; print('Python encoding:', sys.stdout.encoding)"
+          python scripts/merge_clash_config_ex.py
+
+          # 验证生成的文件编码
+          echo "=== [ex]检查生成的文件 ==="
+          ls -la docs/
+          CONFIG_FILE="docs/clash-ex-${AUTH_TOKEN}.yaml"
+          if [ -f "$CONFIG_FILE" ]; then
+            file "$CONFIG_FILE"
+            head -5 "$CONFIG_FILE"
+            echo "[ex]配置文件生成成功: $CONFIG_FILE"
+          else
+            echo "[ex]错误: 配置文件未生成"
+            exit 1
+          fi
+
       - name: Generate index page with authentication
         env:
           AUTH_TOKEN: ${{ secrets.CLASH_AUTH_TOKEN }}
@@ -181,6 +212,11 @@ jobs:
                       <h3>📊 配置统计</h3>
                       <div id="stats">加载中...</div>
                   </div>
+
+                  <div class="config-info">
+                      <h3>📊 配置统计ex</h3>
+                      <div id="stats-ex">加载中...</div>
+                  </div>
                   
                   <div class="warning">
                       <h3>⚠️ 重要提醒</h3>
@@ -197,16 +233,22 @@ jobs:
                       <div class="url-box" id="config-url">
                           https://jy-mar.github.io/clash-yaml-merger/clash-{your-token}.yaml
                       </div>
+                      <p>ex：</p>
+                      <div class="url-box" id="config-ex-url">
+                          https://jy-mar.github.io/clash-yaml-merger/clash-ex-{your-token}.yaml
+                      </div>
                       <p><small>请将 {your-token} 替换为您的实际token</small></p>
                   </div>
               </div>
               
               <script>
                   // 加载统计信息
-                  fetch('stats.json')
+                  function fetchStats(is_ex = false) {
+                    const ex_flag = is_ex ? '-ex' : ''
+                    fetch('stats' + ex_flag + '.json')
                       .then(response => response.json())
                       .then(data => {
-                          const statsDiv = document.getElementById('stats');
+                          const statsDiv = document.getElementById('stats' + ex_flag);
                           let dateStr = ''
                           const generateDate = new Date(data.generated_at)
                           if (typeof generateDate === 'object' && generateDate instanceof Date) {
@@ -234,8 +276,11 @@ jobs:
                           `;
                       })
                       .catch(error => {
-                          document.getElementById('stats').innerHTML = '<p style="color: red;">加载统计信息失败</p>';
+                          document.getElementById('stats' + ex_flag).innerHTML = '<p style="color: red;">加载统计信息失败</p>';
                       });
+                  }
+                  fetchStats()
+                  fetchStats(true)
               </script>
           </body>
           </html>
@@ -277,12 +322,17 @@ jobs:
                   const urlParams = new URLSearchParams(window.location.search);
                   const token = urlParams.get('token');
                   
-                  // 这里应该是您的认证token
-                  const validToken = 'your-auth-token';
-                  
-                  if (token === validToken) {
-                      // 重定向到实际的配置文件
-                      window.location.href = 'clash.yaml';
+                  if (token) {
+                      // 这里应该是您的认证token
+                      const validToken = '${AUTH_TOKEN}';
+                      if (token === validToken) {
+                          // 重定向到实际的配置文件
+                          window.location.href = 'clash-${AUTH_TOKEN}.yaml';
+                      } else {
+                          // 返回404
+                          document.body.innerHTML = '<h1>404 Not Found</h1>';
+                          document.title = '404 Not Found';
+                      }
                   } else {
                       // 返回404
                       document.body.innerHTML = '<h1>404 Not Found</h1>';
