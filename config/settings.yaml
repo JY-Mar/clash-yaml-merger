@@ -1,18 +1,17 @@
 # Clash配置整合工具设置文件
 
-# 基础配置文件，优先级低于github.fconf_directory配置，支持多个远程公开仓库的yaml文件，以“,”符号分隔
-fconf_remote_files: 'https://raw.githubusercontent.com/JY-Mar/scat-proxy/refs/heads/main/Clash/kelee.yaml'
-
 # GitHub仓库配置
 github:
   # 私有仓库所有者用户名
   owner: 'your-username'
   # 私有仓库名称
   repository: 'clash-config'
+  # 基础配置文件，优先级低于github.fconf_directories配置，支持多个远程公开仓库的yaml文件，以“,”符号分隔
+  fconf_remote_files: 'https://raw.githubusercontent.com/JY-Mar/scat-proxy/refs/heads/main/Clash/kelee.yaml'
   # 基础配置文件目录，支持多个目录或远程公开仓库的yaml文件，以“,”符号分隔
-  fconf_directory: 'Clash/fconfs'
+  fconf_directories: 'Clash/fconfs'
   # 基础配置文件目录ex，支持多个目录或远程公开仓库的yaml文件，以“,”符号分隔
-  fconf_ex_directory: 'Clash/fconfs-ex'
+  fconf_ex_directories: 'Clash/fconfs-ex'
   # 订阅文件目录
   sub_directory: 'Clash/subs'
   # 规则文件目录

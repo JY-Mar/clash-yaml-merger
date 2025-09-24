@@ -207,17 +207,7 @@ jobs:
                       <h1>🚀 Clash 配置整合服务</h1>
                       <p>自动整合多个订阅源的 Clash 配置文件</p>
                   </div>
-                  
-                  <div class="config-info">
-                      <h3>📊 配置统计</h3>
-                      <div id="stats">加载中...</div>
-                  </div>
 
-                  <div class="config-info">
-                      <h3>📊 配置统计ex</h3>
-                      <div id="stats-ex">加载中...</div>
-                  </div>
-                  
                   <div class="warning">
                       <h3>⚠️ 重要提醒</h3>
                       <ul>
@@ -227,13 +217,28 @@ jobs:
                       </ul>
                   </div>
                   
+                  <div class="config-info">
+                      <h3>📊 配置统计</h3>
+                      <div id="stats">加载中...</div>
+                  </div>
+
                   <div class="success">
                       <h3>📋 使用方法</h3>
                       <p>在 Clash 客户端中添加以下订阅链接：</p>
                       <div class="url-box" id="config-url">
                           https://jy-mar.github.io/clash-yaml-merger/clash-{your-token}.yaml
                       </div>
-                      <p>ex：</p>
+                      <p><small>请将 {your-token} 替换为您的实际token</small></p>
+                  </div>
+
+                  <div class="config-info">
+                      <h3>📊 配置统计ex</h3>
+                      <div id="stats-ex">加载中...</div>
+                  </div>
+                  
+                  <div class="success">
+                      <h3>📋 使用方法</h3>
+                      <p>在 Clash 客户端中添加以下订阅链接：</p>
                       <div class="url-box" id="config-ex-url">
                           https://jy-mar.github.io/clash-yaml-merger/clash-ex-{your-token}.yaml
                       </div>

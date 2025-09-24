@@ -670,22 +670,23 @@ def merger_init() -> ClashConfigInitParams:
         auth_token = os.getenv("AUTH_TOKEN", "default-token")
 
         config = load_config()
-        fconf_directory = config["github"][
-            "fconf_ex_directory" if is_ex else "fconf_directory"
+        fconf_directories = config["github"][
+            "fconf_ex_directories" if is_ex else "fconf_directories"
         ]
+        logger.info(f"fconf_directories: {fconf_directories}")
         sub_directory = config["github"]["sub_directory"]
         rule_directory = config["github"]["rule_directory"]
 
         fconf_dirs = ["fconfs_ex" if is_ex else "fconfs"]
-        if fconf_directory and isinstance(fconf_directory, str):
+        if fconf_directories and isinstance(fconf_directories, str):
             if (
-                "," in fconf_directory
-                and not fconf_directory.startswith(",")
-                and not fconf_directory.endswith(",")
+                "," in fconf_directories
+                and not fconf_directories.startswith(",")
+                and not fconf_directories.endswith(",")
             ):
-                fconf_dirs = list(map(str.strip, fconf_directory.split(",")))
+                fconf_dirs = list(map(str.strip, fconf_directories.split(",")))
             else:
-                fconf_dirs = [fconf_directory.strip()]
+                fconf_dirs = [fconf_directories.strip()]
 
         sub_dir = "subs"
         if sub_directory:

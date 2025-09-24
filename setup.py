@@ -51,21 +51,19 @@ def setup_github_config():
     if repo:
         config['github']['repository'] = repo
     
-    fconf_r_fs = input(f"远程订阅文件 [{config['fconf_remote_files']}]: ").strip()
+    fconf_r_fs = input(f"远程订阅文件 [{config['github']['fconf_remote_files']}]: ").strip()
     
-    fconf_dir = input(f"订阅文件目录 [{config['github']['fconf_directory']}]: ").strip()
-    if fconf_dir:
-        if fconf_r_fs:
-            config['github']['fconf_directory'] = ','.join(list(dict.fromkeys(fconf_r_fs.split(',') + fconf_dir.split(','))))
-        else:
-            config['github']['fconf_directory'] = fconf_dir
+    fconf_dir = input(f"订阅文件目录 [{config['github']['fconf_directories']}]: ").strip()
+    if fconf_dir and fconf_r_fs:
+        config['github']['fconf_directories'] = ','.join(list(dict.fromkeys(fconf_r_fs.split(',') + fconf_dir.split(','))))
+    elif fconf_dir and not fconf_r_fs:
+        config['github']['fconf_directories'] = fconf_dir
     
-    fconf_ex_dir = input(f"订阅文件目录 [{config['github']['fconf_ex_directory']}]: ").strip()
-    if fconf_ex_dir:
-        if fconf_r_fs:
-            config['github']['fconf_ex_directory'] = ','.join(list(dict.fromkeys(fconf_r_fs.split(',') + fconf_ex_dir.split(','))))
-        else:
-            config['github']['fconf_ex_directory'] = fconf_ex_dir
+    fconf_ex_dir = input(f"订阅文件目录 [{config['github']['fconf_ex_directories']}]: ").strip()
+    if fconf_ex_dir and fconf_r_fs:
+        config['github']['fconf_ex_directories'] = ','.join(list(dict.fromkeys(fconf_r_fs.split(',') + fconf_ex_dir.split(','))))
+    elif fconf_ex_dir and not fconf_r_fs:
+        config['github']['fconf_ex_directories'] = fconf_ex_dir
     
     sub_dir = input(f"订阅文件目录 [{config['github']['sub_directory']}]: ").strip()
     if sub_dir:
