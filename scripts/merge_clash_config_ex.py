@@ -46,6 +46,8 @@ logger = logging.getLogger(__name__)
 is_ex: bool = True
 # ex版本标识
 ex_flag = ""
+# ex文件后缀
+ex_file_suffix = "-ex" if is_ex else ""
 
 
 def deep_merge(a: Any, b: Any) -> Any:
@@ -147,9 +149,11 @@ def load_config() -> Dict[str, Any]:
         print(f"❌ 配置文件格式错误: {e}")
         sys.exit(1)
 
+
 # settings.yaml 配置
 settings_config = load_config()
 
+# 远程YAML文件正则表达式
 remote_yaml_pattern = r"^https:\/\/.+\.yaml$"
 
 
@@ -507,7 +511,7 @@ class ClashConfigMerger:
         生成合并后的配置文件
 
         Args:
-            fconf_directories: 基础配置文件目录，支持私有仓库目录、单独指定的yaml文件
+            fconf_directories: 全量配置文件目录，支持私有仓库目录、单独指定的yaml文件
             sub_directory: 订阅文件目录
             rule_directory: 规则文件目录
 
@@ -517,7 +521,10 @@ class ClashConfigMerger:
 
         logger.info(f"{ex_flag}开始生成合并配置...")
 
-        # 获取基础配置文件列表
+        # 1. 创建基础配置
+        merged_config = self.create_base_config()
+
+        # 2.1.1 获取全量配置文件列表
         fconf_files: List[str] = []
         if fconf_directories:
             for fconf_directory in fconf_directories:
@@ -526,54 +533,46 @@ class ClashConfigMerger:
                 else:
                     fconf_files.extend(self.get_directory_files(fconf_directory))
         if not fconf_files:
-            logger.warning(f"{ex_flag}未找到基础配置文件在目录: {fconf_directories}")
+            logger.warning(f"{ex_flag}未找到全量配置文件在目录: {fconf_directories}")
 
-        # 获取订阅文件列表
-        sub_files = self.get_directory_files(sub_directory)
-        if not sub_files:
-            logger.warning(f"{ex_flag}未找到订阅文件在目录: {sub_directory}")
-
-        # 获取规则文件列表
-        rule_files = self.get_directory_files(rule_directory)
-        if not rule_files:
-            logger.warning(f"{ex_flag}未找到规则文件在目录: {rule_directory}")
-
-        # 加载所有基础配置
-        configs_as_full = []
-        logger.info(f"{ex_flag}基础配置文件: {fconf_files}")
+        # 2.1.2 从全量配置文件列表加载所有全量配置
+        configs_from_fconf_files: List[Dict[str, Any]] = []
         for file_path in fconf_files:
             content = self.get_file_content(file_path)
             if content:
                 config = self.load_yaml_content(content)
                 if config:
-                    configs_as_full.append((config))
+                    configs_from_fconf_files.append((config))
 
-        if not configs_as_full:
-            logger.error(f"{ex_flag}未能加载任何有效的基础配置文件")
+        if not configs_from_fconf_files:
+            logger.error(f"{ex_flag}未能加载任何有效的全量配置文件")
             return {}
 
-        # 加载所有订阅配置
-        configs_with_sources = []
+        # 2.1.3 合并全量配置
+        if configs_from_fconf_files:
+            merged_config = reduce(deep_merge, configs_from_fconf_files)
+
+        # 2.2.1 获取订阅文件列表
+        sub_files = self.get_directory_files(sub_directory)
+        if not sub_files:
+            logger.warning(f"{ex_flag}未找到订阅文件在目录: {sub_directory}")
+
+        # 2.2.2 加载所有订阅配置
+        configs_from_sub_files = []
         for file_path in sub_files:
             content = self.get_file_content(file_path)
             if content:
                 config = self.load_yaml_content(content)
                 if config:
-                    configs_with_sources.append((config, file_path))
+                    configs_from_sub_files.append((config, file_path))
 
-        if not configs_with_sources:
+        if not configs_from_sub_files:
             logger.error(f"{ex_flag}未能加载任何有效的订阅配置文件")
             # return {}
 
-        # 创建基础配置
-        merged_config = self.create_base_config()
-
-        if configs_as_full:
-            merged_config = reduce(deep_merge, configs_as_full)
-
-        # 合并代理节点
-        if configs_with_sources:
-            merged_proxies = self.merge_proxies(configs_with_sources)
+        # 2.2.3 合并代理节点
+        if configs_from_sub_files:
+            merged_proxies = self.merge_proxies(configs_from_sub_files)
             merged_config["proxies"] = merged_proxies
             # 创建代理组（传入文件列表用于创建对应的分组）
             proxy_groups = self.create_proxy_groups(
@@ -581,7 +580,12 @@ class ClashConfigMerger:
             )
             merged_config["proxy-groups"] = proxy_groups
 
-        # 合并规则（只使用rule目录下的规则）
+        # 2.3.1 获取规则文件列表
+        rule_files = self.get_directory_files(rule_directory)
+        if not rule_files:
+            logger.warning(f"{ex_flag}未找到规则文件在目录: {rule_directory}")
+
+        # 2.3.2 合并规则（只使用rule目录下的规则）
         merged_rules = self.merge_rules(rule_files)
 
         if merged_rules:
@@ -590,7 +594,7 @@ class ClashConfigMerger:
 
             merged_config["rules"] = merged_rules + default_rules
 
-        # 清理代理节点中的临时字段
+        # 3. 清理代理节点中的临时字段
         try:
             for proxy in merged_config.get("proxies", []):
                 if isinstance(proxy, dict) and "_source_file" in proxy:
@@ -599,6 +603,7 @@ class ClashConfigMerger:
             logger.error(f"{ex_flag}清理代理节点中的临时字段失败: {e}")
 
         logger.info(f"{ex_flag}配置合并完成")
+
         return merged_config
 
     def save_config_to_file(self, config: Dict[str, Any], output_path: str) -> bool:
@@ -667,7 +672,7 @@ class ClashConfigInitParams:
             merger: Clash配置合并对象
             auth_token: 用户鉴权令牌
             output_dir: 输出目录
-            fconf_dirs: 基础配置目录列表
+            fconf_dirs: 全量配置目录列表
             sub_dir: 订阅目录
             rule_dir: 规则目录
         """
@@ -769,7 +774,7 @@ def merger_gen_config():
         sys.exit(1)
 
     # 使用token作为文件名的一部分进行认证
-    config_filename = f"{settings_config['output']['config_filename']}{'-ex' if is_ex else ''}-{ida.auth_token}.yaml"
+    config_filename = f"{settings_config['output']['config_filename']}{ex_file_suffix}-{ida.auth_token}.yaml"
     output_path = os.path.join(ida.output_dir, config_filename)
     if not ida.merger.save_config_to_file(merged_config, output_path):
         sys.exit(1)
@@ -799,7 +804,10 @@ def merger_gen_config():
     except Exception as e:
         logger.error(f"{ex_flag}生成统计信息失败: {e}")
 
-    stats_path = os.path.join(ida.output_dir, f"{settings_config['output']['stats_filename']}{'-ex' if is_ex else ''}.json")
+    stats_path = os.path.join(
+        ida.output_dir,
+        f"{settings_config['output']['stats_filename']}{ex_file_suffix}.json",
+    )
 
     try:
         os.makedirs(ida.output_dir, exist_ok=True)
@@ -813,7 +821,9 @@ def merger_gen_config():
     logger.info(
         f"{ex_flag}✅ 任务完成! 代理节点: {stats['proxies_count']}, 规则: {stats['rules_count']}"
     )
-    logger.info(f"{ex_flag}📁 配置文件: {'<your_clash_config_filename>.yaml'}")
+    logger.info(
+        f"{ex_flag}📁 配置文件: {'clash' + ex_file_suffix + '{your-token}' + '.yaml'}"
+    )
     if ida.local_mode:
         logger.info(f"{ex_flag}📁 输出路径: {output_path}")
 
