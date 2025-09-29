@@ -815,7 +815,7 @@ def merger_gen_config():
         f"✅ 任务完成! 代理节点: {stats['proxies_count']}, 规则: {stats['rules_count']}"
     )
     logger.info(
-        f"📁 配置文件: {'clash' + version_file_suffix + '{your-token}' + '.yaml'}"
+        f"📁 配置文件: {'clash' + version_file_suffix + '-{your-token}' + '.yaml'}"
     )
     if ida.local_mode:
         logger.info(f"📁 输出路径: {output_path}")

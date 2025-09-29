@@ -88,7 +88,7 @@ jobs:
           # 验证生成的文件编码
           echo "=== 检查生成的文件 ==="
           ls -la docs/
-          CONFIG_FILE="docs/clash-${AUTH_TOKEN}.yaml"
+          CONFIG_FILE="docs/clash-1-${AUTH_TOKEN}.yaml"
           if [ -f "$CONFIG_FILE" ]; then
             file "$CONFIG_FILE"
             head -3 "$CONFIG_FILE"
