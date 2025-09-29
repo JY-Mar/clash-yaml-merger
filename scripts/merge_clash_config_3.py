@@ -1,7 +1,7 @@
 '''
 Author       : Scientificat 51430248+JY-Mar@users.noreply.github.com
 Date         : 2025-09-29 08:54:03
-LastEditTime : 2025-09-29 08:54:24
+LastEditTime : 2025-09-29 09:12:28
 LastEditors  : Scientificat 51430248+JY-Mar@users.noreply.github.com
 Description  : 文件描述
 '''
@@ -52,7 +52,7 @@ logger = logging.getLogger(__name__)
 # 版本1、2、3
 version_flag: int = 3
 # 版本文件后缀
-version_file_suffix = f"-STC-iKuuu-bestbus"
+version_file_suffix = f"-others"
 
 
 def deep_merge(a: Any, b: Any) -> Any:
