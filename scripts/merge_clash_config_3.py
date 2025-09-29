@@ -52,7 +52,7 @@ logger = logging.getLogger(__name__)
 # 版本1、2、3
 version_flag: int = 3
 # 版本文件后缀
-version_file_suffix = f"-{version_flag}"
+version_file_suffix = f"-STC-iKuuu-bestbus"
 
 
 def deep_merge(a: Any, b: Any) -> Any:
