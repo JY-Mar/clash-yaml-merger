@@ -83,15 +83,14 @@ jobs:
           export PYTHONIOENCODING=utf-8
           export PYTHONUTF8=1
           python -c "import sys; print('Python encoding:', sys.stdout.encoding)"
-          python scripts/merge_clash_config.py &
-          python scripts/merge_clash_config_2.py &
-          python scripts/merge_clash_config_3.py &
-
-          wait
+          python scripts/merge_clash_config.py
+          python scripts/merge_clash_config_2.py
+          python scripts/merge_clash_config_3.py
 
           # 验证生成的文件编码
           echo "=== 检查生成的文件 ==="
           ls -la docs/
+
           CONFIG_FILE_Ash="docs/clash-Ash-${AUTH_TOKEN}.yaml"
           if [ -f "$CONFIG_FILE_Ash" ]; then
             file "$CONFIG_FILE_Ash"
@@ -100,6 +99,7 @@ jobs:
           else
             echo "错误: 配置文件 $CONFIG_FILE_Ash 未生成"
             exit 1
+          fi
 
           CONFIG_FILE_CornSS="docs/clash-CornSS-${AUTH_TOKEN}.yaml"
           if [ -f "$CONFIG_FILE_CornSS" ]; then
@@ -109,6 +109,7 @@ jobs:
           else
             echo "错误: 配置文件 $CONFIG_FILE_CornSS 未生成"
             exit 1
+          fi
 
           CONFIG_FILE_others="docs/clash-others-${AUTH_TOKEN}.yaml"
           if [ -f "$CONFIG_FILE_others" ]; then
