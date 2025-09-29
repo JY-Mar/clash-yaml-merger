@@ -67,7 +67,7 @@ jobs:
         run: |
           mkdir -p docs
 
-      - name: '[1]Generate merged config'
+      - name: 'Generate merged config'
         env:
           GITHUB_TOKEN: ${{ secrets.CLASH_GITHUB_TOKEN }}
           REPO_OWNER: ${{ secrets.CLASH_REPO_OWNER }}
@@ -83,80 +83,40 @@ jobs:
           export PYTHONIOENCODING=utf-8
           export PYTHONUTF8=1
           python -c "import sys; print('Python encoding:', sys.stdout.encoding)"
-          python scripts/merge_clash_config.py
+          python scripts/merge_clash_config.py &
+          python scripts/merge_clash_config_2.py &
+          python scripts/merge_clash_config_3.py &
+
+          wait
 
           # 验证生成的文件编码
           echo "=== 检查生成的文件 ==="
           ls -la docs/
-          CONFIG_FILE="docs/clash-Ash-${AUTH_TOKEN}.yaml"
-          if [ -f "$CONFIG_FILE" ]; then
-            file "$CONFIG_FILE"
-            head -3 "$CONFIG_FILE"
-            echo "配置文件生成成功: $CONFIG_FILE"
+          CONFIG_FILE_Ash="docs/clash-Ash-${AUTH_TOKEN}.yaml"
+          if [ -f "$CONFIG_FILE_Ash" ]; then
+            file "$CONFIG_FILE_Ash"
+            head -3 "$CONFIG_FILE_Ash"
+            echo "配置文件生成成功: $CONFIG_FILE_Ash"
           else
-            echo "错误: 配置文件未生成"
+            echo "错误: 配置文件 $CONFIG_FILE_Ash 未生成"
             exit 1
-          fi
 
-      - name: '[2]Generate merged config'
-        env:
-          GITHUB_TOKEN: ${{ secrets.CLASH_GITHUB_TOKEN }}
-          REPO_OWNER: ${{ secrets.CLASH_REPO_OWNER }}
-          REPO_NAME: ${{ secrets.CLASH_REPO_NAME }}
-          AUTH_TOKEN: ${{ secrets.CLASH_AUTH_TOKEN }}
-          OUTPUT_DIR: docs
-          PYTHONIOENCODING: utf-8
-          PYTHONLEGACYWINDOWSFSENCODING: utf-8
-          PYTHONUTF8: 1
-          LC_ALL: zh_CN.UTF-8
-          LANG: zh_CN.UTF-8
-        run: |
-          export PYTHONIOENCODING=utf-8
-          export PYTHONUTF8=1
-          python -c "import sys; print('Python encoding:', sys.stdout.encoding)"
-          python scripts/merge_clash_config_2.py
-
-          # 验证生成的文件编码
-          echo "=== 检查生成的文件 ==="
-          ls -la docs/
-          CONFIG_FILE="docs/clash-CornSS-${AUTH_TOKEN}.yaml"
-          if [ -f "$CONFIG_FILE" ]; then
-            file "$CONFIG_FILE"
-            head -3 "$CONFIG_FILE"
-            echo "配置文件生成成功: $CONFIG_FILE"
+          CONFIG_FILE_CornSS="docs/clash-CornSS-${AUTH_TOKEN}.yaml"
+          if [ -f "$CONFIG_FILE_CornSS" ]; then
+            file "$CONFIG_FILE_CornSS"
+            head -3 "$CONFIG_FILE_CornSS"
+            echo "配置文件生成成功: $CONFIG_FILE_CornSS"
           else
-            echo "错误: 配置文件未生成"
+            echo "错误: 配置文件 $CONFIG_FILE_CornSS 未生成"
             exit 1
-          fi
 
-      - name: '[3]Generate merged config'
-        env:
-          GITHUB_TOKEN: ${{ secrets.CLASH_GITHUB_TOKEN }}
-          REPO_OWNER: ${{ secrets.CLASH_REPO_OWNER }}
-          REPO_NAME: ${{ secrets.CLASH_REPO_NAME }}
-          AUTH_TOKEN: ${{ secrets.CLASH_AUTH_TOKEN }}
-          OUTPUT_DIR: docs
-          PYTHONIOENCODING: utf-8
-          PYTHONLEGACYWINDOWSFSENCODING: utf-8
-          PYTHONUTF8: 1
-          LC_ALL: zh_CN.UTF-8
-          LANG: zh_CN.UTF-8
-        run: |
-          export PYTHONIOENCODING=utf-8
-          export PYTHONUTF8=1
-          python -c "import sys; print('Python encoding:', sys.stdout.encoding)"
-          python scripts/merge_clash_config_3.py
-
-          # 验证生成的文件编码
-          echo "=== 检查生成的文件 ==="
-          ls -la docs/
-          CONFIG_FILE="docs/clash-others-${AUTH_TOKEN}.yaml"
-          if [ -f "$CONFIG_FILE" ]; then
-            file "$CONFIG_FILE"
-            head -3 "$CONFIG_FILE"
-            echo "配置文件生成成功: $CONFIG_FILE"
+          CONFIG_FILE_others="docs/clash-others-${AUTH_TOKEN}.yaml"
+          if [ -f "$CONFIG_FILE_others" ]; then
+            file "$CONFIG_FILE_others"
+            head -3 "$CONFIG_FILE_others"
+            echo "配置文件生成成功: $CONFIG_FILE_others"
           else
-            echo "错误: 配置文件未生成"
+            echo "错误: 配置文件 $CONFIG_FILE_others 未生成"
             exit 1
           fi
 
