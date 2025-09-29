@@ -36,7 +36,7 @@ dns:
 # 代理节点（将由脚本自动填充）
 proxies: []
 
-# 代理组（将由脚本自动生成）
+# 策略组（将由脚本自动生成）
 proxy-groups:
   - name: PROXY
     type: select

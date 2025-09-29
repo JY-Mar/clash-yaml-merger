@@ -84,8 +84,11 @@ jobs:
           export PYTHONUTF8=1
           python -c "import sys; print('Python encoding:', sys.stdout.encoding)"
           python scripts/merge_clash_config.py
+          echo "=== 执行完成 1 / 3 ==="
           python scripts/merge_clash_config_2.py
+          echo "=== 执行完成 2 / 3 ==="
           python scripts/merge_clash_config_3.py
+          echo "=== 执行完成 3 / 3 ==="
 
           # 验证生成的文件编码
           echo "=== 检查生成的文件 ==="
@@ -210,7 +213,7 @@ jobs:
                   </div>
                   
                   <div class="config-info">
-                      <h3>📊 配置统计Ash</h3>
+                      <h3>📊 配置统计 Ash</h3>
                       <div id="stats-Ash">加载中...</div>
                   </div>
 
@@ -224,7 +227,7 @@ jobs:
                   </div>
 
                   <div class="config-info">
-                      <h3>📊 配置统计CornSS</h3>
+                      <h3>📊 配置统计 CornSS</h3>
                       <div id="stats-CornSS">加载中...</div>
                   </div>
                   
@@ -238,7 +241,7 @@ jobs:
                   </div>
 
                   <div class="config-info">
-                      <h3>📊 配置统计STC/iKuuu/bestbus</h3>
+                      <h3>📊 配置统计 STC/iKuuu/bestbus</h3>
                       <div id="stats-others">加载中...</div>
                   </div>
                   
@@ -280,7 +283,7 @@ jobs:
                           statsDiv.innerHTML = `
                               <p><strong>代理集数量：</strong> ${data.proxy_providers_count}</p>
                               <p><strong>代理节点数量：</strong> ${data.proxies_count}</p>
-                              <p><strong>代理组数量：</strong> ${data.proxy_groups_count}</p>
+                              <p><strong>策略组数量：</strong> ${data.proxy_groups_count}</p>
                               <p><strong>规则数量：</strong> ${data.rules_count}</p>
                               <p><strong>最后更新：</strong> ${dateStr}</p>
                           `;

@@ -97,7 +97,7 @@ https://your-username.github.io/your-repo/
 支持标准的 Clash 配置文件格式，脚本会自动提取以下部分：
 
 - `proxies`: 代理节点列表
-- `proxy-groups`: 代理组配置
+- `proxy-groups`: 策略组配置
 - `rules`: 规则列表
 
 ### 规则文件格式

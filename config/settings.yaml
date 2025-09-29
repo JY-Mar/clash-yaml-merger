@@ -72,7 +72,7 @@ proxy:
 rules:
   # 是否去重规则
   deduplicate: true
-  # 默认代理组名称
+  # 默认策略组名称
   default_proxy_group: 'PROXY'
   # 是否添加默认规则
   add_default_rules: true

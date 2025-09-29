@@ -1,7 +1,7 @@
 '''
 Author       : Scientificat 51430248+JY-Mar@users.noreply.github.com
 Date         : 2025-09-29 08:54:03
-LastEditTime : 2025-09-29 09:12:28
+LastEditTime : 2025-09-29 09:45:07
 LastEditors  : Scientificat 51430248+JY-Mar@users.noreply.github.com
 Description  : 文件描述
 '''
@@ -393,7 +393,7 @@ class ClashConfigMerger:
         self, proxies: List[Dict[str, Any]], sub_files: List[str], rule_files: List[str]
     ) -> List[Dict[str, Any]]:
         """
-        创建代理组结构
+        创建策略组结构
 
         Args:
             proxies: 代理节点列表
@@ -401,7 +401,7 @@ class ClashConfigMerger:
             rule_files: 规则文件路径列表
 
         Returns:
-            代理组配置列表
+            策略组配置列表
         """
         proxy_names = [proxy["name"] for proxy in proxies if "name" in proxy]
 
@@ -420,10 +420,10 @@ class ClashConfigMerger:
                 if source_name in sub_groups and proxy_name:
                     sub_groups[source_name].append(proxy_name)
 
-        # 创建代理组列表
+        # 创建策略组列表
         proxy_groups = []
 
-        # 1. 创建主网络代理组（只包含sub分组，不包含rule分组）
+        # 1. 创建主网络策略组（只包含sub分组，不包含rule分组）
         sub_group_names = list(sub_groups.keys())
 
         network_proxy_options = ["自动选择", "故障转移"] + sub_group_names
@@ -451,7 +451,7 @@ class ClashConfigMerger:
             ]
         )
 
-        # 3. 为每个订阅文件创建代理组（只为sub文件创建，不为rule文件创建）
+        # 3. 为每个订阅文件创建策略组（只为sub文件创建，不为rule文件创建）
         for sub_name, sub_proxies in sub_groups.items():
             if sub_proxies:
                 proxy_groups.append(
@@ -462,7 +462,7 @@ class ClashConfigMerger:
                     }
                 )
 
-        logger.info(f"创建了 {len(proxy_groups)} 个代理组")
+        logger.info(f"创建了 {len(proxy_groups)} 个策略组")
         return proxy_groups
 
     def create_base_config(self) -> Dict[str, Any]:
@@ -569,7 +569,7 @@ class ClashConfigMerger:
         if configs_from_sub_files:
             merged_proxies = self.merge_proxies(configs_from_sub_files)
             merged_config["proxies"] = merged_proxies
-            # 创建代理组（传入文件列表用于创建对应的分组）
+            # 创建策略组（传入文件列表用于创建对应的分组）
             proxy_groups = self.create_proxy_groups(
                 merged_proxies, sub_files, rule_files
             )
@@ -585,7 +585,7 @@ class ClashConfigMerger:
 
         if merged_rules:
             # 只添加最基本的默认规则
-            default_rules = ["MATCH,DIRECT"]  # 默认流量走网络代理组
+            default_rules = ["MATCH,DIRECT"]  # 默认流量走网络策略组
 
             merged_config["rules"] = merged_rules + default_rules
 
