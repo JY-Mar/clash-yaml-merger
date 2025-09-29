@@ -67,7 +67,7 @@ jobs:
         run: |
           mkdir -p docs
 
-      - name: Generate merged config
+      - name: '[1]Generate merged config'
         env:
           GITHUB_TOKEN: ${{ secrets.CLASH_GITHUB_TOKEN }}
           REPO_OWNER: ${{ secrets.CLASH_REPO_OWNER }}
@@ -98,7 +98,7 @@ jobs:
             exit 1
           fi
 
-      - name: '[ex]Generate merged config'
+      - name: '[2]Generate merged config'
         env:
           GITHUB_TOKEN: ${{ secrets.CLASH_GITHUB_TOKEN }}
           REPO_OWNER: ${{ secrets.CLASH_REPO_OWNER }}
@@ -114,12 +114,43 @@ jobs:
           export PYTHONIOENCODING=utf-8
           export PYTHONUTF8=1
           python -c "import sys; print('Python encoding:', sys.stdout.encoding)"
-          python scripts/merge_clash_config_ex.py
+          python scripts/merge_clash_config_2.py
 
           # 验证生成的文件编码
           echo "=== 检查生成的文件 ==="
           ls -la docs/
-          CONFIG_FILE="docs/clash-ex-${AUTH_TOKEN}.yaml"
+          CONFIG_FILE="docs/clash-2-${AUTH_TOKEN}.yaml"
+          if [ -f "$CONFIG_FILE" ]; then
+            file "$CONFIG_FILE"
+            head -3 "$CONFIG_FILE"
+            echo "配置文件生成成功: $CONFIG_FILE"
+          else
+            echo "错误: 配置文件未生成"
+            exit 1
+          fi
+
+      - name: '[3]Generate merged config'
+        env:
+          GITHUB_TOKEN: ${{ secrets.CLASH_GITHUB_TOKEN }}
+          REPO_OWNER: ${{ secrets.CLASH_REPO_OWNER }}
+          REPO_NAME: ${{ secrets.CLASH_REPO_NAME }}
+          AUTH_TOKEN: ${{ secrets.CLASH_AUTH_TOKEN }}
+          OUTPUT_DIR: docs
+          PYTHONIOENCODING: utf-8
+          PYTHONLEGACYWINDOWSFSENCODING: utf-8
+          PYTHONUTF8: 1
+          LC_ALL: zh_CN.UTF-8
+          LANG: zh_CN.UTF-8
+        run: |
+          export PYTHONIOENCODING=utf-8
+          export PYTHONUTF8=1
+          python -c "import sys; print('Python encoding:', sys.stdout.encoding)"
+          python scripts/merge_clash_config_3.py
+
+          # 验证生成的文件编码
+          echo "=== 检查生成的文件 ==="
+          ls -la docs/
+          CONFIG_FILE="docs/clash-3-${AUTH_TOKEN}.yaml"
           if [ -f "$CONFIG_FILE" ]; then
             file "$CONFIG_FILE"
             head -3 "$CONFIG_FILE"
@@ -248,12 +279,12 @@ jobs:
               
               <script>
                   // 加载统计信息
-                  function fetchStats(is_ex = false) {
-                    const ex_flag = is_ex ? '-ex' : ''
-                    fetch('stats' + ex_flag + '.json')
+                  function fetchStats(version_flag = 1) {
+                    const version_file_suffix = '-' + version_flag
+                    fetch('stats' + version_file_suffix + '.json')
                       .then(response => response.json())
                       .then(data => {
-                          const statsDiv = document.getElementById('stats' + ex_flag);
+                          const statsDiv = document.getElementById('stats' + version_file_suffix);
                           let dateStr = ''
                           const generateDate = new Date(data.generated_at)
                           if (typeof generateDate === 'object' && generateDate instanceof Date) {
@@ -281,7 +312,7 @@ jobs:
                           `;
                       })
                       .catch(error => {
-                          document.getElementById('stats' + ex_flag).innerHTML = '<p style="color: red;">加载统计信息失败</p>';
+                          document.getElementById('stats' + version_file_suffix).innerHTML = '<p style="color: red;">加载统计信息失败</p>';
                       });
                   }
                   fetchStats()

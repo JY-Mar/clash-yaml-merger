@@ -1,3 +1,10 @@
+'''
+Author       : Scientificat 51430248+JY-Mar@users.noreply.github.com
+Date         : 2025-09-29 08:54:03
+LastEditTime : 2025-09-29 08:54:24
+LastEditors  : Scientificat 51430248+JY-Mar@users.noreply.github.com
+Description  : 文件描述
+'''
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
@@ -42,12 +49,10 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# 是否ex版本
-is_ex: bool = True
-# ex版本标识
-ex_flag = ""
-# ex文件后缀
-ex_file_suffix = "-ex" if is_ex else ""
+# 版本1、2、3
+version_flag: int = 3
+# 版本文件后缀
+version_file_suffix = f"-{version_flag}"
 
 
 def deep_merge(a: Any, b: Any) -> Any:
@@ -115,23 +120,13 @@ def load_config() -> Dict[str, Any]:
 
             fconf_r_fs = f"{config['github']['fconf_remote_files']}".strip()
 
-            fconf_dirs = f"{config['github']['fconf_directories']}".strip()
+            fconf_dirs = f"{config['github'][f'fconf_directories_{version_flag}']}".strip()
             if fconf_dirs and fconf_r_fs:
-                config["github"]["fconf_directories"] = ",".join(
+                config["github"][f'fconf_directories_{version_flag}'] = ",".join(
                     list(dict.fromkeys(fconf_r_fs.split(",") + fconf_dirs.split(",")))
                 )
             elif fconf_dirs and not fconf_r_fs:
-                config["github"]["fconf_directories"] = fconf_dirs
-
-            fconf_ex_dirs = f"{config['github']['fconf_ex_directories']}".strip()
-            if fconf_ex_dirs and fconf_r_fs:
-                config["github"]["fconf_ex_directories"] = ",".join(
-                    list(
-                        dict.fromkeys(fconf_r_fs.split(",") + fconf_ex_dirs.split(","))
-                    )
-                )
-            elif fconf_ex_dirs and not fconf_r_fs:
-                config["github"]["fconf_ex_directories"] = fconf_ex_dirs
+                config["github"][f'fconf_directories_{version_flag}'] = fconf_dirs
 
             sub_dir = f"{config['github']['sub_directory']}".strip()
             if sub_dir:
@@ -203,13 +198,13 @@ class ClashConfigMerger:
             try:
                 with open(file_path, "r", encoding="utf-8") as f:
                     content = f.read()
-                    logger.info(f"{ex_flag}成功读取本地文件: {file_path}")
+                    logger.info(f"成功读取本地文件: {file_path}")
                     return content
             except FileNotFoundError:
-                logger.error(f"{ex_flag}本地文件不存在: {file_path}")
+                logger.error(f"本地文件不存在: {file_path}")
                 return None
             except Exception as e:
-                logger.error(f"{ex_flag}读取本地文件失败 {file_path}: {e}")
+                logger.error(f"读取本地文件失败 {file_path}: {e}")
                 return None
         else:
             # GitHub模式：通过API获取
@@ -222,10 +217,10 @@ class ClashConfigMerger:
                         yaml_raw_content = response.text
                     except json.JSONDecodeError as e:
                         yaml_raw_content = None
-                        logger.error(f"{ex_flag}解析失败：不是合法的 JSON 格式: {e}")
+                        logger.error(f"解析失败：不是合法的 JSON 格式: {e}")
 
                     if yaml_raw_content:
-                        logger.info(f"{ex_flag}成功获取文件: {file_path}")
+                        logger.info(f"成功获取文件: {file_path}")
 
                     return yaml_raw_content
                 else:
@@ -236,17 +231,17 @@ class ClashConfigMerger:
 
                 if file_data["encoding"] == "base64":
                     content = base64.b64decode(file_data["content"]).decode("utf-8")
-                    logger.info(f"{ex_flag}成功获取文件: {file_path}")
+                    logger.info(f"成功获取文件: {file_path}")
                     return content
                 else:
-                    logger.error(f"{ex_flag}不支持的编码格式: {file_data['encoding']}")
+                    logger.error(f"不支持的编码格式: {file_data['encoding']}")
                     return None
 
             except requests.exceptions.RequestException as e:
-                logger.error(f"{ex_flag}获取文件失败 {file_path}: {e}")
+                logger.error(f"获取文件失败 {file_path}: {e}")
                 return None
             except Exception as e:
-                logger.error(f"{ex_flag}解析文件失败 {file_path}: {e}")
+                logger.error(f"解析文件失败 {file_path}: {e}")
                 return None
 
     def load_yaml_content(self, content: str) -> Optional[Dict[str, Any]]:
@@ -262,7 +257,7 @@ class ClashConfigMerger:
         try:
             return yaml.safe_load(content)
         except yaml.YAMLError as e:
-            logger.error(f"{ex_flag}YAML解析失败: {e}")
+            logger.error(f"YAML解析失败: {e}")
             return None
 
     def get_directory_files(self, directory_path: str) -> List[str]:
@@ -279,7 +274,7 @@ class ClashConfigMerger:
             # 本地模式：扫描本地目录
             try:
                 if not os.path.exists(directory_path):
-                    logger.warning(f"{ex_flag}本地目录不存在: {directory_path}")
+                    logger.warning(f"本地目录不存在: {directory_path}")
                     return []
 
                 file_paths = []
@@ -289,12 +284,12 @@ class ClashConfigMerger:
                         file_paths.append(file_path)
 
                 logger.info(
-                    f"{ex_flag}发现 {len(file_paths)} 个YAML文件在本地目录: {directory_path}"
+                    f"发现 {len(file_paths)} 个YAML文件在本地目录: {directory_path}"
                 )
                 return file_paths
 
             except Exception as e:
-                logger.error(f"{ex_flag}扫描本地目录失败 {directory_path}: {e}")
+                logger.error(f"扫描本地目录失败 {directory_path}: {e}")
                 return []
         else:
             # GitHub模式：通过API获取
@@ -313,12 +308,12 @@ class ClashConfigMerger:
                         file_paths.append(file_info["path"])
 
                 logger.info(
-                    f"{ex_flag}发现 {len(file_paths)} 个YAML文件在目录: {directory_path}"
+                    f"发现 {len(file_paths)} 个YAML文件在目录: {directory_path}"
                 )
                 return file_paths
 
             except requests.exceptions.RequestException as e:
-                logger.error(f"{ex_flag}获取目录文件列表失败 {directory_path}: {e}")
+                logger.error(f"获取目录文件列表失败 {directory_path}: {e}")
                 return []
 
     def merge_proxies(self, configs_with_sources: List[tuple]) -> List[Dict[str, Any]]:
@@ -353,7 +348,7 @@ class ClashConfigMerger:
                         seen_names.add(name)
                         merged_proxies.append(proxy)
 
-        logger.info(f"{ex_flag}合并了 {len(merged_proxies)} 个代理节点")
+        logger.info(f"合并了 {len(merged_proxies)} 个代理节点")
         return merged_proxies
 
     def merge_rules(self, rule_files: List[str]) -> List[str]:
@@ -374,12 +369,12 @@ class ClashConfigMerger:
             content = self.get_file_content(rule_file_path)
             if content:
                 rule_data = self.load_yaml_content(content)
-                logger.info(f"{ex_flag}规则文件 {rule_file_path}")
+                logger.info(f"规则文件 {rule_file_path}")
                 if rule_data and "payload" in rule_data:
                     rule_file_name = os.path.basename(rule_file_path).replace(
                         ".yaml", ""
                     )
-                    logger.info(f"{ex_flag}处理规则文件: {rule_file_name}")
+                    logger.info(f"处理规则文件: {rule_file_name}")
 
                     for rule in rule_data["payload"]:
                         if isinstance(rule, str) and rule not in seen_rules:
@@ -391,7 +386,7 @@ class ClashConfigMerger:
                                 merged_rules.append(formatted_rule)
                                 seen_rules.add(formatted_rule)
 
-        logger.info(f"{ex_flag}合并了 {len(merged_rules)} 条规则")
+        logger.info(f"合并了 {len(merged_rules)} 条规则")
         return merged_rules
 
     def create_proxy_groups(
@@ -467,7 +462,7 @@ class ClashConfigMerger:
                     }
                 )
 
-        logger.info(f"{ex_flag}创建了 {len(proxy_groups)} 个代理组")
+        logger.info(f"创建了 {len(proxy_groups)} 个代理组")
         return proxy_groups
 
     def create_base_config(self) -> Dict[str, Any]:
@@ -504,7 +499,7 @@ class ClashConfigMerger:
     def generate_merged_config(
         self,
         fconf_directories: List[str] = ["fconfs"],
-        sub_directory: str = "subs",
+        sub_directory: str = "proxies",
         rule_directory: str = "rules",
     ) -> Dict[str, Any]:
         """
@@ -519,7 +514,7 @@ class ClashConfigMerger:
             合并后的基础配置
         """
 
-        logger.info(f"{ex_flag}开始生成合并配置...")
+        logger.info(f"开始生成合并配置...")
 
         # 1. 创建基础配置
         merged_config = self.create_base_config()
@@ -533,7 +528,7 @@ class ClashConfigMerger:
                 else:
                     fconf_files.extend(self.get_directory_files(fconf_directory))
         if not fconf_files:
-            logger.warning(f"{ex_flag}未找到全量配置文件在目录: {fconf_directories}")
+            logger.warning(f"未找到全量配置文件在目录: {fconf_directories}")
 
         # 2.1.2 从全量配置文件列表加载所有全量配置
         configs_from_fconf_files: List[Dict[str, Any]] = []
@@ -545,7 +540,7 @@ class ClashConfigMerger:
                     configs_from_fconf_files.append((config))
 
         if not configs_from_fconf_files:
-            logger.error(f"{ex_flag}未能加载任何有效的全量配置文件")
+            logger.error(f"未能加载任何有效的全量配置文件")
             return {}
 
         # 2.1.3 合并全量配置
@@ -555,7 +550,7 @@ class ClashConfigMerger:
         # 2.2.1 获取订阅文件列表
         sub_files = self.get_directory_files(sub_directory)
         if not sub_files:
-            logger.warning(f"{ex_flag}未找到订阅文件在目录: {sub_directory}")
+            logger.warning(f"未找到订阅文件在目录: {sub_directory}")
 
         # 2.2.2 加载所有订阅配置
         configs_from_sub_files = []
@@ -567,7 +562,7 @@ class ClashConfigMerger:
                     configs_from_sub_files.append((config, file_path))
 
         if not configs_from_sub_files:
-            logger.error(f"{ex_flag}未能加载任何有效的订阅配置文件")
+            logger.error(f"未能加载任何有效的订阅配置文件")
             # return {}
 
         # 2.2.3 合并代理节点
@@ -583,7 +578,7 @@ class ClashConfigMerger:
         # 2.3.1 获取规则文件列表
         rule_files = self.get_directory_files(rule_directory)
         if not rule_files:
-            logger.warning(f"{ex_flag}未找到规则文件在目录: {rule_directory}")
+            logger.warning(f"未找到规则文件在目录: {rule_directory}")
 
         # 2.3.2 合并规则（只使用rule目录下的规则）
         merged_rules = self.merge_rules(rule_files)
@@ -600,9 +595,9 @@ class ClashConfigMerger:
                 if isinstance(proxy, dict) and "_source_file" in proxy:
                     del proxy["_source_file"]
         except Exception as e:
-            logger.error(f"{ex_flag}清理代理节点中的临时字段失败: {e}")
+            logger.error(f"清理代理节点中的临时字段失败: {e}")
 
-        logger.info(f"{ex_flag}配置合并完成")
+        logger.info(f"配置合并完成")
 
         return merged_config
 
@@ -645,11 +640,11 @@ class ClashConfigMerger:
                 # 确保写入UTF-8编码的内容
                 f.write(final_yaml_content)
 
-            logger.info(f"{ex_flag}配置文件已保存到: {output_path}")
+            logger.info(f"配置文件已保存到: {output_path}")
             return True
 
         except Exception as e:
-            logger.error(f"{ex_flag}保存配置文件失败: {e}")
+            logger.error(f"保存配置文件失败: {e}")
             return False
 
 
@@ -697,16 +692,16 @@ def merger_init() -> ClashConfigInitParams:
     local_mode = len(sys.argv) > 1 and sys.argv[1] == "--local"
 
     if local_mode:
-        logger.info(f"{ex_flag}🧪 本地测试模式")
+        logger.info(f"🧪 本地测试模式")
         # 本地模式配置
         merger = ClashConfigMerger(local_mode=True)
         output_dir = "output"
         fconf_dirs = ["fconfs"]
-        sub_dir = "subs"
+        sub_dir = "proxies"
         rule_dir = "rules"
         auth_token = "local-test"
     else:
-        logger.info(f"{ex_flag}☁️ GitHub模式")
+        logger.info(f"☁️ GitHub模式")
         # 从环境变量获取配置
         github_token = os.getenv("GITHUB_TOKEN")
         repo_owner = os.getenv("REPO_OWNER", "your-username")
@@ -714,13 +709,11 @@ def merger_init() -> ClashConfigInitParams:
         output_dir = os.getenv("OUTPUT_DIR", "docs")
         auth_token = os.getenv("AUTH_TOKEN", "default-token")
 
-        fconf_directories = settings_config["github"][
-            "fconf_ex_directories" if is_ex else "fconf_directories"
-        ]
+        fconf_directories = settings_config["github"][f'fconf_directories_{version_flag}']
         sub_directory = settings_config["github"]["sub_directory"]
         rule_directory = settings_config["github"]["rule_directory"]
 
-        fconf_dirs = ["fconfs_ex" if is_ex else "fconfs"]
+        fconf_dirs = ["fconfs"]
         if fconf_directories and isinstance(fconf_directories, str):
             if (
                 "," in fconf_directories
@@ -731,7 +724,7 @@ def merger_init() -> ClashConfigInitParams:
             else:
                 fconf_dirs = [fconf_directories.strip()]
 
-        sub_dir = "subs"
+        sub_dir = "proxies"
         if sub_directory:
             sub_dir = sub_directory.strip()
 
@@ -740,7 +733,7 @@ def merger_init() -> ClashConfigInitParams:
             rule_dir = rule_directory.strip()
 
         if not github_token:
-            logger.error(f"{ex_flag}未设置GITHUB_TOKEN环境变量")
+            logger.error(f"未设置GITHUB_TOKEN环境变量")
             sys.exit(1)
 
         # 创建合并器实例
@@ -770,11 +763,11 @@ def merger_gen_config():
     )
 
     if not merged_config:
-        logger.error(f"{ex_flag}生成配置失败")
+        logger.error(f"生成配置失败")
         sys.exit(1)
 
     # 使用token作为文件名的一部分进行认证
-    config_filename = f"{settings_config['output']['config_filename']}{ex_file_suffix}-{ida.auth_token}.yaml"
+    config_filename = f"{settings_config['output']['config_filename']}{version_file_suffix}-{ida.auth_token}.yaml"
     output_path = os.path.join(ida.output_dir, config_filename)
     if not ida.merger.save_config_to_file(merged_config, output_path):
         sys.exit(1)
@@ -802,11 +795,11 @@ def merger_gen_config():
             }
         )
     except Exception as e:
-        logger.error(f"{ex_flag}生成统计信息失败: {e}")
+        logger.error(f"生成统计信息失败: {e}")
 
     stats_path = os.path.join(
         ida.output_dir,
-        f"{settings_config['output']['stats_filename']}{ex_file_suffix}.json",
+        f"{settings_config['output']['stats_filename']}{version_file_suffix}.json",
     )
 
     try:
@@ -814,18 +807,18 @@ def merger_gen_config():
         with open(stats_path, "w", encoding="utf-8") as f:
             json.dump(stats, f, indent=2, ensure_ascii=False)
 
-        logger.info(f"{ex_flag}统计信息已保存到: {stats_path}")
+        logger.info(f"统计信息已保存到: {stats_path}")
     except Exception as e:
-        logger.warning(f"{ex_flag}保存统计信息失败: {e}")
+        logger.warning(f"保存统计信息失败: {e}")
 
     logger.info(
-        f"{ex_flag}✅ 任务完成! 代理节点: {stats['proxies_count']}, 规则: {stats['rules_count']}"
+        f"✅ 任务完成! 代理节点: {stats['proxies_count']}, 规则: {stats['rules_count']}"
     )
     logger.info(
-        f"{ex_flag}📁 配置文件: {'clash' + ex_file_suffix + '{your-token}' + '.yaml'}"
+        f"📁 配置文件: {'clash' + version_file_suffix + '{your-token}' + '.yaml'}"
     )
     if ida.local_mode:
-        logger.info(f"{ex_flag}📁 输出路径: {output_path}")
+        logger.info(f"📁 输出路径: {output_path}")
 
 
 def main():

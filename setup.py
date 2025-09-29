@@ -53,17 +53,23 @@ def setup_github_config():
     
     fconf_r_fs = input(f"远程订阅文件 [{config['github']['fconf_remote_files']}]: ").strip()
     
-    fconf_dirs = input(f"订阅文件目录 [{config['github']['fconf_directories']}]: ").strip()
-    if fconf_dirs and fconf_r_fs:
-        config['github']['fconf_directories'] = ','.join(list(dict.fromkeys(fconf_r_fs.split(',') + fconf_dirs.split(','))))
-    elif fconf_dirs and not fconf_r_fs:
-        config['github']['fconf_directories'] = fconf_dirs
+    fconf_dirs_1 = input(f"订阅文件目录 [{config['github']['fconf_directories_1']}]: ").strip()
+    if fconf_dirs_1 and fconf_r_fs:
+        config['github']['fconf_directories_1'] = ','.join(list(dict.fromkeys(fconf_r_fs.split(',') + fconf_dirs_1.split(','))))
+    elif fconf_dirs_1 and not fconf_r_fs:
+        config['github']['fconf_directories_1'] = fconf_dirs_1
     
-    fconf_ex_dirs = input(f"订阅文件目录 [{config['github']['fconf_ex_directories']}]: ").strip()
-    if fconf_ex_dirs and fconf_r_fs:
-        config['github']['fconf_ex_directories'] = ','.join(list(dict.fromkeys(fconf_r_fs.split(',') + fconf_ex_dirs.split(','))))
-    elif fconf_ex_dirs and not fconf_r_fs:
-        config['github']['fconf_ex_directories'] = fconf_ex_dirs
+    fconf_dirs_2 = input(f"订阅文件目录 [{config['github']['fconf_directories_2']}]: ").strip()
+    if fconf_dirs_2 and fconf_r_fs:
+        config['github']['fconf_directories_2'] = ','.join(list(dict.fromkeys(fconf_r_fs.split(',') + fconf_dirs_2.split(','))))
+    elif fconf_dirs_2 and not fconf_r_fs:
+        config['github']['fconf_directories_2'] = fconf_dirs_2
+
+    fconf_dirs_3 = input(f"订阅文件目录 [{config['github']['fconf_directories_3']}]: ").strip()
+    if fconf_dirs_3 and fconf_r_fs:
+        config['github']['fconf_directories_3'] = ','.join(list(dict.fromkeys(fconf_r_fs.split(',') + fconf_dirs_3.split(','))))
+    elif fconf_dirs_3 and not fconf_r_fs:
+        config['github']['fconf_directories_3'] = fconf_dirs_3
     
     sub_dir = input(f"订阅文件目录 [{config['github']['sub_directory']}]: ").strip()
     if sub_dir:
@@ -157,8 +163,8 @@ def show_next_steps():
     
     steps = [
         "1. 创建GitHub私有仓库存放您的Clash配置文件",
-        "2. 在私有仓库中创建 subs/ 和 rules/ 目录",
-        "3. 将您的订阅文件放入 subs/ 目录",
+        "2. 在私有仓库中创建 proxies/ 和 rules/ 目录",
+        "3. 将您的订阅文件放入 proxies/ 目录",
         "4. 将您的规则文件放入 rules/ 目录",
         "5. 获取GitHub Personal Access Token（需要repo权限）",
         "6. 在当前仓库设置中添加上述GitHub Secrets",

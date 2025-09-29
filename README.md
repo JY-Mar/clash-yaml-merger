@@ -36,7 +36,7 @@
    ```
    your-private-repo/
    ├── Clash/                       # Clash文件
-   │   ├── subs/                    # 订阅文件目录
+   │   ├── proxies/                    # 订阅文件目录
    │   │   ├── provider1.yaml
    │   │   ├── provider2.yaml
    │   │   └── provider3.yaml

@@ -9,11 +9,13 @@ github:
   # 远程全量配置文件，支持多个远程公开仓库的yaml文件，以“,”符号分隔
   fconf_remote_files: 'https://raw.githubusercontent.com/JY-Mar/scat-proxy/refs/heads/main/Clash/kelee.yaml'
   # 全量配置文件目录，支持多个目录或远程公开仓库的yaml文件，以“,”符号分隔
-  fconf_directories: 'Clash/fconfs'
-  # 全量配置文件目录ex，支持多个目录或远程公开仓库的yaml文件，以“,”符号分隔
-  fconf_ex_directories: 'Clash/fconfs-ex'
+  fconf_directories_1: 'Clash/fconfs/Ash'
+  # 全量配置文件目录2，支持多个目录或远程公开仓库的yaml文件，以“,”符号分隔
+  fconf_directories_2: 'Clash/fconfs/CornSS'
+  # 全量配置文件目录3，支持多个目录或远程公开仓库的yaml文件，以“,”符号分隔
+  fconf_directories_3: 'Clash/fconfs/others'
   # 订阅文件目录
-  sub_directory: 'Clash/subs'
+  sub_directory: 'Clash/proxies'
   # 规则文件目录
   rule_directory: 'Clash/rules'
 
