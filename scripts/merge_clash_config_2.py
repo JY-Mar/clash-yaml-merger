@@ -805,7 +805,7 @@ def merger_gen_config():
         logger.warning(f"保存统计信息失败: {e}")
 
     logger.info(
-        f"✅ 任务完成! 代理节点: {stats['proxies_count']}, 规则: {stats['rules_count']}"
+        f"✅ 任务完成! 代理集: {stats['proxy_providers_count']}, 代理节点: {stats['proxies_count']}, 规则: {stats['rules_count']}"
     )
     logger.info(
         f"📁 配置文件: {'clash' + version_file_suffix + '-{your-token}' + '.yaml'}"
