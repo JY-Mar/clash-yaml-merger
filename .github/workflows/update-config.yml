@@ -83,52 +83,35 @@ jobs:
           export PYTHONIOENCODING=utf-8
           export PYTHONUTF8=1
           python -c "import sys; print('Python encoding:', sys.stdout.encoding)"
+          
+          PY_FILE="scripts/merge_clash_config.py"
+          NEW_PARAMS=("Ash,1", "CornSS,2", "others,3")
+
           echo "=== ↓↓↓ 开始执行 ↓↓↓ ==="
-          python scripts/merge_clash_config.py
-          echo "=== 执行完成 1 / 3 ==="
-          python scripts/merge_clash_config_2.py
-          echo "=== 执行完成 2 / 3 ==="
-          python scripts/merge_clash_config_3.py
-          echo "=== 执行完成 3 / 3 ==="
+          for ((i=1; i<${#NEW_PARAMS[@]}+1; i++)); do
+            sed -i "1s|.*|CLASS_HEADER = \"${NEW_PARAMS[$i]}\"|" "$PY_FILE"
+            python "$PY_FILE"
+            echo "=== 执行完成 $i / ${#NEW_PARAMS[@]} ==="
+          done
           echo "=== ↑↑↑ 执行完毕 ↑↑↑ ==="
-          echo ""
 
           # 验证生成的文件编码
           echo "=== ↓↓↓ 检查生成的文件 ↓↓↓ ==="
           ls -la docs/
-
-          CONFIG_FILE_Ash="docs/clash-Ash-${AUTH_TOKEN}.yaml"
-          if [ -f "$CONFIG_FILE_Ash" ]; then
-            file "$CONFIG_FILE_Ash"
-            head -3 "$CONFIG_FILE_Ash"
-            echo "配置文件生成成功: $CONFIG_FILE_Ash"
-          else
-            echo "错误: 配置文件 $CONFIG_FILE_Ash 未生成"
-            exit 1
-          fi
-          echo "=== 检查进度 1 / 3 ==="
-
-          CONFIG_FILE_CornSS="docs/clash-CornSS-${AUTH_TOKEN}.yaml"
-          if [ -f "$CONFIG_FILE_CornSS" ]; then
-            file "$CONFIG_FILE_CornSS"
-            head -3 "$CONFIG_FILE_CornSS"
-            echo "配置文件生成成功: $CONFIG_FILE_CornSS"
-          else
-            echo "错误: 配置文件 $CONFIG_FILE_CornSS 未生成"
-            exit 1
-          fi
-          echo "=== 检查进度 2 / 3 ==="
-
-          CONFIG_FILE_others="docs/clash-others-${AUTH_TOKEN}.yaml"
-          if [ -f "$CONFIG_FILE_others" ]; then
-            file "$CONFIG_FILE_others"
-            head -3 "$CONFIG_FILE_others"
-            echo "配置文件生成成功: $CONFIG_FILE_others"
-          else
-            echo "错误: 配置文件 $CONFIG_FILE_others 未生成"
-            exit 1
-          fi
-          echo "=== 检查进度 3 / 3 ==="
+          for ((i=1; i<${#NEW_PARAMS[@]}+1; i++)); do
+            temp=${NEW_PARAMS[$i]}
+            name=${temp%%,*}
+            CONFIG_FILE="docs/clash-${name}-${AUTH_TOKEN}.yaml"
+            if [ -f "$CONFIG_FILE" ]; then
+              file "$CONFIG_FILE"
+              head -3 "$CONFIG_FILE"
+              echo "配置文件生成成功: $CONFIG_FILE"
+            else
+              echo "错误: 配置文件 $CONFIG_FILE 未生成"
+              exit 1
+            fi
+            echo "=== 检查进度 $i / ${#NEW_PARAMS[@]} ==="
+          done
           echo "=== ↑↑↑ 文件生成检查完毕 ↑↑↑ ==="
 
       - name: Generate index page with authentication
