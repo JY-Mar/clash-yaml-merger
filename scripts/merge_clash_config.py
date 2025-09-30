@@ -47,6 +47,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 CLASS_HEADER = os.getenv("CLASS_HEADER", "Ash,1")
+logger.info(f"CLASS_HEADER: {CLASS_HEADER}")
 if re.fullmatch(r"^[a-zA-Z0-9]+,[0-9]+$", CLASS_HEADER) is None:
     print(f"❌ CLASS_HEADER 设置错误: {CLASS_HEADER}")
     sys.exit(1)
