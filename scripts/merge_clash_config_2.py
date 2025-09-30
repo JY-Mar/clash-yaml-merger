@@ -49,10 +49,11 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+CLASS_HEADER_split = CLASS_HEADER.strip().split(",")
 # 版本
-CLASS = CLASS_HEADER.strip().split(";")[0]
+CLASS = CLASS_HEADER_split[0]
 # 版本号
-CLASS_NUM = int(CLASS_HEADER.strip().split(";")[1])
+CLASS_NUM = int(CLASS_HEADER_split[1])
 # 版本文件后缀
 CLASS_SUFFIX = f"-{CLASS}"
 
