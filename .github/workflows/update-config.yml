@@ -3,13 +3,13 @@ name: Update Clash Config
 on:
   # 定时触发 - 每天的 0 点、8 点、16 点 各执行一次任务
   schedule:
-    - cron: '0 0,8,16 * * *'
+    - cron: "0 0,8,16 * * *"
 
   # 手动触发
   workflow_dispatch:
     inputs:
       force_update:
-        description: '强制更新配置'
+        description: "强制更新配置"
         required: false
         default: false
         type: boolean
@@ -17,9 +17,9 @@ on:
   # 当脚本文件更新时触发
   push:
     paths:
-      - 'scripts/**'
-      - '.github/workflows/update-config.yml'
-      - 'config/**'
+      - "scripts/**"
+      - ".github/workflows/update-config.yml"
+      - "config/**"
 
 # 设置权限
 permissions:
@@ -29,7 +29,7 @@ permissions:
 
 # 确保只有一个部署任务同时运行
 concurrency:
-  group: 'pages'
+  group: "pages"
   cancel-in-progress: false
 
 jobs:
@@ -45,8 +45,8 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.11'
-          cache: 'pip'
+          python-version: "3.11"
+          cache: "pip"
 
       - name: Set up locale and encoding
         run: |
@@ -67,7 +67,7 @@ jobs:
         run: |
           mkdir -p docs
 
-      - name: 'Generate merged config'
+      - name: "Generate merged config"
         env:
           GITHUB_TOKEN: ${{ secrets.CLASH_GITHUB_TOKEN }}
           REPO_OWNER: ${{ secrets.CLASH_REPO_OWNER }}
@@ -83,9 +83,9 @@ jobs:
           export PYTHONIOENCODING=utf-8
           export PYTHONUTF8=1
           python -c "import sys; print('Python encoding:', sys.stdout.encoding)"
-          
+
           PY_FILE="scripts/merge_clash_config.py"
-          
+
           python "$PY_FILE"
 
           # 验证生成的文件编码
@@ -196,57 +196,64 @@ jobs:
                           <li>访问配置需要正确的认证参数</li>
                       </ul>
                   </div>
-                  
-                  <div class="config-info">
-                      <h3>📊 配置统计 Ash</h3>
-                      <div id="stats-Ash">加载中...</div>
-                  </div>
-
-                  <div class="success">
-                      <h3>📋 使用方法</h3>
-                      <p>在 Clash 客户端中添加以下订阅链接：</p>
-                      <div class="url-box" id="config-url">
-                          https://jy-mar.github.io/clash-yaml-merger/clash-Ash-{your-token}.yaml
-                      </div>
-                      <p><small>请将 {your-token} 替换为您的实际token</small></p>
-                  </div>
-
-                  <div class="config-info">
-                      <h3>📊 配置统计 CornSS</h3>
-                      <div id="stats-CornSS">加载中...</div>
-                  </div>
-                  
-                  <div class="success">
-                      <h3>📋 使用方法</h3>
-                      <p>在 Clash 客户端中添加以下订阅链接：</p>
-                      <div class="url-box" id="config-ex-url">
-                          https://jy-mar.github.io/clash-yaml-merger/clash-CornSS-{your-token}.yaml
-                      </div>
-                      <p><small>请将 {your-token} 替换为您的实际token</small></p>
-                  </div>
-
-                  <div class="config-info">
-                      <h3>📊 配置统计 other(STC/iKuuu/bestbus)</h3>
-                      <div id="stats-others">加载中...</div>
-                  </div>
-                  
-                  <div class="success">
-                      <h3>📋 使用方法</h3>
-                      <p>在 Clash 客户端中添加以下订阅链接：</p>
-                      <div class="url-box" id="config-ex-url">
-                          https://jy-mar.github.io/clash-yaml-merger/clash-others-{your-token}.yaml
-                      </div>
-                      <p><small>请将 {your-token} 替换为您的实际token</small></p>
-                  </div>
               </div>
               
               <script>
                   const class_names = [
-                    { label: 'Ash' }
-                    { label: 'CornSS' }
+                    { label: 'Ash' },
+                    { label: 'CornSS' },
                     { label: 'others', remark: 'STC/iKuuu/bestbus' }
                   ];
-                  
+                  class_names.forEach((class_name) => {
+                      const dom = document.querySelector('.config-info.' + class_name.label);
+                      if (!dom) {
+                          return;
+                      }
+                      // 创建配置统计区域
+                      const configInfo = document.createElement('div');
+                      configInfo.className = "config-info " + class_name.label;
+
+                      const title1 = document.createElement("h3");
+                      title1.textContent = "📊 配置统计 " + class_name.label + (class_name.remark ? "(" + class_name.remark + ")" : "");
+
+                      const stats = document.createElement("div");
+                      stats.id = "stats-" + class_name.label;
+                      stats.textContent = "加载中...";
+
+                      configInfo.appendChild(title1);
+                      configInfo.appendChild(stats);
+
+                      // 创建使用方法区域
+                      const successBox = document.createElement("div");
+                      successBox.className = "success";
+
+                      const title2 = document.createElement("h3");
+                      title2.textContent = "📋 使用方法";
+
+                      const desc = document.createElement("p");
+                      desc.textContent = "在 Clash 客户端中添加以下订阅链接：";
+
+                      const urlBox = document.createElement("div");
+                      urlBox.className = "url-box";
+                      urlBox.id = "config-url";
+                      urlBox.textContent = "https://jy-mar.github.io/clash-yaml-merger/clash-" + class_name.label + "-{your-token}.yaml";
+
+                      const tip = document.createElement("p");
+                      const small = document.createElement("small");
+                      small.textContent = "请将 {your-token} 替换为您的实际token";
+                      tip.appendChild(small);
+
+                      // 添加所有元素到 successBox
+                      successBox.appendChild(title2);
+                      successBox.appendChild(desc);
+                      successBox.appendChild(urlBox);
+                      successBox.appendChild(tip);
+
+                      // 添加到页面
+                      const container = document.querySelector('.container');
+                      container.appendChild(configInfo);
+                      container.appendChild(successBox);
+                  });
                   // 加载统计信息
                   function fetchStats(class_name) {
                     fetch('stats' + class_name + '.json')
@@ -283,8 +290,19 @@ jobs:
                           document.getElementById('stats' + class_name).innerHTML = '<p style="color: red;">加载统计信息失败</p>';
                       });
                   }
+                  const intervals = Object.fromEntries(class_names.map((class_name) => [class_name.label, undefined]));
                   class_names.forEach((class_name) => {
-                      fetchStats('-' + class_name.label)
+                      if (intervals[class_name.label] !== undefined && intervals[class_name.label] !== null) {
+                        clearInterval(intervals[class_name.label]);
+                        intervals[class_name.label] = undefined;
+                      };
+                      intervals[class_name.label] = setInterval(() => {
+                        if (document.getElementById('stats' + class_name.label)) {
+                          fetchStats('-' + class_name.label)
+                          clearInterval(intervals[class_name.label]);
+                          intervals[class_name.label] = undefined;
+                        }
+                      }, 70);
                   })
               </script>
           </body>
