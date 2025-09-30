@@ -90,8 +90,7 @@ jobs:
 
           echo "=== ↓↓↓ 开始执行 ↓↓↓ ==="
           for ((i=0; i<len; i++)); do
-            sed -i "1s|.*|CLASS_HEADER = \"${NEW_PARAMS[$i]}\"|" "$PY_FILE"
-            python "$PY_FILE"
+            CLASS_HEADER=${NEW_PARAMS[$i]} python "$PY_FILE"
             echo "=== 执行完成 $i+1 / len ==="
           done
           echo "=== ↑↑↑ 执行完毕 ↑↑↑ ==="
@@ -100,9 +99,9 @@ jobs:
           echo "=== ↓↓↓ 检查生成的文件 ↓↓↓ ==="
           ls -la docs/
           for ((i=0; i<len; i++)); do
-            temp=${NEW_PARAMS[$i]}
-            temp_name=${temp%%,*}
-            CONFIG_FILE="docs/clash-${temp_name}-${AUTH_TOKEN}.yaml"
+            CLASS_HEADER=${NEW_PARAMS[$i]}
+            CLASS_HEADER_FIRST=${CLASS_HEADER%%,*}
+            CONFIG_FILE="docs/clash-${CLASS_HEADER_FIRST}-${AUTH_TOKEN}.yaml"
             if [ -f "$CONFIG_FILE" ]; then
               file "$CONFIG_FILE"
               head -3 "$CONFIG_FILE"
