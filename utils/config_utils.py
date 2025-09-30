@@ -31,7 +31,7 @@ def simple_save_config(config: Dict[str, Any]) -> None:
         print(f"❌ 保存配置失败: {e}")
 
 
-def load_config(flag: int = 1) -> Dict[str, Any]:
+def load_config() -> Dict[str, Any]:
     """加载配置文件"""
     config_path = "config/settings.yaml"
     try:
@@ -45,15 +45,13 @@ def load_config(flag: int = 1) -> Dict[str, Any]:
             if repo:
                 config["github"]["repository"] = repo
 
-            fconfs_r_yaml = f"{config['github']['fconfs_remote_yaml']}".strip()
+            fconfs_yamls = f"{config['github']['fconfs_remote_yamls']}".strip()
+            if fconfs_yamls:
+                config["github"]["fconfs_remote_yamls"] = fconfs_yamls
 
-            fconf_dirs = f"{config['github'][f'fconfs_directories_{flag}']}".strip()
-            if fconf_dirs and fconfs_r_yaml:
-                config["github"][f"fconfs_directories_{flag}"] = ",".join(
-                    list(dict.fromkeys(fconfs_r_yaml.split(",") + fconf_dirs.split(",")))
-                )
-            elif fconf_dirs and not fconfs_r_yaml:
-                config["github"][f"fconfs_directories_{flag}"] = fconf_dirs
+            fconfs_dirs = f"{config['github']['fconfs_directories']}".strip()
+            if fconfs_dirs:
+                config["github"]["fconfs_directories"] = fconfs_dirs
 
             proxies_dir = f"{config['github']['proxies_directory']}".strip()
             if proxies_dir:
@@ -70,6 +68,7 @@ def load_config(flag: int = 1) -> Dict[str, Any]:
     except yaml.YAMLError as e:
         print(f"❌ 配置文件格式错误: {e}")
         sys.exit(1)
+
 
 # 远程YAML文件正则表达式
 REMOTE_YAML_PATTERN = r"^https:\/\/.+\.yaml$"

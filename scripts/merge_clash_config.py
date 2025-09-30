@@ -23,6 +23,8 @@ sys.path.insert(0, root_dir)
 
 from utils.config_utils import load_config, REMOTE_YAML_PATTERN
 from utils.merge_utils import deep_merge
+from utils.string_utils import FCONFS_DIR_PATTERN, cut_fonfs_name, split_str_to_2d_array
+from utils.array_utils import unshift_to_array
 
 # 设置默认编码
 import codecs
@@ -54,11 +56,9 @@ if re.fullmatch(r"^[a-zA-Z0-9]+,[0-9]+$", CLASS_HEADER) is None:
 CLASS = CLASS_HEADER.strip().split(",")[0]
 # 版本号
 CLASS_NUM = int(CLASS_HEADER.strip().split(",")[1])
-# 版本文件后缀
-CLASS_SUFFIX = f"-{CLASS}"
 
 # settings.yaml 配置
-settings_config = load_config(CLASS_NUM)
+settings_config = load_config()
 
 
 class ClashConfigMerger:
@@ -561,7 +561,8 @@ class ClashConfigInitParams:
         merger: ClashConfigMerger | None = None,
         auth_token: str = "",
         output_dir: str = "",
-        fconf_dirs: list[str] = [],
+        fconfs_dirs: List[List[str]] = [],
+        fconfs_filenames: List[str] = [],
         proxies_dir: str = "",
         rules_dir: str = "",
     ):
@@ -573,14 +574,16 @@ class ClashConfigInitParams:
             merger: Clash配置合并对象
             auth_token: 用户鉴权令牌
             output_dir: 输出目录
-            fconf_dirs: 全量配置目录列表
+            fconfs_dirs: 全量配置目录列表
+            fconfs_filenames: 生成配置文件名列表
             proxies_dir: 订阅目录
             rules_dir: 规则目录
         """
         self.local_mode = local_mode
         self.merger = merger
         self.output_dir = output_dir
-        self.fconf_dirs = fconf_dirs
+        self.fconfs_dirs = fconfs_dirs
+        self.fconfs_filenames = fconfs_filenames
         self.proxies_dir = proxies_dir
         self.rules_dir = rules_dir
         self.auth_token = auth_token
@@ -588,7 +591,7 @@ class ClashConfigInitParams:
 
 def merger_init() -> ClashConfigInitParams:
     """
-    初始化merger、output_dir、fconf_dirs、proxies_dir、rule_dir、auth_token等重要参数
+    初始化merger、output_dir、fconfs_dirs、fconfs_filenames、proxies_dir、rule_dir、auth_token等重要参数
 
     Returns:
         初始化参数对象
@@ -597,14 +600,16 @@ def merger_init() -> ClashConfigInitParams:
     # 检查是否为本地测试模式
     local_mode = len(sys.argv) > 1 and sys.argv[1] == "--local"
 
+    fconfs_dirs = [["fconfs"]]
+    fconfs_filenames = ["filename"]
+    proxies_dir = "proxies"
+    rules_dir = "rules"
+
     if local_mode:
         logger.info(f"🧪 本地测试模式")
         # 本地模式配置
         merger = ClashConfigMerger(local_mode=True)
         output_dir = "output"
-        fconf_dirs = ["fconfs"]
-        proxies_dir = "proxies"
-        rules_dir = "rules"
         auth_token = "local-test"
     else:
         logger.info(f"☁️ GitHub模式")
@@ -615,29 +620,27 @@ def merger_init() -> ClashConfigInitParams:
         output_dir = os.getenv("OUTPUT_DIR", "docs")
         auth_token = os.getenv("AUTH_TOKEN", "default-token")
 
-        fconfs_directories = settings_config["github"][
-            f"fconfs_directories_{CLASS_NUM}"
-        ]
+        fconfs_remote_yamls = settings_config["github"]["fconfs_remote_yamls"]
+        fconfs_directories = settings_config["github"]["fconfs_directories"]
         proxies_directory = settings_config["github"]["proxies_directory"]
         rules_directory = settings_config["github"]["rules_directory"]
 
-        fconf_dirs = ["fconfs"]
-        if fconfs_directories and isinstance(fconfs_directories, str):
-            if (
-                "," in fconfs_directories
-                and not fconfs_directories.startswith(",")
-                and not fconfs_directories.endswith(",")
-            ):
-                fconf_dirs = list(map(str.strip, fconfs_directories.split(",")))
-            else:
-                fconf_dirs = [fconfs_directories.strip()]
+        fconfs_yamls = ""
+        if fconfs_remote_yamls and isinstance(fconfs_remote_yamls, str):
+            fconfs_yamls = fconfs_remote_yamls.strip()
 
-        proxies_dir = "proxies"
-        if proxies_directory:
+        if fconfs_directories and isinstance(fconfs_directories, str):
+            f_d_list = split_str_to_2d_array(
+                re.sub(FCONFS_DIR_PATTERN, r"\2", fconfs_directories)
+            )
+            # 获取文件名，默认取“name|。。。”的name值，否则取第一个目录名
+            fconfs_filenames = list(map(lambda f_d: cut_fonfs_name(f_d), f_d_list))
+            fconfs_dirs = unshift_to_array(f_d_list, fconfs_yamls)
+
+        if proxies_directory and isinstance(proxies_directory, str):
             proxies_dir = proxies_directory.strip()
 
-        rules_dir = "rules"
-        if rules_directory:
+        if rules_directory and isinstance(rules_directory, str):
             rules_dir = rules_directory.strip()
 
         if not github_token:
@@ -653,7 +656,8 @@ def merger_init() -> ClashConfigInitParams:
         local_mode=local_mode,
         merger=merger,
         output_dir=output_dir,
-        fconf_dirs=fconf_dirs,
+        fconfs_dirs=fconfs_dirs,
+        fconfs_filenames=fconfs_filenames,
         proxies_dir=proxies_dir,
         rules_dir=rules_dir,
         auth_token=auth_token,
@@ -666,71 +670,79 @@ def merger_gen_config():
     """
 
     ida = merger_init()
-    merged_config = (
-        ida.merger.generate_merged_config(
-            ida.fconf_dirs, ida.proxies_dir, ida.rules_dir
-        )
-        if ida.merger
-        else {}
-    )
+    merged_configs: Dict[str, Dict[str, Any]] = {}
+    if ida.merger is not None and ida.fconfs_dirs and isinstance(ida.fconfs_dirs, list) and ida.fconfs_filenames and isinstance(ida.fconfs_filenames, list) and len(ida.fconfs_dirs) == len(ida.fconfs_filenames):
+        _merger = ida.merger
+        for i, dirs in enumerate(ida.fconfs_dirs):
+            merged_configs[ida.fconfs_filenames[i]] = _merger.generate_merged_config(
+                dirs, ida.proxies_dir, ida.rules_dir
+            )
+    else:
+        merged_configs = {}
 
-    if not merged_config:
+    if not merged_configs:
         logger.error(f"生成配置失败")
         sys.exit(1)
 
-    # 使用token作为文件名的一部分进行认证
-    config_filename = f"{settings_config['output']['config_filename']}{CLASS_SUFFIX}-{ida.auth_token}.yaml"
-    output_path = os.path.join(ida.output_dir, config_filename)
-    if not ida.merger or (
-        ida.merger and not ida.merger.save_config_to_file(merged_config, output_path)
-    ):
-        sys.exit(1)
+    for filename, merged_config in merged_configs.items():
+        if filename and merged_config:
+            final_filename = f"-{filename}"
+            # 使用token作为文件名的一部分进行认证
+            config_filename = f"{settings_config['output']['config_filename']}{final_filename}-{ida.auth_token}.yaml"
+            output_path = os.path.join(ida.output_dir, config_filename)
+            if not ida.merger or (
+                ida.merger
+                and not ida.merger.save_config_to_file(merged_config, output_path)
+            ):
+                sys.exit(1)
 
-    # 生成统计信息
-    now_date_formatted = datetime.now(timezone.utc).isoformat()
-    stats = {
-        "generated_at": now_date_formatted,
-        "proxy_providers_count": 0,
-        "proxies_count": 0,
-        "proxy_groups_count": 0,
-        "rules_count": 0,
-    }
-    try:
-        proxy_providers_count = len(merged_config.get("proxy-providers", {}))
-        proxies_count = len(merged_config.get("proxies", {}))
-        proxy_groups_count = len(merged_config.get("proxy-groups", {}))
-        rules_count = len(merged_config.get("rules", {}))
-        stats.update(
-            {
-                "proxy_providers_count": proxy_providers_count,
-                "proxies_count": proxies_count,
-                "proxy_groups_count": proxy_groups_count,
-                "rules_count": rules_count,
+            # 生成统计信息
+            now_date_formatted = datetime.now(timezone.utc).isoformat()
+            stats = {
+                "generated_at": now_date_formatted,
+                "proxy_providers_count": 0,
+                "proxies_count": 0,
+                "proxy_groups_count": 0,
+                "rules_count": 0,
             }
-        )
-    except Exception as e:
-        logger.error(f"生成统计信息失败: {e}")
+            try:
+                proxy_providers_count = len(merged_config.get("proxy-providers", {}))
+                proxies_count = len(merged_config.get("proxies", {}))
+                proxy_groups_count = len(merged_config.get("proxy-groups", {}))
+                rules_count = len(merged_config.get("rules", {}))
+                stats.update(
+                    {
+                        "proxy_providers_count": proxy_providers_count,
+                        "proxies_count": proxies_count,
+                        "proxy_groups_count": proxy_groups_count,
+                        "rules_count": rules_count,
+                    }
+                )
+            except Exception as e:
+                logger.error(f"生成统计信息失败: {e}")
 
-    stats_path = os.path.join(
-        ida.output_dir,
-        f"{settings_config['output']['stats_filename']}{CLASS_SUFFIX}.json",
-    )
+            stats_path = os.path.join(
+                ida.output_dir,
+                f"{settings_config['output']['stats_filename']}{final_filename}.json",
+            )
 
-    try:
-        os.makedirs(ida.output_dir, exist_ok=True)
-        with open(stats_path, "w", encoding="utf-8") as f:
-            json.dump(stats, f, indent=2, ensure_ascii=False)
+            try:
+                os.makedirs(ida.output_dir, exist_ok=True)
+                with open(stats_path, "w", encoding="utf-8") as f:
+                    json.dump(stats, f, indent=2, ensure_ascii=False)
 
-        logger.info(f"统计信息已保存到: {stats_path}")
-    except Exception as e:
-        logger.warning(f"保存统计信息失败: {e}")
+                logger.info(f"统计信息已保存到: {stats_path}")
+            except Exception as e:
+                logger.warning(f"保存统计信息失败: {e}")
 
-    logger.info(
-        f"✅ 任务完成! 代理集: {stats['proxy_providers_count']}, 代理节点: {stats['proxies_count']}, 规则: {stats['rules_count']}"
-    )
-    logger.info(f"📁 配置文件: {'clash' + CLASS_SUFFIX + '-{your-token}' + '.yaml'}")
-    if ida.local_mode:
-        logger.info(f"📁 输出路径: {output_path}")
+            logger.info(
+                f"✅ 任务完成! 代理集: {stats['proxy_providers_count']}, 代理节点: {stats['proxies_count']}, 规则: {stats['rules_count']}"
+            )
+            logger.info(
+                f"📁 配置文件: {settings_config['output']['config_filename']}{final_filename}-{'your-token'}.yaml"
+            )
+            if ida.local_mode:
+                logger.info(f"📁 输出路径: {output_path}")
 
 
 def main():

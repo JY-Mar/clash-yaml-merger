@@ -29,41 +29,21 @@ def setup_github_config():
     if repo:
         config["github"]["repository"] = repo
 
-    fconfs_r_yaml = input(
-        f"远程订阅文件 [{config['github']['fconfs_remote_yaml']}]: "
+    fconfs_yamls = input(
+        f"远程完整配置文件 [{config['github']['fconfs_remote_yamls']}]: "
     ).strip()
+    if fconfs_yamls:
+        config["github"]["fconfs_remote_yamls"] = fconfs_yamls
 
-    fconfs_dirs_1 = input(
-        f"订阅文件目录 [{config['github']['fconfs_directories_1']}]: "
+    fconfs_dirs = input(
+        f"完整配置文件目录 [{config['github']['fconfs_directories']}]: "
     ).strip()
-    if fconfs_dirs_1 and fconfs_r_yaml:
-        config["github"]["fconfs_directories_1"] = ",".join(
-            list(dict.fromkeys(fconfs_r_yaml.split(",") + fconfs_dirs_1.split(",")))
-        )
-    elif fconfs_dirs_1 and not fconfs_r_yaml:
-        config["github"]["fconfs_directories_1"] = fconfs_dirs_1
+    if fconfs_dirs:
+        config["github"]["fconfs_directories"] = fconfs_dirs
 
-    fconfs_dirs_2 = input(
-        f"订阅文件目录 [{config['github']['fconfs_directories_2']}]: "
+    proxies_dir = input(
+        f"订阅节点文件目录 [{config['github']['proxies_directory']}]: "
     ).strip()
-    if fconfs_dirs_2 and fconfs_r_yaml:
-        config["github"]["fconfs_directories_2"] = ",".join(
-            list(dict.fromkeys(fconfs_r_yaml.split(",") + fconfs_dirs_2.split(",")))
-        )
-    elif fconfs_dirs_2 and not fconfs_r_yaml:
-        config["github"]["fconfs_directories_2"] = fconfs_dirs_2
-
-    fconfs_dirs_3 = input(
-        f"订阅文件目录 [{config['github']['fconfs_directories_3']}]: "
-    ).strip()
-    if fconfs_dirs_3 and fconfs_r_yaml:
-        config["github"]["fconfs_directories_3"] = ",".join(
-            list(dict.fromkeys(fconfs_r_yaml.split(",") + fconfs_dirs_3.split(",")))
-        )
-    elif fconfs_dirs_3 and not fconfs_r_yaml:
-        config["github"]["fconfs_directories_3"] = fconfs_dirs_3
-
-    proxies_dir = input(f"订阅文件目录 [{config['github']['proxies_directory']}]: ").strip()
     if proxies_dir:
         config["github"]["proxies_directory"] = proxies_dir
 

@@ -7,7 +7,10 @@ github:
   # 私有仓库名称
   repository: 'clash-config'
   # 远程全量配置文件，支持多个远程公开仓库的yaml文件，以“,”符号分隔
-  fconfs_remote_yaml: 'https://raw.githubusercontent.com/JY-Mar/scat-proxy/refs/heads/main/Clash/kelee.yaml'
+  fconfs_remote_yamls: 'https://raw.githubusercontent.com/JY-Mar/scat-proxy/refs/heads/main/Clash/kelee.yaml'
+  # 全量配置文件目录，支持以“;”符号分隔生成多个文件，支持以“,”符号分隔多个目录或远程公开仓库的yaml文件合并为一个文件
+  # 格式：<生成文件名>|<合并配置1>,<合并配置2>...;<生成文件名>|<合并配置1>,<合并配置2>...
+  fconfs_directories: 'Ash|Clash/fconfs/Ash;CornSS|Clash/fconfs/CornSS;others|Clash/fconfs/others'
   # 全量配置文件目录，支持多个目录或远程公开仓库的yaml文件，以“,”符号分隔
   fconfs_directories_1: 'Clash/fconfs/Ash'
   # 全量配置文件目录2，支持多个目录或远程公开仓库的yaml文件，以“,”符号分隔
