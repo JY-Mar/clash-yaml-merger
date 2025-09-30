@@ -91,7 +91,7 @@ jobs:
           echo "=== ↓↓↓ 开始执行 ↓↓↓ ==="
           for ((i=0; i<len; i++)); do
             CLASS_HEADER="${NEW_PARAMS[$i]}" python "$PY_FILE"
-            echo "=== 执行完成 $((i+1)) / len ==="
+            echo "=== 执行完成 $((i+1)) / $(len) ==="
           done
           echo "=== ↑↑↑ 执行完毕 ↑↑↑ ==="
 
@@ -110,7 +110,7 @@ jobs:
               echo "错误: 配置文件 $CONFIG_FILE 未生成"
               exit 1
             fi
-            echo "=== 检查进度 $((i+1)) / len ==="
+            echo "=== 检查进度 $((i+1)) / $(len) ==="
           done
           echo "=== ↑↑↑ 文件生成检查完毕 ↑↑↑ ==="
 

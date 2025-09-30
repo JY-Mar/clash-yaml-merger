@@ -45,23 +45,23 @@ def load_config(flag: int = 1) -> Dict[str, Any]:
             if repo:
                 config["github"]["repository"] = repo
 
-            fconf_r_fs = f"{config['github']['fconf_remote_files']}".strip()
+            fconfs_r_yaml = f"{config['github']['fconfs_remote_yaml']}".strip()
 
-            fconf_dirs = f"{config['github'][f'fconf_directories_{flag}']}".strip()
-            if fconf_dirs and fconf_r_fs:
-                config["github"][f"fconf_directories_{flag}"] = ",".join(
-                    list(dict.fromkeys(fconf_r_fs.split(",") + fconf_dirs.split(",")))
+            fconf_dirs = f"{config['github'][f'fconfs_directories_{flag}']}".strip()
+            if fconf_dirs and fconfs_r_yaml:
+                config["github"][f"fconfs_directories_{flag}"] = ",".join(
+                    list(dict.fromkeys(fconfs_r_yaml.split(",") + fconf_dirs.split(",")))
                 )
-            elif fconf_dirs and not fconf_r_fs:
-                config["github"][f"fconf_directories_{flag}"] = fconf_dirs
+            elif fconf_dirs and not fconfs_r_yaml:
+                config["github"][f"fconfs_directories_{flag}"] = fconf_dirs
 
-            sub_dir = f"{config['github']['sub_directory']}".strip()
-            if sub_dir:
-                config["github"]["sub_directory"] = sub_dir
+            proxies_dir = f"{config['github']['proxies_directory']}".strip()
+            if proxies_dir:
+                config["github"]["proxies_directory"] = proxies_dir
 
-            rule_dir = f"{config['github']['rule_directory']}".strip()
-            if rule_dir:
-                config["github"]["rule_directory"] = rule_dir
+            rules_dir = f"{config['github']['rules_directory']}".strip()
+            if rules_dir:
+                config["github"]["rules_directory"] = rules_dir
 
             return config
     except FileNotFoundError:

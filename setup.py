@@ -29,47 +29,47 @@ def setup_github_config():
     if repo:
         config["github"]["repository"] = repo
 
-    fconf_r_fs = input(
-        f"远程订阅文件 [{config['github']['fconf_remote_files']}]: "
+    fconfs_r_yaml = input(
+        f"远程订阅文件 [{config['github']['fconfs_remote_yaml']}]: "
     ).strip()
 
-    fconf_dirs_1 = input(
-        f"订阅文件目录 [{config['github']['fconf_directories_1']}]: "
+    fconfs_dirs_1 = input(
+        f"订阅文件目录 [{config['github']['fconfs_directories_1']}]: "
     ).strip()
-    if fconf_dirs_1 and fconf_r_fs:
-        config["github"]["fconf_directories_1"] = ",".join(
-            list(dict.fromkeys(fconf_r_fs.split(",") + fconf_dirs_1.split(",")))
+    if fconfs_dirs_1 and fconfs_r_yaml:
+        config["github"]["fconfs_directories_1"] = ",".join(
+            list(dict.fromkeys(fconfs_r_yaml.split(",") + fconfs_dirs_1.split(",")))
         )
-    elif fconf_dirs_1 and not fconf_r_fs:
-        config["github"]["fconf_directories_1"] = fconf_dirs_1
+    elif fconfs_dirs_1 and not fconfs_r_yaml:
+        config["github"]["fconfs_directories_1"] = fconfs_dirs_1
 
-    fconf_dirs_2 = input(
-        f"订阅文件目录 [{config['github']['fconf_directories_2']}]: "
+    fconfs_dirs_2 = input(
+        f"订阅文件目录 [{config['github']['fconfs_directories_2']}]: "
     ).strip()
-    if fconf_dirs_2 and fconf_r_fs:
-        config["github"]["fconf_directories_2"] = ",".join(
-            list(dict.fromkeys(fconf_r_fs.split(",") + fconf_dirs_2.split(",")))
+    if fconfs_dirs_2 and fconfs_r_yaml:
+        config["github"]["fconfs_directories_2"] = ",".join(
+            list(dict.fromkeys(fconfs_r_yaml.split(",") + fconfs_dirs_2.split(",")))
         )
-    elif fconf_dirs_2 and not fconf_r_fs:
-        config["github"]["fconf_directories_2"] = fconf_dirs_2
+    elif fconfs_dirs_2 and not fconfs_r_yaml:
+        config["github"]["fconfs_directories_2"] = fconfs_dirs_2
 
-    fconf_dirs_3 = input(
-        f"订阅文件目录 [{config['github']['fconf_directories_3']}]: "
+    fconfs_dirs_3 = input(
+        f"订阅文件目录 [{config['github']['fconfs_directories_3']}]: "
     ).strip()
-    if fconf_dirs_3 and fconf_r_fs:
-        config["github"]["fconf_directories_3"] = ",".join(
-            list(dict.fromkeys(fconf_r_fs.split(",") + fconf_dirs_3.split(",")))
+    if fconfs_dirs_3 and fconfs_r_yaml:
+        config["github"]["fconfs_directories_3"] = ",".join(
+            list(dict.fromkeys(fconfs_r_yaml.split(",") + fconfs_dirs_3.split(",")))
         )
-    elif fconf_dirs_3 and not fconf_r_fs:
-        config["github"]["fconf_directories_3"] = fconf_dirs_3
+    elif fconfs_dirs_3 and not fconfs_r_yaml:
+        config["github"]["fconfs_directories_3"] = fconfs_dirs_3
 
-    sub_dir = input(f"订阅文件目录 [{config['github']['sub_directory']}]: ").strip()
-    if sub_dir:
-        config["github"]["sub_directory"] = sub_dir
+    proxies_dir = input(f"订阅文件目录 [{config['github']['proxies_directory']}]: ").strip()
+    if proxies_dir:
+        config["github"]["proxies_directory"] = proxies_dir
 
-    rule_dir = input(f"规则文件目录 [{config['github']['rule_directory']}]: ").strip()
-    if rule_dir:
-        config["github"]["rule_directory"] = rule_dir
+    rules_dir = input(f"规则文件目录 [{config['github']['rules_directory']}]: ").strip()
+    if rules_dir:
+        config["github"]["rules_directory"] = rules_dir
 
     # 认证配置
     print("\n🔐 认证配置:")

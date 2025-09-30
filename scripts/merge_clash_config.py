@@ -47,7 +47,6 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 CLASS_HEADER = os.getenv("CLASS_HEADER", "Ash,1")
-logger.info(f"CLASS_HEADER: {CLASS_HEADER}")
 if re.fullmatch(r"^[a-zA-Z0-9]+,[0-9]+$", CLASS_HEADER) is None:
     print(f"❌ CLASS_HEADER 设置错误: {CLASS_HEADER}")
     sys.exit(1)
@@ -274,7 +273,7 @@ class ClashConfigMerger:
         merged_rules = []
         seen_rules = set()
 
-        # 只从规则文件中加载规则，忽略sub文件中的规则
+        # 只从规则文件中加载规则，忽略 proxies 文件中的规则
         for rule_file_path in rule_files:
             content = self.get_file_content(rule_file_path)
             if content:
@@ -300,14 +299,14 @@ class ClashConfigMerger:
         return merged_rules
 
     def create_proxy_groups(
-        self, proxies: List[Dict[str, Any]], sub_files: List[str]
+        self, proxies: List[Dict[str, Any]], proxies_files: List[str]
     ) -> List[Dict[str, Any]]:
         """
         创建策略组结构
 
         Args:
             proxies: 代理节点列表
-            sub_files: 订阅文件路径列表
+            proxies_files: 订阅文件路径列表
 
         Returns:
             策略组配置列表
@@ -315,27 +314,27 @@ class ClashConfigMerger:
         proxy_names = [proxy["name"] for proxy in proxies if "name" in proxy]
 
         # 按订阅文件分组代理节点 - 基于来源信息进行精确分组
-        sub_groups = {}
-        for file_path in sub_files:
+        temp_groups = {}
+        for file_path in proxies_files:
             # 从文件路径提取文件名作为分组名
             file_name = os.path.basename(file_path).replace(".yaml", "")
-            sub_groups[file_name] = []
+            temp_groups[file_name] = []
 
         # 根据代理的来源信息进行精确分组
         for proxy in proxies:
             if isinstance(proxy, dict) and "_source_file" in proxy:
                 source_name = proxy["_source_file"]
                 proxy_name = proxy.get("name", "")
-                if source_name in sub_groups and proxy_name:
-                    sub_groups[source_name].append(proxy_name)
+                if source_name in temp_groups and proxy_name:
+                    temp_groups[source_name].append(proxy_name)
 
         # 创建策略组列表
         proxy_groups = []
 
-        # 1. 创建主网络策略组（只包含sub分组，不包含rule分组）
-        sub_group_names = list(sub_groups.keys())
+        # 1. 创建主网络策略组（只包含 proxies 分组，不包含 rules 分组）
+        temp_group_names = list(temp_groups.keys())
 
-        network_proxy_options = ["自动选择", "故障转移"] + sub_group_names
+        network_proxy_options = ["自动选择", "故障转移"] + temp_group_names
         proxy_groups.append(
             {"name": "网络代理", "type": "select", "proxies": network_proxy_options}
         )
@@ -360,14 +359,14 @@ class ClashConfigMerger:
             ]
         )
 
-        # 3. 为每个订阅文件创建策略组（只为sub文件创建，不为rule文件创建）
-        for sub_name, sub_proxies in sub_groups.items():
-            if sub_proxies:
+        # 3. 为每个订阅文件创建策略组（只为 proxies 文件创建，不为 rules 文件创建）
+        for temp_item_name, temp_item_proxies in temp_groups.items():
+            if temp_item_proxies:
                 proxy_groups.append(
                     {
-                        "name": sub_name,
+                        "name": temp_item_name,
                         "type": "select",
-                        "proxies": ["自动选择", "故障转移"] + sub_proxies,
+                        "proxies": ["自动选择", "故障转移"] + temp_item_proxies,
                     }
                 )
 
@@ -407,17 +406,17 @@ class ClashConfigMerger:
 
     def generate_merged_config(
         self,
-        fconf_directories: List[str] = ["fconfs"],
-        sub_directory: str = "proxies",
-        rule_directory: str = "rules",
+        fconfs_directories: List[str] = ["fconfs"],
+        proxies_directory: str = "proxies",
+        rules_directory: str = "rules",
     ) -> Dict[str, Any]:
         """
         生成合并后的配置文件
 
         Args:
-            fconf_directories: 全量配置文件目录，支持私有仓库目录、单独指定的yaml文件
-            sub_directory: 订阅文件目录
-            rule_directory: 规则文件目录
+            fconfs_directories: 全量配置文件目录，支持私有仓库目录、单独指定的yaml文件
+            proxies_directory: 订阅文件目录
+            rules_directory: 规则文件目录
 
         Returns:
             合并后的基础配置
@@ -429,19 +428,19 @@ class ClashConfigMerger:
         merged_config = self.create_base_config()
 
         # 2.1.1 获取全量配置文件列表
-        fconf_files: List[str] = []
-        if fconf_directories:
-            for fconf_directory in fconf_directories:
+        fconfs_files: List[str] = []
+        if fconfs_directories:
+            for fconf_directory in fconfs_directories:
                 if re.fullmatch(REMOTE_YAML_PATTERN, fconf_directory) is not None:
-                    fconf_files.extend([fconf_directory])
+                    fconfs_files.extend([fconf_directory])
                 else:
-                    fconf_files.extend(self.get_directory_files(fconf_directory))
-        if not fconf_files:
-            logger.warning(f"未找到全量配置文件在目录: {fconf_directories}")
+                    fconfs_files.extend(self.get_directory_files(fconf_directory))
+        if not fconfs_files:
+            logger.warning(f"未找到全量配置文件在目录: {fconfs_directories}")
 
         # 2.1.2 从全量配置文件列表加载所有全量配置
         configs_from_fconf_files: List[Dict[str, Any]] = []
-        for file_path in fconf_files:
+        for file_path in fconfs_files:
             content = self.get_file_content(file_path)
             if content:
                 config = self.load_yaml_content(content)
@@ -457,35 +456,35 @@ class ClashConfigMerger:
             merged_config = reduce(deep_merge, configs_from_fconf_files)
 
         # 2.2.1 获取订阅文件列表
-        sub_files = self.get_directory_files(sub_directory)
-        if not sub_files:
-            logger.warning(f"未找到订阅文件在目录: {sub_directory}")
+        proxies_files = self.get_directory_files(proxies_directory)
+        if not proxies_files:
+            logger.warning(f"未找到订阅文件在目录: {proxies_directory}")
 
         # 2.2.2 加载所有订阅配置
-        configs_from_sub_files = []
-        for file_path in sub_files:
+        configs_from_proxies_files = []
+        for file_path in proxies_files:
             content = self.get_file_content(file_path)
             if content:
                 config = self.load_yaml_content(content)
                 if config:
-                    configs_from_sub_files.append((config, file_path))
+                    configs_from_proxies_files.append((config, file_path))
 
-        if not configs_from_sub_files:
+        if not configs_from_proxies_files:
             logger.error(f"未能加载任何有效的订阅配置文件")
             # return {}
 
         # 2.2.3 合并代理节点
-        if configs_from_sub_files:
-            merged_proxies = self.merge_proxies(configs_from_sub_files)
+        if configs_from_proxies_files:
+            merged_proxies = self.merge_proxies(configs_from_proxies_files)
             merged_config["proxies"] = merged_proxies
             # 创建策略组（传入文件列表用于创建对应的分组）
-            proxy_groups = self.create_proxy_groups(merged_proxies, sub_files)
+            proxy_groups = self.create_proxy_groups(merged_proxies, proxies_files)
             merged_config["proxy-groups"] = proxy_groups
 
         # 2.3.1 获取规则文件列表
-        rule_files = self.get_directory_files(rule_directory)
+        rule_files = self.get_directory_files(rules_directory)
         if not rule_files:
-            logger.warning(f"未找到规则文件在目录: {rule_directory}")
+            logger.warning(f"未找到规则文件在目录: {rules_directory}")
 
         # 2.3.2 合并规则（只使用rule目录下的规则）
         merged_rules = self.merge_rules(rule_files)
@@ -563,8 +562,8 @@ class ClashConfigInitParams:
         auth_token: str = "",
         output_dir: str = "",
         fconf_dirs: list[str] = [],
-        sub_dir: str = "",
-        rule_dir: str = "",
+        proxies_dir: str = "",
+        rules_dir: str = "",
     ):
         """
         初始化Clash配置初始化参数
@@ -575,21 +574,21 @@ class ClashConfigInitParams:
             auth_token: 用户鉴权令牌
             output_dir: 输出目录
             fconf_dirs: 全量配置目录列表
-            sub_dir: 订阅目录
-            rule_dir: 规则目录
+            proxies_dir: 订阅目录
+            rules_dir: 规则目录
         """
         self.local_mode = local_mode
         self.merger = merger
         self.output_dir = output_dir
         self.fconf_dirs = fconf_dirs
-        self.sub_dir = sub_dir
-        self.rule_dir = rule_dir
+        self.proxies_dir = proxies_dir
+        self.rules_dir = rules_dir
         self.auth_token = auth_token
 
 
 def merger_init() -> ClashConfigInitParams:
     """
-    初始化merger、output_dir、fconf_dirs、sub_dir、rule_dir、auth_token等重要参数
+    初始化merger、output_dir、fconf_dirs、proxies_dir、rule_dir、auth_token等重要参数
 
     Returns:
         初始化参数对象
@@ -604,8 +603,8 @@ def merger_init() -> ClashConfigInitParams:
         merger = ClashConfigMerger(local_mode=True)
         output_dir = "output"
         fconf_dirs = ["fconfs"]
-        sub_dir = "proxies"
-        rule_dir = "rules"
+        proxies_dir = "proxies"
+        rules_dir = "rules"
         auth_token = "local-test"
     else:
         logger.info(f"☁️ GitHub模式")
@@ -616,28 +615,30 @@ def merger_init() -> ClashConfigInitParams:
         output_dir = os.getenv("OUTPUT_DIR", "docs")
         auth_token = os.getenv("AUTH_TOKEN", "default-token")
 
-        fconf_directories = settings_config["github"][f"fconf_directories_{CLASS_NUM}"]
-        sub_directory = settings_config["github"]["sub_directory"]
-        rule_directory = settings_config["github"]["rule_directory"]
+        fconfs_directories = settings_config["github"][
+            f"fconfs_directories_{CLASS_NUM}"
+        ]
+        proxies_directory = settings_config["github"]["proxies_directory"]
+        rules_directory = settings_config["github"]["rules_directory"]
 
         fconf_dirs = ["fconfs"]
-        if fconf_directories and isinstance(fconf_directories, str):
+        if fconfs_directories and isinstance(fconfs_directories, str):
             if (
-                "," in fconf_directories
-                and not fconf_directories.startswith(",")
-                and not fconf_directories.endswith(",")
+                "," in fconfs_directories
+                and not fconfs_directories.startswith(",")
+                and not fconfs_directories.endswith(",")
             ):
-                fconf_dirs = list(map(str.strip, fconf_directories.split(",")))
+                fconf_dirs = list(map(str.strip, fconfs_directories.split(",")))
             else:
-                fconf_dirs = [fconf_directories.strip()]
+                fconf_dirs = [fconfs_directories.strip()]
 
-        sub_dir = "proxies"
-        if sub_directory:
-            sub_dir = sub_directory.strip()
+        proxies_dir = "proxies"
+        if proxies_directory:
+            proxies_dir = proxies_directory.strip()
 
-        rule_dir = "rules"
-        if rule_directory:
-            rule_dir = rule_directory.strip()
+        rules_dir = "rules"
+        if rules_directory:
+            rules_dir = rules_directory.strip()
 
         if not github_token:
             logger.error(f"未设置GITHUB_TOKEN环境变量")
@@ -653,8 +654,8 @@ def merger_init() -> ClashConfigInitParams:
         merger=merger,
         output_dir=output_dir,
         fconf_dirs=fconf_dirs,
-        sub_dir=sub_dir,
-        rule_dir=rule_dir,
+        proxies_dir=proxies_dir,
+        rules_dir=rules_dir,
         auth_token=auth_token,
     )
 
@@ -666,7 +667,9 @@ def merger_gen_config():
 
     ida = merger_init()
     merged_config = (
-        ida.merger.generate_merged_config(ida.fconf_dirs, ida.sub_dir, ida.rule_dir)
+        ida.merger.generate_merged_config(
+            ida.fconf_dirs, ida.proxies_dir, ida.rules_dir
+        )
         if ida.merger
         else {}
     )
