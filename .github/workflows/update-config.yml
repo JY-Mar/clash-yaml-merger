@@ -89,17 +89,17 @@ jobs:
           len=${#NEW_PARAMS[@]}
 
           echo "=== ↓↓↓ 开始执行 ↓↓↓ ==="
-          for ((i=1; i<len+1; i++)); do
+          for ((i=0; i<len; i++)); do
             sed -i "1s|.*|CLASS_HEADER = \"${NEW_PARAMS[$i]}\"|" "$PY_FILE"
             python "$PY_FILE"
-            echo "=== 执行完成 $i / len ==="
+            echo "=== 执行完成 $i+1 / len ==="
           done
           echo "=== ↑↑↑ 执行完毕 ↑↑↑ ==="
 
           # 验证生成的文件编码
           echo "=== ↓↓↓ 检查生成的文件 ↓↓↓ ==="
           ls -la docs/
-          for ((i=1; i<len+1; i++)); do
+          for ((i=0; i<len; i++)); do
             temp=${NEW_PARAMS[$i]}
             temp_name=${temp%%,*}
             CONFIG_FILE="docs/clash-${temp_name}-${AUTH_TOKEN}.yaml"
@@ -111,7 +111,7 @@ jobs:
               echo "错误: 配置文件 $CONFIG_FILE 未生成"
               exit 1
             fi
-            echo "=== 检查进度 $i / len ==="
+            echo "=== 检查进度 $i+1 / len ==="
           done
           echo "=== ↑↑↑ 文件生成检查完毕 ↑↑↑ ==="
 

@@ -1,5 +1,3 @@
-CLASS_HEADER = "Ash,1"
-
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
@@ -48,12 +46,14 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-CLASS_HEADER_split = CLASS_HEADER.strip().split(",")
-logger.info(f"CLASS_HEADER_split: {CLASS_HEADER_split}")
+CLASS_HEADER = os.getenv("CLASS_HEADER", "Ash,1")
+if re.fullmatch(r"^[a-zA-Z0-9]+,[0-9]+$", CLASS_HEADER) is None:
+    print(f"❌ CLASS_HEADER 设置错误: {CLASS_HEADER}")
+    sys.exit(1)
 # 版本
-CLASS = CLASS_HEADER_split[0]
+CLASS = CLASS_HEADER.strip().split(",")[0]
 # 版本号
-CLASS_NUM = int(CLASS_HEADER_split[1])
+CLASS_NUM = int(CLASS_HEADER.strip().split(",")[1])
 # 版本文件后缀
 CLASS_SUFFIX = f"-{CLASS}"
 
