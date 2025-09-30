@@ -206,7 +206,7 @@ jobs:
                   ];
                   class_names.forEach((class_name) => {
                       const dom = document.querySelector('.config-info.' + class_name.label);
-                      if (!dom) {
+                      if (dom) {
                           return;
                       }
                       // 创建配置统计区域
