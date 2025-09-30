@@ -6,7 +6,6 @@ Clash配置文件整合工具
 """
 
 from copy import deepcopy
-import getpass
 import os
 import re
 import sys
@@ -19,8 +18,9 @@ from typing import Dict, List, Any, Optional
 import logging
 from functools import reduce
 
+from utils.config_utils import load_config
+
 # 设置默认编码
-import locale
 import codecs
 
 # 强制设置UTF-8编码
@@ -42,10 +42,12 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# 版本1、2、3
-version_flag: int = 1
+# 版本
+CLASS: str = "Ash"
+# 版本号
+CLASS_NUM: int = 1
 # 版本文件后缀
-version_file_suffix = f"-Ash"
+CLASS_SUFFIX = f"-{CLASS}"
 
 
 def deep_merge(a: Any, b: Any) -> Any:
@@ -97,47 +99,6 @@ def deep_merge(a: Any, b: Any) -> Any:
         return deepcopy(b)
 
 
-def load_config() -> Dict[str, Any]:
-    """加载配置文件"""
-    config_path = "config/settings.yaml"
-    try:
-        with open(config_path, "r", encoding="utf-8") as f:
-            config = yaml.safe_load(f)
-            owner = f"{config['github']['owner']}".strip()
-            if owner:
-                config["github"]["owner"] = owner
-
-            repo = f"{config['github']['repository']}".strip()
-            if repo:
-                config["github"]["repository"] = repo
-
-            fconf_r_fs = f"{config['github']['fconf_remote_files']}".strip()
-
-            fconf_dirs = f"{config['github'][f'fconf_directories_{version_flag}']}".strip()
-            if fconf_dirs and fconf_r_fs:
-                config["github"][f'fconf_directories_{version_flag}'] = ",".join(
-                    list(dict.fromkeys(fconf_r_fs.split(",") + fconf_dirs.split(",")))
-                )
-            elif fconf_dirs and not fconf_r_fs:
-                config["github"][f'fconf_directories_{version_flag}'] = fconf_dirs
-
-            sub_dir = f"{config['github']['sub_directory']}".strip()
-            if sub_dir:
-                config["github"]["sub_directory"] = sub_dir
-
-            rule_dir = f"{config['github']['rule_directory']}".strip()
-            if rule_dir:
-                config["github"]["rule_directory"] = rule_dir
-
-            return config
-    except FileNotFoundError:
-        print(f"❌ 配置文件不存在: {config_path}")
-        sys.exit(1)
-    except yaml.YAMLError as e:
-        print(f"❌ 配置文件格式错误: {e}")
-        sys.exit(1)
-
-
 # settings.yaml 配置
 settings_config = load_config()
 
@@ -148,9 +109,9 @@ remote_yaml_pattern = r"^https:\/\/.+\.yaml$"
 class ClashConfigMerger:
     def __init__(
         self,
-        github_token: str = None,
-        repo_owner: str = None,
-        repo_name: str = None,
+        github_token: str = "",
+        repo_owner: str = "",
+        repo_name: str = "",
         local_mode: bool = False,
     ):
         """
@@ -383,7 +344,7 @@ class ClashConfigMerger:
         return merged_rules
 
     def create_proxy_groups(
-        self, proxies: List[Dict[str, Any]], sub_files: List[str], rule_files: List[str]
+        self, proxies: List[Dict[str, Any]], sub_files: List[str]
     ) -> List[Dict[str, Any]]:
         """
         创建策略组结构
@@ -391,7 +352,6 @@ class ClashConfigMerger:
         Args:
             proxies: 代理节点列表
             sub_files: 订阅文件路径列表
-            rule_files: 规则文件路径列表
 
         Returns:
             策略组配置列表
@@ -563,9 +523,7 @@ class ClashConfigMerger:
             merged_proxies = self.merge_proxies(configs_from_sub_files)
             merged_config["proxies"] = merged_proxies
             # 创建策略组（传入文件列表用于创建对应的分组）
-            proxy_groups = self.create_proxy_groups(
-                merged_proxies, sub_files, rule_files
-            )
+            proxy_groups = self.create_proxy_groups(merged_proxies, sub_files)
             merged_config["proxy-groups"] = proxy_groups
 
         # 2.3.1 获取规则文件列表
@@ -645,12 +603,12 @@ class ClashConfigInitParams:
     def __init__(
         self,
         local_mode: bool = False,
-        merger: ClashConfigMerger = None,
-        auth_token: str = None,
-        output_dir: str = None,
+        merger: ClashConfigMerger | None = None,
+        auth_token: str = "",
+        output_dir: str = "",
         fconf_dirs: list[str] = [],
-        sub_dir: str = None,
-        rule_dir: str = None,
+        sub_dir: str = "",
+        rule_dir: str = "",
     ):
         """
         初始化Clash配置初始化参数
@@ -702,7 +660,9 @@ def merger_init() -> ClashConfigInitParams:
         output_dir = os.getenv("OUTPUT_DIR", "docs")
         auth_token = os.getenv("AUTH_TOKEN", "default-token")
 
-        fconf_directories = settings_config["github"][f'fconf_directories_{version_flag}']
+        fconf_directories = settings_config["github"][
+            f"fconf_directories_{CLASS_NUM}"
+        ]
         sub_directory = settings_config["github"]["sub_directory"]
         rule_directory = settings_config["github"]["rule_directory"]
 
@@ -751,8 +711,10 @@ def merger_gen_config():
     """
 
     ida = merger_init()
-    merged_config = ida.merger.generate_merged_config(
-        ida.fconf_dirs, ida.sub_dir, ida.rule_dir
+    merged_config = (
+        ida.merger.generate_merged_config(ida.fconf_dirs, ida.sub_dir, ida.rule_dir)
+        if ida.merger
+        else {}
     )
 
     if not merged_config:
@@ -760,9 +722,11 @@ def merger_gen_config():
         sys.exit(1)
 
     # 使用token作为文件名的一部分进行认证
-    config_filename = f"{settings_config['output']['config_filename']}{version_file_suffix}-{ida.auth_token}.yaml"
+    config_filename = f"{settings_config['output']['config_filename']}{CLASS_SUFFIX}-{ida.auth_token}.yaml"
     output_path = os.path.join(ida.output_dir, config_filename)
-    if not ida.merger.save_config_to_file(merged_config, output_path):
+    if not ida.merger or (
+        ida.merger and not ida.merger.save_config_to_file(merged_config, output_path)
+    ):
         sys.exit(1)
 
     # 生成统计信息
@@ -792,7 +756,7 @@ def merger_gen_config():
 
     stats_path = os.path.join(
         ida.output_dir,
-        f"{settings_config['output']['stats_filename']}{version_file_suffix}.json",
+        f"{settings_config['output']['stats_filename']}{CLASS_SUFFIX}.json",
     )
 
     try:
@@ -808,7 +772,7 @@ def merger_gen_config():
         f"✅ 任务完成! 代理集: {stats['proxy_providers_count']}, 代理节点: {stats['proxies_count']}, 规则: {stats['rules_count']}"
     )
     logger.info(
-        f"📁 配置文件: {'clash' + version_file_suffix + '-{your-token}' + '.yaml'}"
+        f"📁 配置文件: {'clash' + CLASS_SUFFIX + '-{your-token}' + '.yaml'}"
     )
     if ida.local_mode:
         logger.info(f"📁 输出路径: {output_path}")
