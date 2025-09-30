@@ -18,6 +18,10 @@ from typing import Dict, List, Any, Optional
 import logging
 from functools import reduce
 
+script_dir = os.path.dirname(os.path.abspath(__file__))
+root_dir = os.path.dirname(script_dir)
+sys.path.insert(0, root_dir)
+
 from utils.config_utils import load_config
 
 # 设置默认编码
