@@ -31,7 +31,7 @@ def simple_save_config(config: Dict[str, Any]) -> None:
         print(f"❌ 保存配置失败: {e}")
 
 
-def load_config() -> Dict[str, Any]:
+def load_config(flag: int = 1) -> Dict[str, Any]:
     """加载配置文件"""
     config_path = "config/settings.yaml"
     try:
@@ -47,13 +47,13 @@ def load_config() -> Dict[str, Any]:
 
             fconf_r_fs = f"{config['github']['fconf_remote_files']}".strip()
 
-            fconf_dirs = f"{config['github'][f'fconf_directories']}".strip()
+            fconf_dirs = f"{config['github'][f'fconf_directories_{flag}']}".strip()
             if fconf_dirs and fconf_r_fs:
-                config["github"][f"fconf_directories"] = ",".join(
+                config["github"][f"fconf_directories_{flag}"] = ",".join(
                     list(dict.fromkeys(fconf_r_fs.split(",") + fconf_dirs.split(",")))
                 )
             elif fconf_dirs and not fconf_r_fs:
-                config["github"][f"fconf_directories"] = fconf_dirs
+                config["github"][f"fconf_directories_{flag}"] = fconf_dirs
 
             sub_dir = f"{config['github']['sub_directory']}".strip()
             if sub_dir:
