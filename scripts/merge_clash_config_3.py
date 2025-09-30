@@ -1,3 +1,5 @@
+CLASS_HEADER = "others,3"
+
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
@@ -17,6 +19,13 @@ from datetime import datetime, timezone
 from typing import Dict, List, Any, Optional
 import logging
 from functools import reduce
+
+script_dir = os.path.dirname(os.path.abspath(__file__))
+root_dir = os.path.dirname(script_dir)
+sys.path.insert(0, root_dir)
+
+from utils.config_utils import load_config, REMOTE_YAML_PATTERN
+from utils.merge_utils import deep_merge
 
 # 设置默认编码
 import codecs
@@ -41,110 +50,14 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # 版本
-CLASS: str = "others"
+CLASS = CLASS_HEADER.strip().split(";")[0]
 # 版本号
-CLASS_NUM: int = 3
+CLASS_NUM = int(CLASS_HEADER.strip().split(";")[1])
 # 版本文件后缀
 CLASS_SUFFIX = f"-{CLASS}"
 
-
-def deep_merge(a: Any, b: Any) -> Any:
-    """
-    深合并，将b合并到a中
-
-    Args:
-        a: 合并对象1
-        b: 合并对象2
-
-    Returns:
-        文件内容字符串，失败返回None
-    """
-    # 类型一致才合并
-    if type(a) != type(b):
-        return deepcopy(b)
-
-    # 合并 dict（Map）
-    if isinstance(a, dict):
-        result = deepcopy(a)
-        for key, value in b.items():
-            if key in result:
-                result[key] = deep_merge(result[key], value)
-            else:
-                result[key] = deepcopy(value)
-        return result
-
-    # 合并 list
-    elif isinstance(a, list):
-        return deepcopy(a) + deepcopy(b)
-
-    # 合并 set
-    elif isinstance(a, set):
-        return deepcopy(a) | deepcopy(b)
-
-    # 合并对象（自定义类）
-    elif hasattr(a, "__dict__") and hasattr(b, "__dict__"):
-        result = deepcopy(a)
-        for attr in b.__dict__:
-            if hasattr(result, attr):
-                merged_value = deep_merge(getattr(result, attr), getattr(b, attr))
-                setattr(result, attr, merged_value)
-            else:
-                setattr(result, attr, deepcopy(getattr(b, attr)))
-        return result
-
-    # 基础类型直接替换
-    else:
-        return deepcopy(b)
-
-
-def load_config() -> Dict[str, Any]:
-    """加载配置文件"""
-    config_path = "config/settings.yaml"
-    try:
-        with open(config_path, "r", encoding="utf-8") as f:
-            config = yaml.safe_load(f)
-            owner = f"{config['github']['owner']}".strip()
-            if owner:
-                config["github"]["owner"] = owner
-
-            repo = f"{config['github']['repository']}".strip()
-            if repo:
-                config["github"]["repository"] = repo
-
-            fconf_r_fs = f"{config['github']['fconf_remote_files']}".strip()
-
-            fconf_dirs = (
-                f"{config['github'][f'fconf_directories_{CLASS_NUM}']}".strip()
-            )
-            if fconf_dirs and fconf_r_fs:
-                config["github"][f"fconf_directories_{CLASS_NUM}"] = ",".join(
-                    list(dict.fromkeys(fconf_r_fs.split(",") + fconf_dirs.split(",")))
-                )
-            elif fconf_dirs and not fconf_r_fs:
-                config["github"][f"fconf_directories_{CLASS_NUM}"] = fconf_dirs
-
-            sub_dir = f"{config['github']['sub_directory']}".strip()
-            if sub_dir:
-                config["github"]["sub_directory"] = sub_dir
-
-            rule_dir = f"{config['github']['rule_directory']}".strip()
-            if rule_dir:
-                config["github"]["rule_directory"] = rule_dir
-
-            return config
-    except FileNotFoundError:
-        print(f"❌ 配置文件不存在: {config_path}")
-        sys.exit(1)
-    except yaml.YAMLError as e:
-        print(f"❌ 配置文件格式错误: {e}")
-        sys.exit(1)
-
-
 # settings.yaml 配置
-settings_config = load_config()
-
-# 远程YAML文件正则表达式
-remote_yaml_pattern = r"^https:\/\/.+\.yaml$"
+settings_config = load_config(CLASS_NUM)
 
 
 class ClashConfigMerger:
@@ -204,7 +117,7 @@ class ClashConfigMerger:
         else:
             # GitHub模式：通过API获取
             try:
-                if re.fullmatch(remote_yaml_pattern, file_path) is not None:
+                if re.fullmatch(REMOTE_YAML_PATTERN, file_path) is not None:
                     # 是yaml文件路径直接读取
                     url = file_path
                     response = requests.get(url)
@@ -517,7 +430,7 @@ class ClashConfigMerger:
         fconf_files: List[str] = []
         if fconf_directories:
             for fconf_directory in fconf_directories:
-                if re.fullmatch(remote_yaml_pattern, fconf_directory) is not None:
+                if re.fullmatch(REMOTE_YAML_PATTERN, fconf_directory) is not None:
                     fconf_files.extend([fconf_directory])
                 else:
                     fconf_files.extend(self.get_directory_files(fconf_directory))
@@ -701,9 +614,7 @@ def merger_init() -> ClashConfigInitParams:
         output_dir = os.getenv("OUTPUT_DIR", "docs")
         auth_token = os.getenv("AUTH_TOKEN", "default-token")
 
-        fconf_directories = settings_config["github"][
-            f"fconf_directories_{CLASS_NUM}"
-        ]
+        fconf_directories = settings_config["github"][f"fconf_directories_{CLASS_NUM}"]
         sub_directory = settings_config["github"]["sub_directory"]
         rule_directory = settings_config["github"]["rule_directory"]
 
@@ -812,9 +723,7 @@ def merger_gen_config():
     logger.info(
         f"✅ 任务完成! 代理集: {stats['proxy_providers_count']}, 代理节点: {stats['proxies_count']}, 规则: {stats['rules_count']}"
     )
-    logger.info(
-        f"📁 配置文件: {'clash' + CLASS_SUFFIX + '-{your-token}' + '.yaml'}"
-    )
+    logger.info(f"📁 配置文件: {'clash' + CLASS_SUFFIX + '-{your-token}' + '.yaml'}")
     if ida.local_mode:
         logger.info(f"📁 输出路径: {output_path}")
 

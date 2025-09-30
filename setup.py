@@ -6,7 +6,6 @@ Clash配置整合工具设置脚本
 
 import os
 import sys
-import yaml
 import getpass
 from typing import Dict, Any
 

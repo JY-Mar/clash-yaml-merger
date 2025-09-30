@@ -70,3 +70,9 @@ def load_config(flag: int = 1) -> Dict[str, Any]:
     except yaml.YAMLError as e:
         print(f"❌ 配置文件格式错误: {e}")
         sys.exit(1)
+
+# 远程YAML文件正则表达式
+REMOTE_YAML_PATTERN = r"^https:\/\/.+\.yaml$"
+
+# YAML文件正则表达式
+YAML_PATTERN = r".+\.yaml$"

@@ -1,3 +1,5 @@
+CLASS_HEADER = "Ash,1"
+
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
@@ -22,7 +24,7 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 root_dir = os.path.dirname(script_dir)
 sys.path.insert(0, root_dir)
 
-from utils.config_utils import load_config
+from utils.config_utils import load_config, REMOTE_YAML_PATTERN
 from utils.merge_utils import deep_merge
 
 # 设置默认编码
@@ -48,17 +50,14 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # 版本
-CLASS: str = "Ash"
+CLASS = CLASS_HEADER.strip().split(";")[0]
 # 版本号
-CLASS_NUM: int = 1
+CLASS_NUM = int(CLASS_HEADER.strip().split(";")[1])
 # 版本文件后缀
 CLASS_SUFFIX = f"-{CLASS}"
 
 # settings.yaml 配置
 settings_config = load_config(CLASS_NUM)
-
-# 远程YAML文件正则表达式
-remote_yaml_pattern = r"^https:\/\/.+\.yaml$"
 
 
 class ClashConfigMerger:
@@ -118,7 +117,7 @@ class ClashConfigMerger:
         else:
             # GitHub模式：通过API获取
             try:
-                if re.fullmatch(remote_yaml_pattern, file_path) is not None:
+                if re.fullmatch(REMOTE_YAML_PATTERN, file_path) is not None:
                     # 是yaml文件路径直接读取
                     url = file_path
                     response = requests.get(url)
@@ -431,7 +430,7 @@ class ClashConfigMerger:
         fconf_files: List[str] = []
         if fconf_directories:
             for fconf_directory in fconf_directories:
-                if re.fullmatch(remote_yaml_pattern, fconf_directory) is not None:
+                if re.fullmatch(REMOTE_YAML_PATTERN, fconf_directory) is not None:
                     fconf_files.extend([fconf_directory])
                 else:
                     fconf_files.extend(self.get_directory_files(fconf_directory))
@@ -615,9 +614,7 @@ def merger_init() -> ClashConfigInitParams:
         output_dir = os.getenv("OUTPUT_DIR", "docs")
         auth_token = os.getenv("AUTH_TOKEN", "default-token")
 
-        fconf_directories = settings_config["github"][
-            f"fconf_directories_{CLASS_NUM}"
-        ]
+        fconf_directories = settings_config["github"][f"fconf_directories_{CLASS_NUM}"]
         sub_directory = settings_config["github"]["sub_directory"]
         rule_directory = settings_config["github"]["rule_directory"]
 
@@ -726,9 +723,7 @@ def merger_gen_config():
     logger.info(
         f"✅ 任务完成! 代理集: {stats['proxy_providers_count']}, 代理节点: {stats['proxies_count']}, 规则: {stats['rules_count']}"
     )
-    logger.info(
-        f"📁 配置文件: {'clash' + CLASS_SUFFIX + '-{your-token}' + '.yaml'}"
-    )
+    logger.info(f"📁 配置文件: {'clash' + CLASS_SUFFIX + '-{your-token}' + '.yaml'}")
     if ida.local_mode:
         logger.info(f"📁 输出路径: {output_path}")
 
