@@ -49,6 +49,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 CLASS_HEADER_split = CLASS_HEADER.strip().split(",")
+logger.info(f"CLASS_HEADER_split: {CLASS_HEADER_split}")
 # 版本
 CLASS = CLASS_HEADER_split[0]
 # 版本号
