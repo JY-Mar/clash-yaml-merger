@@ -217,7 +217,7 @@ jobs:
                       title1.textContent = "📊 配置统计 " + class_name.label + (class_name.remark ? "(" + class_name.remark + ")" : "");
 
                       const stats = document.createElement("div");
-                      stats.id = "stats-" + class_name.label;
+                      stats.id = "stats" + "-" + class_name.label;
                       stats.textContent = "加载中...";
 
                       configInfo.appendChild(title1);
@@ -290,8 +290,9 @@ jobs:
                           document.getElementById('stats' + class_name).innerHTML = '<p style="color: red;">加载统计信息失败</p>';
                       });
                   }
-                  const intervals = Object.fromEntries(class_names.map((class_name) => [class_name.label, undefined]));
-                  class_names.forEach((class_name) => {
+                  const intervals = Object.fromEntries(class_names.map((class_name) => [class_name.label, null]));
+                  window.onload = function () {
+                    class_names.forEach((class_name) => {
                       if (intervals[class_name.label] !== undefined && intervals[class_name.label] !== null) {
                         clearInterval(intervals[class_name.label]);
                         intervals[class_name.label] = undefined;
@@ -300,10 +301,11 @@ jobs:
                         if (document.getElementById('stats' + class_name.label)) {
                           fetchStats('-' + class_name.label)
                           clearInterval(intervals[class_name.label]);
-                          intervals[class_name.label] = undefined;
+                          intervals[class_name.label] = null;
                         }
                       }, 70);
-                  })
+                    })
+                  };
               </script>
           </body>
           </html>
