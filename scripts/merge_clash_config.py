@@ -7,7 +7,6 @@ Clash配置文件整合工具
 从GitHub私有仓库读取多个订阅YAML文件，整合代理节点和规则，生成统一的Clash配置
 """
 
-from copy import deepcopy
 import os
 import re
 import sys
