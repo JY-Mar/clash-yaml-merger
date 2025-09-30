@@ -302,7 +302,7 @@ jobs:
                         intervals[class_name.label] = undefined;
                       };
                       intervals[class_name.label] = setInterval(() => {
-                        console.log('intervals', intervals)
+                        console.log('stats' + class_name.label, document.getElementById('stats' + class_name.label))
                         if (document.getElementById('stats' + class_name.label)) {
                           fetchStats('-' + class_name.label)
                           clearInterval(intervals[class_name.label]);
