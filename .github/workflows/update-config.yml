@@ -255,11 +255,11 @@ jobs:
                       container.appendChild(successBox);
                   });
                   // 加载统计信息
-                  function fetchStats(class_name) {
-                    fetch('stats' + class_name + '.json')
+                  function fetchStats(filename) {
+                    fetch('stats' + filename + '.json')
                       .then(response => response.json())
                       .then(data => {
-                          const statsDiv = document.getElementById('stats' + class_name);
+                          const statsDiv = document.getElementById('stats' + filename);
                           let dateStr = ''
                           const generateDate = new Date(data.generated_at)
                           if (typeof generateDate === 'object' && generateDate instanceof Date) {
@@ -287,10 +287,11 @@ jobs:
                           `;
                       })
                       .catch(error => {
-                          document.getElementById('stats' + class_name).innerHTML = '<p style="color: red;">加载统计信息失败</p>';
+                          document.getElementById('stats' + filename).innerHTML = '<p style="color: red;">加载统计信息失败</p>';
                       });
                   }
                   const intervals = Object.fromEntries(class_names.map((class_name) => [class_name.label, null]));
+                  console.log('intervals', intervals)
                   window.onload = function () {
                     class_names.forEach((class_name) => {
                       if (intervals[class_name.label] !== undefined && intervals[class_name.label] !== null) {
