@@ -241,12 +241,62 @@ jobs:
               </div>
               
               <script>
+                  const class_names = [
+                    { label: 'Ash' }
+                    { label: 'CornSS' }
+                    { label: 'others', remark: 'STC/iKuuu/bestbus' }
+                  ];
+                  class_names.forEach((class_name) => {
+                      // 创建配置统计区域
+                      const configInfo = document.createElement('div');
+                      configInfo.className = "config-info";
+
+                      const title1 = document.createElement("h3");
+                      title1.textContent = "📊 配置统计 " + class_name.label + (class_name.remark ? "(" + class_name.remark + ")" : "");
+
+                      const stats = document.createElement("div");
+                      stats.id = "stats-" + class_name.label;
+                      stats.textContent = "加载中...";
+
+                      configInfo.appendChild(title1);
+                      configInfo.appendChild(stats);
+
+                      // 创建使用方法区域
+                      const successBox = document.createElement("div");
+                      successBox.className = "success";
+
+                      const title2 = document.createElement("h3");
+                      title2.textContent = "📋 使用方法";
+
+                      const desc = document.createElement("p");
+                      desc.textContent = "在 Clash 客户端中添加以下订阅链接：";
+
+                      const urlBox = document.createElement("div");
+                      urlBox.className = "url-box";
+                      urlBox.id = "config-url";
+                      urlBox.textContent = "https://jy-mar.github.io/clash-yaml-merger/clash-" + class_name.label + "-{your-token}.yaml";
+
+                      const tip = document.createElement("p");
+                      const small = document.createElement("small");
+                      small.textContent = "请将 {your-token} 替换为您的实际token";
+                      tip.appendChild(small);
+
+                      // 添加所有元素到 successBox
+                      successBox.appendChild(title2);
+                      successBox.appendChild(desc);
+                      successBox.appendChild(urlBox);
+                      successBox.appendChild(tip);
+
+                      // 添加到页面
+                      document.body.appendChild(configInfo);
+                      document.body.appendChild(successBox);
+                  });
                   // 加载统计信息
-                  function fetchStats(version_file_suffix) {
-                    fetch('stats' + version_file_suffix + '.json')
+                  function fetchStats(class_name) {
+                    fetch('stats' + class_name + '.json')
                       .then(response => response.json())
                       .then(data => {
-                          const statsDiv = document.getElementById('stats' + version_file_suffix);
+                          const statsDiv = document.getElementById('stats' + class_name);
                           let dateStr = ''
                           const generateDate = new Date(data.generated_at)
                           if (typeof generateDate === 'object' && generateDate instanceof Date) {
@@ -274,12 +324,12 @@ jobs:
                           `;
                       })
                       .catch(error => {
-                          document.getElementById('stats' + version_file_suffix).innerHTML = '<p style="color: red;">加载统计信息失败</p>';
+                          document.getElementById('stats' + class_name).innerHTML = '<p style="color: red;">加载统计信息失败</p>';
                       });
                   }
-                  fetchStats('-Ash')
-                  fetchStats('-CornSS')
-                  fetchStats('-others')
+                  class_names.forEach((class_name) => {
+                      fetchStats('-' + class_name.label)
+                  })
               </script>
           </body>
           </html>
