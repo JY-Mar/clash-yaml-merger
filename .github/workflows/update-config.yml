@@ -288,10 +288,7 @@ jobs:
                       })
                       .catch(error => {
                           document.getElementById('stats' + filename).innerHTML = '<p style="color: red;">加载统计信息失败</p>';
-                      })
-                      .finally(() => {
-                          intervals[filename] = null;
-                      })
+                      });
                   }
                   const intervals = Object.fromEntries(class_names.map((class_name) => [class_name.label, null]));
                   
@@ -302,10 +299,10 @@ jobs:
                         intervals[class_name.label] = undefined;
                       };
                       intervals[class_name.label] = setInterval(() => {
-                        console.log('stats' + class_name.label, document.getElementById('stats' + class_name.label))
-                        if (document.getElementById('stats' + class_name.label)) {
+                        if (document.getElementById('stats' + '-' + class_name.label)) {
                           fetchStats('-' + class_name.label)
                           clearInterval(intervals[class_name.label]);
+                          intervals[class_name.label] = null;
                         }
                       }, 70);
                     })
