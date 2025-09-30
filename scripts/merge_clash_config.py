@@ -48,15 +48,6 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-CLASS_HEADER = os.getenv("CLASS_HEADER", "Ash,1")
-if re.fullmatch(r"^[a-zA-Z0-9]+,[0-9]+$", CLASS_HEADER) is None:
-    print(f"❌ CLASS_HEADER 设置错误: {CLASS_HEADER}")
-    sys.exit(1)
-# 版本
-CLASS = CLASS_HEADER.strip().split(",")[0]
-# 版本号
-CLASS_NUM = int(CLASS_HEADER.strip().split(",")[1])
-
 # settings.yaml 配置
 settings_config = load_config()
 
@@ -408,7 +399,7 @@ class ClashConfigMerger:
         self,
         fconfs_directories: List[str] = ["fconfs"],
         proxies_directory: str = "proxies",
-        rules_directory: str = "rules",
+        rules_directory: str = "rules"
     ) -> Dict[str, Any]:
         """
         生成合并后的配置文件
@@ -421,8 +412,6 @@ class ClashConfigMerger:
         Returns:
             合并后的基础配置
         """
-
-        logger.info(f"开始生成合并配置...")
 
         # 1. 创建基础配置
         merged_config = self.create_base_config()
@@ -502,8 +491,6 @@ class ClashConfigMerger:
                     del proxy["_source_file"]
         except Exception as e:
             logger.error(f"清理代理节点中的临时字段失败: {e}")
-
-        logger.info(f"配置合并完成")
 
         return merged_config
 
@@ -671,12 +658,24 @@ def merger_gen_config():
 
     ida = merger_init()
     merged_configs: Dict[str, Dict[str, Any]] = {}
-    if ida.merger is not None and ida.fconfs_dirs and isinstance(ida.fconfs_dirs, list) and ida.fconfs_filenames and isinstance(ida.fconfs_filenames, list) and len(ida.fconfs_dirs) == len(ida.fconfs_filenames):
+    if (
+        ida.merger is not None
+        and ida.fconfs_dirs
+        and isinstance(ida.fconfs_dirs, list)
+        and ida.fconfs_filenames
+        and isinstance(ida.fconfs_filenames, list)
+        and len(ida.fconfs_dirs) == len(ida.fconfs_filenames)
+    ):
         _merger = ida.merger
+        logger.info(f"=== ↓↓↓ 开始生成合并配置 ↓↓↓ ===")
         for i, dirs in enumerate(ida.fconfs_dirs):
-            merged_configs[ida.fconfs_filenames[i]] = _merger.generate_merged_config(
+            attr = ida.fconfs_filenames[i]
+            logger.info(f"=== [{i + 1} / {len(ida.fconfs_dirs)}] 开始合并 {attr} <== {dirs} ===")
+            merged_configs[attr] = _merger.generate_merged_config(
                 dirs, ida.proxies_dir, ida.rules_dir
             )
+            logger.info(f"=== [{i + 1} / {len(ida.fconfs_dirs)}] 合并完成 {attr}  ===")
+        logger.info(f"=== ↑↑↑ 配置合并完成 ↑↑↑ ===")
     else:
         merged_configs = {}
 

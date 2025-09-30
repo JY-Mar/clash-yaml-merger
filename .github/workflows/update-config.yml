@@ -85,15 +85,13 @@ jobs:
           python -c "import sys; print('Python encoding:', sys.stdout.encoding)"
           
           PY_FILE="scripts/merge_clash_config.py"
-          NEW_PARAMS=("Ash,1" "CornSS,2" "others,3")
-          len=${#NEW_PARAMS[@]}
-
-          echo "=== ↓↓↓ 开始执行 ↓↓↓ ==="
+          
           python "$PY_FILE"
-          echo "=== ↑↑↑ 执行完毕 ↑↑↑ ==="
 
           # 验证生成的文件编码
           echo "=== ↓↓↓ 检查生成的文件 ↓↓↓ ==="
+          NEW_PARAMS=("Ash,1" "CornSS,2" "others,3")
+          len=${#NEW_PARAMS[@]}
           ls -la docs/
           for ((i=0; i<len; i++)); do
             temp=${NEW_PARAMS[$i]}
