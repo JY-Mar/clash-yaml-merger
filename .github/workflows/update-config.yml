@@ -124,7 +124,6 @@ jobs:
       - name: Generate index page with authentication
         env:
           AUTH_TOKEN: ${{ secrets.CLASH_AUTH_TOKEN }}
-          FCONFS_DIRECTORIES: ${{ vars.CLASH_ENV_FCONFS_DIRECTORIES }}
         run: |
           # 生成带有实际token的HTML页面
           cat > docs/index.html << 'HTMLEOF'
@@ -197,7 +196,7 @@ jobs:
           <body>
               <script>
                 window.ENV = {
-                  __FCONFS_DIRECTORIES__: "$FCONFS_DIRECTORIES"
+                  FCONFS_DIRECTORIES: ${{ vars.CLASH_ENV_FCONFS_DIRECTORIES }}
                 };
               </script>
 
@@ -218,7 +217,7 @@ jobs:
               </div>
               
               <script>
-                  console.log(window.__FCONFS_DIRECTORIES__)
+                  console.log(window.ENV.FCONFS_DIRECTORIES)
                   const class_names = [
                     { label: 'Ash' },
                     { label: 'CornSS' },
