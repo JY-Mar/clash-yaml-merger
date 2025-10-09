@@ -217,14 +217,7 @@ jobs:
               </div>
               
               <script>
-                  console.log(window.ENV.FCONFS_DIRECTORIES)
-                  const class_names = [
-                    { label: 'Ash' },
-                    { label: 'CornSS' },
-                    { label: 'STC' },
-                    { label: 'iKuuu' },
-                    { label: 'others', remark: 'STC/iKuuu/bestbus' }
-                  ];
+                  const class_names = (window.ENV.FCONFS_DIRECTORIES || '').split(';').map((v) => (v || '').split('|')?.[0]).filter((v) => v !== undefined && v !== null && v !== '');
                   class_names.forEach((class_name) => {
                       const dom = document.querySelector('.config-info.' + class_name.label);
                       if (dom) {
