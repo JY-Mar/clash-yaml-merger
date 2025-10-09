@@ -126,7 +126,7 @@ class ClashConfigMerger:
                         logger.error(f"解析失败：不是合法的 JSON 格式: {e}")
 
                     if yaml_raw_content:
-                        logger.info(f"成功获取文件: {file_path}")
+                        logger.info(f"成功获取文件: {desensitize_url(file_path)}")
 
                     return yaml_raw_content
                 else:
@@ -137,7 +137,7 @@ class ClashConfigMerger:
 
                 if file_data["encoding"] == "base64":
                     content = base64.b64decode(file_data["content"]).decode("utf-8")
-                    logger.info(f"成功获取文件: {file_path}")
+                    logger.info(f"成功获取文件: {desensitize_url(file_path)}")
                     return content
                 else:
                     logger.error(f"不支持的编码格式: {file_data['encoding']}")
