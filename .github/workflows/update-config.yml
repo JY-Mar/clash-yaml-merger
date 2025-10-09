@@ -217,6 +217,15 @@ jobs:
               </div>
               
               <script>
+                  const container = document.querySelector('.container');
+                  let updateTime_DOM = document.querySelector('.config-info.updateTime');
+                  if (!updateTime_DOM) {
+                    updateTime_DOM = document.createElement('div');
+                    updateTime_DOM.className = 'config-info updateTime';
+                  }
+                  if (container && updateTime_DOM) {
+                      container.appendChild(updateTime_DOM);
+                  }
                   const class_names = (window.ENV.FCONFS_DIRECTORIES || '').split(';').map((v) => (v || '').split('|')?.[0]).filter((v) => v !== undefined && v !== null && v !== '').map((v) => ({ label: v }));
                   class_names.forEach((class_name) => {
                       const dom = document.querySelector('.config-info.' + class_name.label);
@@ -264,16 +273,17 @@ jobs:
                       successBox.appendChild(tip);
 
                       // 添加到页面
-                      const container = document.querySelector('.container');
-                      container.appendChild(configInfo);
-                      container.appendChild(successBox);
+                      if (container) {
+                          container.appendChild(configInfo);
+                          container.appendChild(successBox);
+                      }
                   });
                   // 加载统计信息
                   function fetchStats(filename) {
                     fetch('stats' + filename + '.json')
                       .then(response => response.json())
                       .then(data => {
-                          const statsDiv = document.getElementById('stats' + filename);
+                          const stats_DOM = document.getElementById('stats' + filename);
                           let dateStr = ''
                           const generateDate = new Date(data.generated_at)
                           if (typeof generateDate === 'object' && generateDate instanceof Date) {
@@ -292,13 +302,17 @@ jobs:
                           } else {
                               dateStr = String(data.generated_at)
                           }
-                          statsDiv.innerHTML = `
+                          stats_DOM.innerHTML = `
                               <p><strong>代理集数量：</strong> ${data.proxy_providers_count}</p>
                               <p><strong>代理节点数量：</strong> ${data.proxies_count}</p>
                               <p><strong>策略组数量：</strong> ${data.proxy_groups_count}</p>
                               <p><strong>规则数量：</strong> ${data.rules_count}</p>
-                              <p><strong>最后更新：</strong> ${dateStr}</p>
                           `;
+                          if (updateTime_DOM) {
+                              updateTime_DOM.innerHTML = `
+                                  <p><strong>最后更新：</strong> ${dateStr}</p>
+                              `;
+                          }
                       })
                       .catch(error => {
                           document.getElementById('stats' + filename).innerHTML = '<p style="color: red;">加载统计信息失败</p>';
@@ -307,19 +321,19 @@ jobs:
                   const intervals = Object.fromEntries(class_names.map((class_name) => [class_name.label, null]));
                   
                   window.onload = function () {
-                    class_names.forEach((class_name) => {
-                      if (intervals[class_name.label] !== undefined && intervals[class_name.label] !== null) {
-                        clearInterval(intervals[class_name.label]);
-                        intervals[class_name.label] = undefined;
-                      };
-                      intervals[class_name.label] = setInterval(() => {
-                        if (document.getElementById('stats' + '-' + class_name.label)) {
-                          fetchStats('-' + class_name.label)
-                          clearInterval(intervals[class_name.label]);
-                          intervals[class_name.label] = null;
-                        }
-                      }, 70);
-                    })
+                      class_names.forEach((class_name) => {
+                          if (intervals[class_name.label] !== undefined && intervals[class_name.label] !== null) {
+                              clearInterval(intervals[class_name.label]);
+                              intervals[class_name.label] = undefined;
+                          };
+                          intervals[class_name.label] = setInterval(() => {
+                              if (document.getElementById('stats' + '-' + class_name.label)) {
+                                  fetchStats('-' + class_name.label)
+                                  clearInterval(intervals[class_name.label]);
+                                  intervals[class_name.label] = null;
+                              }
+                          }, 70);
+                      })
                   };
               </script>
           </body>
