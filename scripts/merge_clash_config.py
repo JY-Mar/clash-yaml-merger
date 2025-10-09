@@ -400,7 +400,7 @@ class ClashConfigMerger:
         self,
         fconfs_directories: List[str] = ["fconfs"],
         proxies_directory: str = "proxies",
-        rules_directory: str = "rules"
+        rules_directory: str = "rules",
     ) -> Dict[str, Any]:
         """
         生成合并后的配置文件
@@ -671,7 +671,9 @@ def merger_gen_config():
         logger.info(f"=== ↓↓↓ 开始生成合并配置 ↓↓↓ ===")
         for i, dirs in enumerate(ida.fconfs_dirs):
             attr = ida.fconfs_filenames[i]
-            logger.info(f"=== [{i + 1} / {len(ida.fconfs_dirs)}] 开始合并 {attr} <== {dirs} ===")
+            logger.info(
+                f"=== [{i + 1} / {len(ida.fconfs_dirs)}] 开始合并 {attr} <== {dirs} ==="
+            )
             merged_configs[attr] = _merger.generate_merged_config(
                 dirs, ida.proxies_dir, ida.rules_dir
             )
@@ -739,7 +741,7 @@ def merger_gen_config():
                 f"✅ 任务完成! 代理集: {stats['proxy_providers_count']}, 代理节点: {stats['proxies_count']}, 规则: {stats['rules_count']}"
             )
             logger.info(
-                f"📁 配置文件: {settings_config['output']['config_filename']}{final_filename}-{'your-token'}.yaml"
+                f"📁 配置文件: {settings_config['output']['config_filename']}{final_filename}-{{your-token}}.yaml"
             )
             if ida.local_mode:
                 logger.info(f"📁 输出路径: {output_path}")
