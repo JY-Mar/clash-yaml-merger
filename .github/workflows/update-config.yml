@@ -75,7 +75,7 @@ jobs:
           REPO_OWNER: ${{ secrets.CLASH_REPO_OWNER }}
           REPO_NAME: ${{ secrets.CLASH_REPO_NAME }}
           AUTH_TOKEN: ${{ secrets.CLASH_AUTH_TOKEN }}
-          REMOTE_YAMLS: ${{ env.CLASH_ENV_REMOTE_YAMLS }}
+          REMOTE_YAMLS: ${{ vars.CLASH_ENV_REMOTE_YAMLS }}
           OUTPUT_DIR: docs
           PYTHONIOENCODING: utf-8
           PYTHONLEGACYWINDOWSFSENCODING: utf-8
