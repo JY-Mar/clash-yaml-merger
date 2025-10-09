@@ -35,8 +35,7 @@ concurrency:
 jobs:
   generate-config:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
+    environment: github-pages
 
     steps:
       - name: Checkout repository
