@@ -21,9 +21,9 @@
 ├── config/
 │   └── settings.yaml          # 配置文件
 ├── docs/                      # GitHub Pages输出目录
-│   ├── index.html            # 主页面
+│   ├── index.html             # 主页面
 │   ├── <your_clash_config_filename>.yaml            # 生成的配置文件
-│   └── stats.json            # 统计信息
+│   └── stats.json             # 统计信息
 └── README.md
 ```
 
@@ -36,7 +36,7 @@
    ```
    your-private-repo/
    ├── Clash/                       # Clash文件
-   │   ├── proxies/                    # 订阅文件目录
+   │   ├── proxies/                 # 订阅文件目录
    │   │   ├── provider1.yaml
    │   │   ├── provider2.yaml
    │   │   └── provider3.yaml
@@ -53,20 +53,54 @@
 
 在您的仓库设置中添加以下 Secrets：
 
-| Secret 名称          | 说明                                                    | 示例值               |
-| -------------------- | ------------------------------------------------------ | ------------------- |
-| `CLASH_GITHUB_TOKEN` | GitHub 访问令牌（需要 repo 权限）                         | `ghp_xxxxxxxxxxxx`  |
-| `CLASH_REPO_OWNER`   | 私有仓库所有者用户名                                      | `your-username`     |
-| `CLASH_REPO_NAME`    | 私有仓库名称                                             | `clash-config`      |
-| `CLASH_AUTH_TOKEN`   | 访问配置文件的认证 token                                  | `your-secret-token` |
+| Secret 名称          | 说明                              | 示例值              |
+| -------------------- | --------------------------------- | ------------------- |
+| `CLASH_GITHUB_TOKEN` | GitHub 访问令牌（需要 repo 权限） | `ghp_xxxxxxxxxxxx`  |
+| `CLASH_REPO_OWNER`   | 私有仓库所有者用户名              | `your-username`     |
+| `CLASH_REPO_NAME`    | 私有仓库名称                      | `clash-config`      |
+| `CLASH_AUTH_TOKEN`   | 访问配置文件的认证 token          | `your-secret-token` |
 
 ### 3. 配置 GitHub Environment（可跳过此步骤）
 
-在您的仓库设置中添加以下 Environment：
+1. 在您的仓库设置中 点击按钮“New Environment” 添加环境：
 
-| Secret 名称          | 说明                                                    | 示例值               |
-| -------------------- | ------------------------------------------------------ | ------------------- |
-| `CLASH_ENV_REMOTE_YAMLS` | 远程全量配置文件，支持多个远程**公开仓库**的yaml文件，以“,”符号分隔 | `https://example.com/conf1.yaml,https://example.com/conf2.yaml` |
+2. 在您的仓库设置中添加以下 Environment Variables：
+
+| Variable 名称            | 说明                                                                  | 示例值                                                          |
+| ------------------------ | --------------------------------------------------------------------- | --------------------------------------------------------------- |
+| `CLASH_ENV_REMOTE_YAMLS` | 远程全量配置文件，支持多个远程**公开仓库**的 yaml 文件，以“,”符号分隔 | `https://example.com/conf1.yaml,https://example.com/conf2.yaml` |
+
+3. 在您的 workflows 作业中指定所使用的 environment：
+
+示例：
+
+```yaml
+jobs:
+   generate-config:
+      runs-on: ubuntu-latest
+      environment: github-pages
+      ...
+
+      steps:
+         -  name: Generate Clash Config
+            env:
+               ...
+               REMOTE_YAMLS: ${{ vars.CLASH_ENV_REMOTE_YAMLS }}
+            ...
+         ...
+   ...
+...
+```
+
+4. python 脚本中访问环境变量 REMOTE_YAMLS：
+
+示例：
+
+```python
+import os
+
+remote_yamls = os.getenv("REMOTE_YAMLS", "")
+```
 
 ### 4. 启用 GitHub Pages
 
@@ -87,7 +121,7 @@
 配置完成后，您的 Clash 订阅链接为：
 
 ```
-https://your-username.github.io/your-repo/<your_clash_config_filename>.yaml
+https://your-username.github.io/{your-repo}/{your_clash_config_filename}.yaml
 ```
 
 ### 直接下载
@@ -95,7 +129,7 @@ https://your-username.github.io/your-repo/<your_clash_config_filename>.yaml
 访问主页查看配置统计和下载链接：
 
 ```
-https://your-username.github.io/your-repo/
+https://your-username.github.io/{your-repo}/
 ```
 
 ## ⚙️ 配置说明
