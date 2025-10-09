@@ -21,9 +21,10 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 root_dir = os.path.dirname(script_dir)
 sys.path.insert(0, root_dir)
 
-from utils.config_utils import load_config, REMOTE_YAML_PATTERN
+from utils.patterns import REMOTE_YAML_PATTERN, FCONFS_DIR_PATTERN
+from utils.config_utils import load_config
 from utils.merge_utils import deep_merge
-from utils.string_utils import FCONFS_DIR_PATTERN, cut_fonfs_name, split_str_to_2d_array
+from utils.string_utils import cut_fonfs_name, split_str_to_2d_array
 from utils.array_utils import unshift_to_array
 
 # 设置默认编码

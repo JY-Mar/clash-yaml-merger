@@ -90,13 +90,12 @@ jobs:
 
           # 验证生成的文件编码
           echo "=== ↓↓↓ 检查生成的文件 ↓↓↓ ==="
-          NEW_PARAMS=("Ash,1" "CornSS,2" "others,3")
+          NEW_PARAMS=("Ash" "CornSS" "STC" "others")
           len=${#NEW_PARAMS[@]}
           ls -la docs/
           for ((i=0; i<len; i++)); do
             temp=${NEW_PARAMS[$i]}
-            temp_first=${temp%%,*}
-            CONFIG_FILE="docs/clash-${temp_first}-${AUTH_TOKEN}.yaml"
+            CONFIG_FILE="docs/clash-${temp}-${AUTH_TOKEN}.yaml"
             if [ -f "$CONFIG_FILE" ]; then
               file "$CONFIG_FILE"
               head -3 "$CONFIG_FILE"
@@ -202,6 +201,7 @@ jobs:
                   const class_names = [
                     { label: 'Ash' },
                     { label: 'CornSS' },
+                    { label: 'STC' },
                     { label: 'others', remark: 'STC/iKuuu/bestbus' }
                   ];
                   class_names.forEach((class_name) => {

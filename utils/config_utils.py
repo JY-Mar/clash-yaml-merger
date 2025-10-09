@@ -1,3 +1,10 @@
+'''
+Author       : Scientificat
+Date         : 2025-09-30 04:06:44
+LastEditTime : 2025-10-09 01:43:51
+LastEditors  : Scientificat
+Description  : 文件描述
+'''
 import sys
 from typing import Any, Dict
 
@@ -68,10 +75,3 @@ def load_config() -> Dict[str, Any]:
     except yaml.YAMLError as e:
         print(f"❌ 配置文件格式错误: {e}")
         sys.exit(1)
-
-
-# 远程YAML文件正则表达式
-REMOTE_YAML_PATTERN = r"^https:\/\/.+\.yaml$"
-
-# YAML文件正则表达式
-YAML_PATTERN = r".+\.yaml$"

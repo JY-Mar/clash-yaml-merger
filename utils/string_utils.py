@@ -1,8 +1,6 @@
 import re
 from typing import List
-
-
-FCONFS_DIR_PATTERN = r"([a-zA-Z][a-zA-Z0-9_-]*)\|([^;]+;?)"
+from utils.patterns import FCONFS_DIR_PATTERN
 
 
 def split_str_to_2d_array(s: str) -> List[List[str]]:
