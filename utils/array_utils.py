@@ -33,3 +33,22 @@ def unshift_to_array(data: List[List[str]], prefix: str | List[str]) -> List[Lis
 
     # 其他类型不处理
     return data
+
+
+def filter_valid_strings(s_list: List[str] | None) -> List[str]:
+    """
+    过滤掉无效的字符串（空、None、仅空格）
+
+    Args:
+        s_list: 待过滤的字符串列表
+
+    Returns:
+        过滤后的字符串列表
+    """
+
+    if not isinstance(s_list, list):
+        return []
+
+    valid_strings = list(filter(lambda s: isinstance(s, str) and s.strip(), s_list))
+
+    return valid_strings

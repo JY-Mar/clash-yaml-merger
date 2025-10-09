@@ -26,11 +26,11 @@ from utils.config_utils import load_config
 from utils.merge_utils import deep_merge
 from utils.string_utils import (
     cut_fonfs_name,
-    filter_valid_strings,
+    desensitize_url,
     split_str_to_1d_array,
     split_str_to_2d_array,
 )
-from utils.array_utils import unshift_to_array
+from utils.array_utils import unshift_to_array, filter_valid_strings
 
 # 设置默认编码
 import codecs
@@ -624,9 +624,11 @@ def merger_init() -> ClashConfigInitParams:
         proxies_directory = settings_config["github"]["proxies_directory"]
         rules_directory = settings_config["github"]["rules_directory"]
 
-        fconfs_yamls_1d_list: List[str] = []
+        fconfs_remote_yamls_1d_list: List[str] = []
         if fconfs_remote_yamls and isinstance(fconfs_remote_yamls, str):
-            fconfs_yamls_1d_list = split_str_to_1d_array(fconfs_remote_yamls.strip())
+            fconfs_remote_yamls_1d_list = split_str_to_1d_array(
+                fconfs_remote_yamls.strip()
+            )
 
         if fconfs_directories and isinstance(fconfs_directories, str):
             fconfs_directories_2d_list = split_str_to_2d_array(
@@ -637,7 +639,7 @@ def merger_init() -> ClashConfigInitParams:
                 map(lambda f_d: cut_fonfs_name(f_d), fconfs_directories_2d_list)
             )
             fconfs_dirs = unshift_to_array(
-                fconfs_directories_2d_list, fconfs_yamls_1d_list
+                fconfs_directories_2d_list, fconfs_remote_yamls_1d_list
             )
 
         if proxies_directory and isinstance(proxies_directory, str):
@@ -686,8 +688,11 @@ def merger_gen_config():
         logger.info(f"=== ↓↓↓ 开始生成合并配置 ↓↓↓ ===")
         for i, dirs in enumerate(ida.fconfs_dirs):
             attr = ida.fconfs_filenames[i]
+            dirs_desensitize = list(
+                map(lambda dir: desensitize_url(dir), dirs)
+            )
             logger.info(
-                f"=== [{i + 1} / {len(ida.fconfs_dirs)}] 开始合并 {attr} <== {dirs} ==="
+                f"=== [{i + 1} / {len(ida.fconfs_dirs)}] 开始合并 {attr} <== {dirs_desensitize} ==="
             )
             merged_configs[attr] = _merger.generate_merged_config(
                 dirs, ida.proxies_dir, ida.rules_dir

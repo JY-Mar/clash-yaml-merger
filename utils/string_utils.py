@@ -1,6 +1,6 @@
 import re
 from typing import List
-from utils.patterns import FCONFS_DIR_PATTERN
+from utils.patterns import FCONFS_DIR_PATTERN, REMOTE_YAML_PATTERN
 
 
 def split_str_to_2d_array(s: str) -> List[List[str]]:
@@ -67,20 +67,24 @@ def cut_fonfs_name(s_list: List[str]) -> str:
 
     return res
 
-def filter_valid_strings(s_list: List[str] | None) -> List[str]:
+
+def desensitize_url(url: str, symbol: str = "***") -> str:
     """
-    过滤掉无效的字符串（空、None、仅空格）
+    对 URL 进行脱敏处理，将 https:// 开头的 URL 替换为 https://***/<filename>.<extname>
 
     Args:
-        s_list: 待过滤的字符串列表
+        url: 待处理的 URL
 
     Returns:
-        过滤后的字符串列表
+        脱敏后的 URL
     """
 
-    if not isinstance(s_list, list):
-        return []
+    url = url.strip()
 
-    valid_strings = list(filter(lambda s: isinstance(s, str) and s.strip(), s_list))
+    if re.fullmatch(REMOTE_YAML_PATTERN, url):
+        filename = url.split("/")[-1]
+        if not isinstance(filename, str) or not filename:
+            filename = ""
+        return f"https://{symbol}/{filename}"
 
-    return valid_strings
+    return url  # 如果不是符合条件的 URL，原样返回
