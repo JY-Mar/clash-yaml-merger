@@ -157,6 +157,16 @@ jobs:
                       border-radius: 8px;
                       margin: 20px 0;
                   }
+                  .config-info + .success {
+                      margin-top: 0px !important;
+                      border-top-left-radius: 0px !important;
+                      border-top-right-radius: 0px !important;
+                  }
+                  :has(.config-info + .success) .config-info {
+                      margin-bottom: 0px !important;
+                      border-bottom-left-radius: 0px !important;
+                      border-bottom-right-radius: 0px !important;
+                  }
                   .url-box {
                       background: #e9ecef;
                       padding: 15px;
