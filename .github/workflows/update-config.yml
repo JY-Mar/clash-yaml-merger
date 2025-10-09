@@ -93,7 +93,17 @@ jobs:
 
           # 验证生成的文件编码
           echo "=== ↓↓↓ 检查生成的文件 ↓↓↓ ==="
-          NEW_PARAMS=("Ash" "CornSS" "STC" "iKuuu" "others")
+
+          # 先按 ; 分割
+          IFS=';' read -ra groups <<< "$FCONFS_DIRECTORIES"
+          NEW_PARAMS=()
+          for group in "${groups[@]}"; do
+            # 每个 group 再按 | 分割
+            IFS='|' read -ra parts <<< "$group"
+            # 取第一个元素（即 | 前的部分）
+            NEW_PARAMS+=("${parts[0]}")
+          done
+
           len=${#NEW_PARAMS[@]}
           ls -la docs/
           for ((i=0; i<len; i++)); do
@@ -114,6 +124,7 @@ jobs:
       - name: Generate index page with authentication
         env:
           AUTH_TOKEN: ${{ secrets.CLASH_AUTH_TOKEN }}
+          FCONFS_DIRECTORIES: ${{ vars.CLASH_ENV_FCONFS_DIRECTORIES }}
         run: |
           # 生成带有实际token的HTML页面
           cat > docs/index.html << 'HTMLEOF'
@@ -184,6 +195,12 @@ jobs:
               </style>
           </head>
           <body>
+              <script>
+                window.ENV = {
+                  __FCONFS_DIRECTORIES__: "$FCONFS_DIRECTORIES"
+                };
+              </script>
+
               <div class="container">
                   <div class="header">
                       <h1>🚀 Clash 配置整合服务</h1>
@@ -201,6 +218,7 @@ jobs:
               </div>
               
               <script>
+                  console.log(window.__FCONFS_DIRECTORIES__)
                   const class_names = [
                     { label: 'Ash' },
                     { label: 'CornSS' },
