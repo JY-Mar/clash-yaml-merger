@@ -69,6 +69,7 @@
 | Variable 名称            | 说明                                                                  | 示例值                                                          |
 | ------------------------ | --------------------------------------------------------------------- | --------------------------------------------------------------- |
 | `CLASH_ENV_REMOTE_YAMLS` | 远程全量配置文件，支持多个远程**公开仓库**的 yaml 文件，以“,”符号分隔 | `https://example.com/conf1.yaml,https://example.com/conf2.yaml` |
+| `CLASH_ENV_FCONFS_DIRECTORIES` | 全量配置文件目录，支持以“;”符号分隔生成多个文件，支持以“,”符号分隔多个目录或远程公开仓库的yaml文件合并为一个文件（格式：<生成文件名>|<合并配置1>,<合并配置2>...;<生成文件名>|<合并配置1>,<合并配置2>...） | `AB\|Clash/fconfs/A,Clash/fconfs/B;C\|Clash/fconfs/C;https://example.com/conf1.yaml;https://example.com/conf2.yaml` |
 
 3. 在您的 workflows 作业中指定所使用的 environment：
 
@@ -86,13 +87,14 @@ jobs:
             env:
                ...
                REMOTE_YAMLS: ${{ vars.CLASH_ENV_REMOTE_YAMLS }}
+               FCONFS_DIRECTORIES: ${{ vars.CLASH_ENV_FCONFS_DIRECTORIES }}
             ...
          ...
    ...
 ...
 ```
 
-4. python 脚本中访问环境变量 REMOTE_YAMLS：
+4. python 脚本中访问环境变量：
 
 示例：
 
@@ -100,6 +102,7 @@ jobs:
 import os
 
 remote_yamls = os.getenv("REMOTE_YAMLS", "")
+fconfs_dirs = os.getenv("FCONFS_DIRECTORIES", "")
 ```
 
 ### 4. 启用 GitHub Pages

@@ -75,6 +75,7 @@ jobs:
           REPO_NAME: ${{ secrets.CLASH_REPO_NAME }}
           AUTH_TOKEN: ${{ secrets.CLASH_AUTH_TOKEN }}
           REMOTE_YAMLS: ${{ vars.CLASH_ENV_REMOTE_YAMLS }}
+          FCONFS_DIRECTORIES: ${{ vars.CLASH_ENV_FCONFS_DIRECTORIES }}
           OUTPUT_DIR: docs
           PYTHONIOENCODING: utf-8
           PYTHONLEGACYWINDOWSFSENCODING: utf-8
@@ -92,7 +93,7 @@ jobs:
 
           # 验证生成的文件编码
           echo "=== ↓↓↓ 检查生成的文件 ↓↓↓ ==="
-          NEW_PARAMS=("Ash" "CornSS" "STC" "others")
+          NEW_PARAMS=("Ash" "CornSS" "STC" "iKuuu" "others")
           len=${#NEW_PARAMS[@]}
           ls -la docs/
           for ((i=0; i<len; i++)); do
@@ -204,6 +205,7 @@ jobs:
                     { label: 'Ash' },
                     { label: 'CornSS' },
                     { label: 'STC' },
+                    { label: 'iKuuu' },
                     { label: 'others', remark: 'STC/iKuuu/bestbus' }
                   ];
                   class_names.forEach((class_name) => {

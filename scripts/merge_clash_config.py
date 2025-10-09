@@ -617,15 +617,20 @@ def merger_init() -> ClashConfigInitParams:
         repo_name = os.getenv("REPO_NAME", "clash-config")
         output_dir = os.getenv("OUTPUT_DIR", "docs")
         auth_token = os.getenv("AUTH_TOKEN", "default-token")
-        remote_yamls = filter_valid_strings(
+        _fconfs_remote_yamls = filter_valid_strings(
             [
                 os.getenv("REMOTE_YAMLS", ""),
                 settings_config["github"]["fconfs_remote_yamls"],
             ]
         )
-
-        fconfs_remote_yamls = ",".join(remote_yamls) if remote_yamls else ""
-        fconfs_directories = settings_config["github"]["fconfs_directories"]
+        fconfs_remote_yamls = ",".join(_fconfs_remote_yamls) if _fconfs_remote_yamls else ""
+        _fconfs_directories = filter_valid_strings(
+            [
+                os.getenv("FCONFS_DIRECTORIES", ""),
+                settings_config["github"]["fconfs_directories"],
+            ]
+        )
+        fconfs_directories = ";".join(_fconfs_directories) if _fconfs_directories else ""
         proxies_directory = settings_config["github"]["proxies_directory"]
         rules_directory = settings_config["github"]["rules_directory"]
 
