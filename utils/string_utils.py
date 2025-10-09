@@ -82,7 +82,7 @@ def desensitize_url(url: str, symbol: str = "***") -> str:
     url = url.strip()
 
     if re.fullmatch(REMOTE_YAML_PATTERN, url):
-        filename = url.split("/")[-1]
+        filename = url.split("/")[-2]
         if not isinstance(filename, str) or not filename:
             filename = ""
         return f"https://{symbol}/{filename}"

@@ -213,9 +213,14 @@ class ClashConfigMerger:
                     ):
                         file_paths.append(file_info["path"])
 
-                logger.info(
-                    f"发现 {len(file_paths)} 个YAML文件在目录: {directory_path}"
-                )
+                if len(file_paths) == 0:
+                    logger.warning(
+                        f"发现 {len(file_paths)} 个YAML文件在目录: {directory_path}"
+                    )
+                else:
+                    logger.info(
+                        f"发现 {len(file_paths)} 个YAML文件在目录: {directory_path}"
+                    )
                 return file_paths
 
             except requests.exceptions.RequestException as e:
@@ -688,9 +693,7 @@ def merger_gen_config():
         logger.info(f"=== ↓↓↓ 开始生成合并配置 ↓↓↓ ===")
         for i, dirs in enumerate(ida.fconfs_dirs):
             attr = ida.fconfs_filenames[i]
-            dirs_desensitize = list(
-                map(lambda dir: desensitize_url(dir), dirs)
-            )
+            dirs_desensitize = list(map(lambda dir: desensitize_url(dir), dirs))
             logger.info(
                 f"=== [{i + 1} / {len(ida.fconfs_dirs)}] 开始合并 {attr} <== {dirs_desensitize} ==="
             )
