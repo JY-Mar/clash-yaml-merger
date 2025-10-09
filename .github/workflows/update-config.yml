@@ -196,7 +196,7 @@ jobs:
           <body>
               <script>
                 window.ENV = {
-                  FCONFS_DIRECTORIES: "'" + ${{ vars.CLASH_ENV_FCONFS_DIRECTORIES }} + "'"
+                  FCONFS_DIRECTORIES: "${{ vars.CLASH_ENV_FCONFS_DIRECTORIES }}"
                 };
               </script>
 
