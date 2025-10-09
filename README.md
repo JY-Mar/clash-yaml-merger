@@ -53,20 +53,28 @@
 
 在您的仓库设置中添加以下 Secrets：
 
-| Secret 名称          | 说明                              | 示例值              |
-| -------------------- | --------------------------------- | ------------------- |
-| `CLASH_GITHUB_TOKEN` | GitHub 访问令牌（需要 repo 权限） | `ghp_xxxxxxxxxxxx`  |
-| `CLASH_REPO_OWNER`   | 私有仓库所有者用户名              | `your-username`     |
-| `CLASH_REPO_NAME`    | 私有仓库名称                      | `clash-config`      |
-| `CLASH_AUTH_TOKEN`   | 访问配置文件的认证 token          | `your-secret-token` |
+| Secret 名称          | 说明                                                    | 示例值               |
+| -------------------- | ------------------------------------------------------ | ------------------- |
+| `CLASH_GITHUB_TOKEN` | GitHub 访问令牌（需要 repo 权限）                         | `ghp_xxxxxxxxxxxx`  |
+| `CLASH_REPO_OWNER`   | 私有仓库所有者用户名                                      | `your-username`     |
+| `CLASH_REPO_NAME`    | 私有仓库名称                                             | `clash-config`      |
+| `CLASH_AUTH_TOKEN`   | 访问配置文件的认证 token                                  | `your-secret-token` |
 
-### 3. 启用 GitHub Pages
+### 3. 配置 GitHub Environment（可跳过此步骤）
+
+在您的仓库设置中添加以下 Environment：
+
+| Secret 名称          | 说明                                                    | 示例值               |
+| -------------------- | ------------------------------------------------------ | ------------------- |
+| `CLASH_ENV_REMOTE_YAMLS` | 远程全量配置文件，支持多个远程**公开仓库**的yaml文件，以“,”符号分隔 | `https://example.com/conf1.yaml,https://example.com/conf2.yaml` |
+
+### 4. 启用 GitHub Pages
 
 1. 进入仓库设置 → Pages
 2. Source 选择 "GitHub Actions"
 3. 保存设置
 
-### 4. 运行工作流
+### 5. 运行工作流
 
 1. 进入 Actions 标签页
 2. 选择 "Update Clash Config" 工作流

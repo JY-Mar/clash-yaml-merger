@@ -24,7 +24,12 @@ sys.path.insert(0, root_dir)
 from utils.patterns import REMOTE_YAML_PATTERN, FCONFS_DIR_PATTERN
 from utils.config_utils import load_config
 from utils.merge_utils import deep_merge
-from utils.string_utils import cut_fonfs_name, split_str_to_2d_array
+from utils.string_utils import (
+    cut_fonfs_name,
+    filter_valid_strings,
+    split_str_to_1d_array,
+    split_str_to_2d_array,
+)
 from utils.array_utils import unshift_to_array
 
 # 设置默认编码
@@ -607,23 +612,33 @@ def merger_init() -> ClashConfigInitParams:
         repo_name = os.getenv("REPO_NAME", "clash-config")
         output_dir = os.getenv("OUTPUT_DIR", "docs")
         auth_token = os.getenv("AUTH_TOKEN", "default-token")
+        remote_yamls = filter_valid_strings(
+            [
+                os.getenv("REMOTE_YAMLS", ""),
+                settings_config["github"]["fconfs_remote_yamls"],
+            ]
+        )
 
-        fconfs_remote_yamls = settings_config["github"]["fconfs_remote_yamls"]
+        fconfs_remote_yamls = ",".join(remote_yamls) if remote_yamls else ""
         fconfs_directories = settings_config["github"]["fconfs_directories"]
         proxies_directory = settings_config["github"]["proxies_directory"]
         rules_directory = settings_config["github"]["rules_directory"]
 
-        fconfs_yamls = ""
+        fconfs_yamls_1d_list: List[str] = []
         if fconfs_remote_yamls and isinstance(fconfs_remote_yamls, str):
-            fconfs_yamls = fconfs_remote_yamls.strip()
+            fconfs_yamls_1d_list = split_str_to_1d_array(fconfs_remote_yamls.strip())
 
         if fconfs_directories and isinstance(fconfs_directories, str):
-            f_d_list = split_str_to_2d_array(
+            fconfs_directories_2d_list = split_str_to_2d_array(
                 re.sub(FCONFS_DIR_PATTERN, r"\2", fconfs_directories)
             )
             # 获取文件名，默认取“name|。。。”的name值，否则取第一个目录名
-            fconfs_filenames = list(map(lambda f_d: cut_fonfs_name(f_d), f_d_list))
-            fconfs_dirs = unshift_to_array(f_d_list, fconfs_yamls)
+            fconfs_filenames = list(
+                map(lambda f_d: cut_fonfs_name(f_d), fconfs_directories_2d_list)
+            )
+            fconfs_dirs = unshift_to_array(
+                fconfs_directories_2d_list, fconfs_yamls_1d_list
+            )
 
         if proxies_directory and isinstance(proxies_directory, str):
             proxies_dir = proxies_directory.strip()

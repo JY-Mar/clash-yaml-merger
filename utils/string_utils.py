@@ -14,6 +14,7 @@ def split_str_to_2d_array(s: str) -> List[List[str]]:
     Returns:
         二维数组
     """
+
     result: List[List[str]] = []
     for group in s.split(";"):
         items = [item.strip() for item in group.split(",") if item.strip()]
@@ -23,7 +24,7 @@ def split_str_to_2d_array(s: str) -> List[List[str]]:
     return result
 
 
-def split_str_to_1d_array(s: str) -> List[str] | List[List[str]]:
+def split_str_to_1d_array(s: str) -> List[str]:
     """
     将字符串按 ';' 分割为第一维，再按 ',' 分割为第二维。
     自动过滤空字符串和空子数组。
@@ -35,11 +36,8 @@ def split_str_to_1d_array(s: str) -> List[str] | List[List[str]]:
     Returns:
         一维数组
     """
-    result: List[List[str]] = []
-    for group in s.split(";"):
-        items = [item.strip() for item in group.split(",") if item.strip()]
-        if items:
-            result.append(items)
+
+    result: List[List[str]] = split_str_to_2d_array(s)
 
     flatten_result: List[str] = [item for sublist in result for item in sublist]
 
@@ -68,3 +66,21 @@ def cut_fonfs_name(s_list: List[str]) -> str:
         res = s_list[0]
 
     return res
+
+def filter_valid_strings(s_list: List[str] | None) -> List[str]:
+    """
+    过滤掉无效的字符串（空、None、仅空格）
+
+    Args:
+        s_list: 待过滤的字符串列表
+
+    Returns:
+        过滤后的字符串列表
+    """
+
+    if not isinstance(s_list, list):
+        return []
+
+    valid_strings = list(filter(lambda s: isinstance(s, str) and s.strip(), s_list))
+
+    return valid_strings
