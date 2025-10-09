@@ -217,7 +217,7 @@ jobs:
               </div>
               
               <script>
-                  const class_names = (window.ENV.FCONFS_DIRECTORIES || '').split(';').map((v) => (v || '').split('|')?.[0]).filter((v) => v !== undefined && v !== null && v !== '');
+                  const class_names = (window.ENV.FCONFS_DIRECTORIES || '').split(';').map((v) => (v || '').split('|')?.[0]).filter((v) => v !== undefined && v !== null && v !== '').map((v) => ({ label: v }));
                   class_names.forEach((class_name) => {
                       const dom = document.querySelector('.config-info.' + class_name.label);
                       if (dom) {
