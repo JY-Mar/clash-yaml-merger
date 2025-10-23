@@ -12,7 +12,7 @@ import requests
 
 BASE64_PATTERN = r"^[A-Za-z0-9+/]+={0,2}$"
 
-response = requests.get("https://jdddf.stc-spare2.com/link/pCWCI8auEY91py6z?sub=2")
+response = requests.get("")
 
 if response.status_code == 200:
     file_content = response.text
@@ -20,11 +20,13 @@ if response.status_code == 200:
 
         # 解码为字节
         decoded_bytes = base64.b64decode(file_content)
-
         # 如果你知道是 UTF-8 编码的文本，可以转为字符串
         decoded_str = decoded_bytes.decode("utf-8")
+        print(decoded_str)
 
-        count = decoded_str.count("ssr://")
+        count = decoded_str.count("ss://")
+        count += decoded_str.count("ssr://")
+        count += decoded_str.count("vmess://")
 
         print(count)
 else:

@@ -873,7 +873,9 @@ def merger_gen_config():
                                     decoded_bytes = base64.b64decode(file_content)
                                     # 如果你知道是 UTF-8 编码的文本，可以转为字符串
                                     decoded_str = decoded_bytes.decode("utf-8")
-                                    _count = decoded_str.count("ssr://")
+                                    _count = decoded_str.count("ss://")
+                                    _count += decoded_str.count("ssr://")
+                                    _count += decoded_str.count("vmess://")
                                 else:
                                     yaml_content = load_yaml_content(file_content)
                                     if yaml_content and isinstance(yaml_content, dict):
