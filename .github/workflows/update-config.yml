@@ -314,7 +314,7 @@ jobs:
                           }
                           const label_style = 'width: 120px; display: inline-block; text-align: right;'
                           const _proxy_providers_proxies_count = data.proxy_providers_proxies_count || {}
-                          const _proxy_providers_proxies = Object.entries(_proxy_providers_proxies_count).map(([k, v]) => `<p><strong　style="${label_style}">${k}：</strong> ${v}</p>`).join('')
+                          const _proxy_providers_proxies = Object.entries(_proxy_providers_proxies_count).map(([k, v]) => `<div><strong　style="${label_style}">${k}：</strong> ${v}</div>`).join('')
                           
                           stats_DOM.innerHTML = `
                               <p><strong style="${label_style}">代理集数量：</strong> ${data.proxy_providers_count}</p>
@@ -323,7 +323,7 @@ jobs:
                               <p><strong style="${label_style}">策略组数量：</strong> ${data.proxy_groups_count}</p>
                               <p><strong style="${label_style}">规则集数量：</strong> ${data.rule_providers_count}</p>
                               <p><strong style="${label_style}">规则数量：</strong> ${data.rules_count}</p>
-                              <p><strong style="${label_style}"></strong> 包含：规则集 ${data.rule_providers_used_count}</p>
+                              <p><strong style="${label_style}"></strong> 包含：规则集数量 ${data.rule_providers_used_count}</p>
                           `;
                           if (updateTime_DOM) {
                               updateTime_DOM.innerHTML = `
