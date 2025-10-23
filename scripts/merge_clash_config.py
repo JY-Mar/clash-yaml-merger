@@ -21,7 +21,8 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 root_dir = os.path.dirname(script_dir)
 sys.path.insert(0, root_dir)
 
-from utils.patterns import REMOTE_YAML_PATTERN, FCONFS_DIR_PATTERN
+from utils.files_utils import load_yaml_content
+from utils.patterns import REMOTE_FILE_PATTERN, REMOTE_YAML_PATTERN, FCONFS_DIR_PATTERN
 from utils.config_utils import load_config
 from utils.merge_utils import deep_merge
 from utils.string_utils import (
@@ -150,22 +151,6 @@ class ClashConfigMerger:
                 logger.error(f"解析文件失败 {file_path}: {e}")
                 return None
 
-    def load_yaml_content(self, content: str) -> Optional[Dict[str, Any]]:
-        """
-        解析YAML内容
-
-        Args:
-            content: YAML字符串内容
-
-        Returns:
-            解析后的字典，失败返回None
-        """
-        try:
-            return yaml.safe_load(content)
-        except yaml.YAMLError as e:
-            logger.error(f"YAML解析失败: {e}")
-            return None
-
     def get_directory_files(self, directory_path: str) -> List[str]:
         """
         获取目录下的所有文件列表（支持本地和GitHub模式）
@@ -262,12 +247,12 @@ class ClashConfigMerger:
         logger.info(f"合并了 {len(merged_proxies)} 个代理节点")
         return merged_proxies
 
-    def merge_rules(self, rule_files: List[str]) -> List[str]:
+    def merge_rules(self, rules_files: List[str]) -> List[str]:
         """
         合并规则列表（只使用rule目录下的规则文件）
 
         Args:
-            rule_files: 规则文件路径列表
+            rules_files: 规则文件路径列表
 
         Returns:
             合并后的规则列表
@@ -276,10 +261,10 @@ class ClashConfigMerger:
         seen_rules = set()
 
         # 只从规则文件中加载规则，忽略 proxies 文件中的规则
-        for rule_file_path in rule_files:
+        for rule_file_path in rules_files:
             content = self.get_file_content(rule_file_path)
             if content:
-                rule_data = self.load_yaml_content(content)
+                rule_data = load_yaml_content(content)
                 logger.info(f"规则文件 {rule_file_path}")
                 if rule_data and "payload" in rule_data:
                     rule_file_name = os.path.basename(rule_file_path).replace(
@@ -383,12 +368,43 @@ class ClashConfigMerger:
             基础配置字典
         """
         return {
-            "mixed-port": 7890,
+            # HTTP 代理端口
+            "port": 7890,
+            # SOCKS5 代理端口
+            "socks-port": 7891,
+            # HTTP(S) and SOCKS5 共用端口
+            "mixed-port": 7892,
+            # Linux 和 macOS 的 redir 透明代理端口 (重定向 TCP 和 TProxy UDP 流量)
+            "redir-port": 7893,
+            # Linux 的透明代理端口（适用于 TProxy TCP 和 TProxy UDP 流量)
+            "tproxy-port": 7894,
+            "unified-delay": True,
+            "tcp-concurrent": True,
+            "find-process-mode": "strict",
+            # 允许局域网的连接（可用来共享代理）
             "allow-lan": True,
-            "bind-address": "*",
+            # Clash 路由工作模式
+            # 规则模式：rule（规则） / global（全局代理）/ direct（全局直连）
             "mode": "rule",
-            "log-level": "info",
-            "external-controller": "127.0.0.1:9090",
+            # Clash 默认将日志输出至 STDOUT
+            # 设置日志输出级别 (默认级别：silent，即不输出任何内容，以避免因日志内容过大而导致程序内存溢出）。
+            # 5 个级别：silent / info / warning / error / debug。级别越高日志输出量越大，越倾向于调试，若需要请自行开启。
+            "log-level": "silent",
+            "ipv6": True,
+            "udp": True,
+            "bind-address": "*",
+            # clash 的 RESTful API 监听地址
+            "external-controller": "0.0.0.0:9090",
+            "external-controller-tls": "0.0.0.0:9443",
+            "external-controller-unix": "mihomo.sock",
+            "external-controller-pipe": "\\.\\pipe\\mihomo",
+            # 存放配置文件的相对路径，或存放网页静态资源的绝对路径
+            # Clash core 将会将其部署在 http://{{external-controller}}/ui
+            "external-ui": "ui",
+            "external-ui-name": "zashboard",
+            "external-ui-url": "https://github.com/Zephyruso/zashboard/archive/refs/heads/gh-pages.zip",
+            "external-doh-server": "/dns-query",
+            "global-client-fingerprint": "chrome",
             "dns": {
                 "enable": True,
                 "ipv6": False,
@@ -409,7 +425,9 @@ class ClashConfigMerger:
     def generate_merged_config(
         self,
         fconfs_directories: List[str] = ["fconfs"],
+        proxy_providers_directory: str = "proxy-providers",
         proxies_directory: str = "proxies",
+        rule_providers_directory: str = "rule-providers",
         rules_directory: str = "rules",
     ) -> Dict[str, Any]:
         """
@@ -417,7 +435,9 @@ class ClashConfigMerger:
 
         Args:
             fconfs_directories: 全量配置文件目录，支持私有仓库目录、单独指定的yaml文件
-            proxies_directory: 订阅文件目录
+            proxy_providers_directory: 代理集文件目录
+            proxies_directory: 代理节点文件目录
+            rule_providers_directory: 规则集文件目录
             rules_directory: 规则文件目录
 
         Returns:
@@ -427,6 +447,7 @@ class ClashConfigMerger:
         # 1. 创建基础配置
         merged_config = self.create_base_config()
 
+        # MARK: 2.1 全量配置
         # 2.1.1 获取全量配置文件列表
         fconfs_files: List[str] = []
         if fconfs_directories:
@@ -443,7 +464,7 @@ class ClashConfigMerger:
         for file_path in fconfs_files:
             content = self.get_file_content(file_path)
             if content:
-                config = self.load_yaml_content(content)
+                config = load_yaml_content(content)
                 if config:
                     configs_from_fconf_files.append((config))
 
@@ -455,45 +476,105 @@ class ClashConfigMerger:
         if configs_from_fconf_files:
             merged_config = reduce(deep_merge, configs_from_fconf_files)
 
-        # 2.2.1 获取订阅文件列表
+        # MARK: 2.2 代理集
+        # 2.2.1 获取代理集文件列表
+        proxy_providers_files = self.get_directory_files(proxy_providers_directory)
+        if not proxy_providers_files:
+            logger.warning(f"未找到代理集文件在目录: {proxy_providers_directory}")
+
+        # 2.2.2 加载所有代理集配置
+        configs_from_proxy_providers_files = []
+        for file_path in proxy_providers_files:
+            content = self.get_file_content(file_path)
+            if content:
+                config = load_yaml_content(content)
+                if config:
+                    configs_from_proxy_providers_files.append((config))
+
+        if not configs_from_proxy_providers_files:
+            logger.error(f"未能加载任何有效的代理节点配置文件")
+            # return {}
+
+        # 2.2.3 合并代理集
+        if configs_from_proxy_providers_files:
+            merged_proxy_providers = reduce(
+                deep_merge, configs_from_proxy_providers_files
+            )
+            merged_config["proxy-providers"] = merged_proxy_providers
+
+        # MARK: 2.3 代理节点
+        # 2.3.1 获取代理节点文件列表
         proxies_files = self.get_directory_files(proxies_directory)
         if not proxies_files:
-            logger.warning(f"未找到订阅文件在目录: {proxies_directory}")
+            logger.warning(f"未找到代理节点文件在目录: {proxies_directory}")
 
-        # 2.2.2 加载所有订阅配置
+        # 2.3.2 加载所有代理节点配置
         configs_from_proxies_files = []
         for file_path in proxies_files:
             content = self.get_file_content(file_path)
             if content:
-                config = self.load_yaml_content(content)
+                config = load_yaml_content(content)
                 if config:
-                    configs_from_proxies_files.append((config, file_path))
+                    configs_from_proxies_files.append((config))
 
         if not configs_from_proxies_files:
-            logger.error(f"未能加载任何有效的订阅配置文件")
+            logger.error(f"未能加载任何有效的代理节点配置文件")
             # return {}
 
-        # 2.2.3 合并代理节点
+        # 2.3.3 合并代理节点
         if configs_from_proxies_files:
-            merged_proxies = self.merge_proxies(configs_from_proxies_files)
+            merged_proxies = reduce(deep_merge, configs_from_proxies_files)
             merged_config["proxies"] = merged_proxies
-            # 创建策略组（传入文件列表用于创建对应的分组）
-            proxy_groups = self.create_proxy_groups(merged_proxies, proxies_files)
-            merged_config["proxy-groups"] = proxy_groups
 
-        # 2.3.1 获取规则文件列表
-        rule_files = self.get_directory_files(rules_directory)
-        if not rule_files:
+        # MARK: 2.4 规则集
+        # 2.4.1 获取规则集文件列表
+        rule_providers_files = self.get_directory_files(rule_providers_directory)
+        if not rule_providers_files:
+            logger.warning(f"未找到规则集文件在目录: {rule_providers_directory}")
+
+        # 2.4.2 加载所有规则集配置
+        configs_from_rule_providers_files = []
+        for file_path in rule_providers_files:
+            content = self.get_file_content(file_path)
+            if content:
+                config = load_yaml_content(content)
+                if config:
+                    configs_from_rule_providers_files.append((config))
+
+        if not configs_from_rule_providers_files:
+            logger.error(f"未能加载任何有效的规则集配置文件")
+            # return {}
+
+        # 2.4.3 合并规则集
+        if configs_from_rule_providers_files:
+            merged_rule_providers = reduce(
+                deep_merge, configs_from_rule_providers_files
+            )
+            merged_config["rule-providers"] = merged_rule_providers
+
+        # MARK: 2.5 规则
+        # 2.5.1 获取规则文件列表
+        rules_files = self.get_directory_files(rules_directory)
+        if not rules_files:
             logger.warning(f"未找到规则文件在目录: {rules_directory}")
 
-        # 2.3.2 合并规则（只使用rule目录下的规则）
-        merged_rules = self.merge_rules(rule_files)
+        # 2.5.2 加载所有规则配置
+        configs_from_rules_files = []
+        for file_path in proxies_files:
+            content = self.get_file_content(file_path)
+            if content:
+                config = load_yaml_content(content)
+                if config:
+                    configs_from_rules_files.append((config))
 
-        if merged_rules:
-            # 只添加最基本的默认规则
-            default_rules = ["MATCH,DIRECT"]  # 默认流量走网络策略组
+        if not configs_from_rules_files:
+            logger.error(f"未能加载任何有效的规则配置文件")
+            # return {}
 
-            merged_config["rules"] = merged_rules + default_rules
+        # 2.5.3 合并规则
+        if configs_from_rules_files:
+            merged_rules = reduce(deep_merge, configs_from_rules_files)
+            merged_config["rules"] = merged_rules
 
         # 3. 清理代理节点中的临时字段
         try:
@@ -561,7 +642,9 @@ class ClashConfigInitParams:
         output_dir: str = "",
         fconfs_dirs: List[List[str]] = [],
         fconfs_filenames: List[str] = [],
+        proxy_providers_dir: str = "",
         proxies_dir: str = "",
+        rule_providers_dir: str = "",
         rules_dir: str = "",
     ):
         """
@@ -574,7 +657,9 @@ class ClashConfigInitParams:
             output_dir: 输出目录
             fconfs_dirs: 全量配置目录列表
             fconfs_filenames: 生成配置文件名列表
-            proxies_dir: 订阅目录
+            proxy_providers_dir: 代理集目录
+            proxies_dir: 代理节点目录
+            rule_providers_dir: 规则集目录
             rules_dir: 规则目录
         """
         self.local_mode = local_mode
@@ -582,14 +667,16 @@ class ClashConfigInitParams:
         self.output_dir = output_dir
         self.fconfs_dirs = fconfs_dirs
         self.fconfs_filenames = fconfs_filenames
+        self.proxy_providers_dir = proxy_providers_dir
         self.proxies_dir = proxies_dir
+        self.rule_providers_dir = rule_providers_dir
         self.rules_dir = rules_dir
         self.auth_token = auth_token
 
 
 def merger_init() -> ClashConfigInitParams:
     """
-    初始化merger、output_dir、fconfs_dirs、fconfs_filenames、proxies_dir、rule_dir、auth_token等重要参数
+    初始化merger、output_dir、fconfs_dirs、fconfs_filenames、proxy_providers_dir、proxies_dir、rule_providers_dir、rules_dir、auth_token等重要参数
 
     Returns:
         初始化参数对象
@@ -600,7 +687,9 @@ def merger_init() -> ClashConfigInitParams:
 
     fconfs_dirs = [["fconfs"]]
     fconfs_filenames = ["filename"]
+    proxy_providers_dir = "proxy-providers"
     proxies_dir = "proxies"
+    rule_providers_dir = "rules-providers"
     rules_dir = "rules"
 
     if local_mode:
@@ -623,15 +712,23 @@ def merger_init() -> ClashConfigInitParams:
                 settings_config["github"]["fconfs_remote_yamls"],
             ]
         )
-        fconfs_remote_yamls = ",".join(_fconfs_remote_yamls) if _fconfs_remote_yamls else ""
+        fconfs_remote_yamls = (
+            ",".join(_fconfs_remote_yamls) if _fconfs_remote_yamls else ""
+        )
         _fconfs_directories = filter_valid_strings(
             [
                 os.getenv("FCONFS_DIRECTORIES", ""),
                 settings_config["github"]["fconfs_directories"],
             ]
         )
-        fconfs_directories = ";".join(_fconfs_directories) if _fconfs_directories else ""
+        fconfs_directories = (
+            ";".join(_fconfs_directories) if _fconfs_directories else ""
+        )
+        proxy_providers_directory = settings_config["github"][
+            "proxy_providers_directory"
+        ]
         proxies_directory = settings_config["github"]["proxies_directory"]
+        rule_providers_directory = settings_config["github"]["rule_providers_directory"]
         rules_directory = settings_config["github"]["rules_directory"]
 
         fconfs_remote_yamls_1d_list: List[str] = []
@@ -652,8 +749,14 @@ def merger_init() -> ClashConfigInitParams:
                 fconfs_directories_2d_list, fconfs_remote_yamls_1d_list
             )
 
+        if proxy_providers_directory and isinstance(proxy_providers_directory, str):
+            proxy_providers_dir = proxy_providers_directory.strip()
+
         if proxies_directory and isinstance(proxies_directory, str):
             proxies_dir = proxies_directory.strip()
+
+        if rule_providers_directory and isinstance(rule_providers_directory, str):
+            rule_providers_dir = rule_providers_directory.strip()
 
         if rules_directory and isinstance(rules_directory, str):
             rules_dir = rules_directory.strip()
@@ -673,7 +776,9 @@ def merger_init() -> ClashConfigInitParams:
         output_dir=output_dir,
         fconfs_dirs=fconfs_dirs,
         fconfs_filenames=fconfs_filenames,
+        proxy_providers_dir=proxy_providers_dir,
         proxies_dir=proxies_dir,
+        rule_providers_dir=rule_providers_dir,
         rules_dir=rules_dir,
         auth_token=auth_token,
     )
@@ -703,7 +808,11 @@ def merger_gen_config():
                 f"=== [{i + 1} / {len(ida.fconfs_dirs)}] 开始合并 {attr} <== {dirs_desensitize} ==="
             )
             merged_configs[attr] = _merger.generate_merged_config(
-                dirs, ida.proxies_dir, ida.rules_dir
+                dirs,
+                ida.proxy_providers_dir,
+                ida.proxies_dir,
+                ida.rule_providers_dir,
+                ida.rules_dir,
             )
             logger.info(f"=== [{i + 1} / {len(ida.fconfs_dirs)}] 合并完成 {attr}  ===")
         logger.info(f"=== ↑↑↑ 配置合并完成 ↑↑↑ ===")
@@ -730,21 +839,66 @@ def merger_gen_config():
             now_date_formatted = datetime.now(timezone.utc).isoformat()
             stats = {
                 "generated_at": now_date_formatted,
+                # proxy-providers 个数
                 "proxy_providers_count": 0,
+                # 单 proxy-providers 中所包含的 proxies 个数
+                "proxy_providers_proxies_count": {},
+                # 单 proxies 个数
                 "proxies_count": 0,
+                # proxy-groups 个数
                 "proxy_groups_count": 0,
+                # 载入的 rule-providers 个数
+                "rule_providers_count": 0,
+                # 使用的 rule-providers 个数
+                "rule_providers_used_count": 0,
+                # rules 个数
                 "rules_count": 0,
             }
             try:
-                proxy_providers_count = len(merged_config.get("proxy-providers", {}))
-                proxies_count = len(merged_config.get("proxies", {}))
-                proxy_groups_count = len(merged_config.get("proxy-groups", {}))
-                rules_count = len(merged_config.get("rules", {}))
+                # proxy-providers
+                _proxy_providers = merged_config.get("proxy-providers", {})
+                proxy_providers_count = len(_proxy_providers)
+                proxy_providers_proxies_count = {}
+                for proxyProviderKey, proxyProviderValue in _proxy_providers.items():
+                    proxyProviderUrl = proxyProviderValue.get("url", "")
+                    if proxyProviderUrl and isinstance(proxyProviderUrl, str) and re.fullmatch(REMOTE_FILE_PATTERN, proxyProviderUrl) is not None:
+                        _response = requests.get(proxyProviderUrl)
+                        if _response.status_code == 200:
+                            file_content = _response.text
+                            yaml_content = load_yaml_content(file_content)
+                            if yaml_content and isinstance(yaml_content, dict):
+                                _proxies = yaml_content.get("proxies", [])
+                                proxy_providers_proxies_count.update({ proxyProviderKey: len(_proxies) })
+                            else:
+                                proxy_providers_proxies_count.update({ proxyProviderKey: 0 })
+                        else:
+                            proxy_providers_proxies_count.update({ proxyProviderKey: 0 })
+                    else:
+                        proxy_providers_proxies_count.update({ proxyProviderKey: 0 })
+
+                # proxies
+                _proxies = merged_config.get("proxies", [])
+                proxies_count = len(_proxies)
+                # proxy-groups
+                _proxy_groups = merged_config.get("proxy-groups", [])
+                proxy_groups_count = len(_proxy_groups)
+                # rule-providers
+                _rule_providers = merged_config.get("rule-providers", {})
+                rule_providers_count = len(_rule_providers)
+                # rules
+                _rules = merged_config.get("rules", [])
+                rule_providers_used_count = len(
+                    [s for s in _rules if isinstance(s, str) and s.strip().startswith("RULE-SET,")]
+                )
+                rules_count = len(_rules)
                 stats.update(
                     {
                         "proxy_providers_count": proxy_providers_count,
+                        "proxy_providers_proxies_count": proxy_providers_proxies_count,
                         "proxies_count": proxies_count,
                         "proxy_groups_count": proxy_groups_count,
+                        "rule_providers_count": rule_providers_count,
+                        "rule_providers_used_count": rule_providers_used_count,
                         "rules_count": rules_count,
                     }
                 )
@@ -766,7 +920,7 @@ def merger_gen_config():
                 logger.warning(f"保存统计信息失败: {e}")
 
             logger.info(
-                f"✅ 任务完成! 代理集: {stats['proxy_providers_count']}, 代理节点: {stats['proxies_count']}, 规则: {stats['rules_count']}"
+                f"✅ 任务完成! 代理集: {stats['proxy_providers_count']}, 代理节点: {stats['proxies_count']}, 规则: {stats['rule_providers_count']}, 规则: {stats['rules_count']}"
             )
             logger.info(
                 f"📁 配置文件: {settings_config['output']['config_filename']}{final_filename}-{{your-token}}.yaml"

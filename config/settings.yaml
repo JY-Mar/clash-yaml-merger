@@ -11,8 +11,12 @@ github:
   # 全量配置文件目录，支持以“;”符号分隔生成多个文件，支持以“,”符号分隔多个目录或远程公开仓库的yaml文件合并为一个文件
   # 格式：<生成文件名>|<合并配置1>,<合并配置2>...;<生成文件名>|<合并配置1>,<合并配置2>...
   fconfs_directories: ''
-  # 订阅文件目录
+  # 代理集文件目录
+  proxy_providers_directory: 'Clash/proxy-providers'
+  # 代理节点文件目录
   proxies_directory: 'Clash/proxies'
+  # 规则集文件目录
+  rule_providers_directory: 'Clash/rule-providers'
   # 规则文件目录
   rules_directory: 'Clash/rules'
 

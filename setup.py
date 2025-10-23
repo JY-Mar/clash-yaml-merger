@@ -41,11 +41,23 @@ def setup_github_config():
     if fconfs_dirs:
         config["github"]["fconfs_directories"] = fconfs_dirs
 
+    proxy_providers_dir = input(
+        f"代理集文件目录 [{config['github']['proxy_providers_directory']}]: "
+    ).strip()
+    if proxy_providers_dir:
+        config["github"]["proxy_providers_directory"] = proxy_providers_dir
+
     proxies_dir = input(
-        f"订阅节点文件目录 [{config['github']['proxies_directory']}]: "
+        f"代理节点文件目录 [{config['github']['proxies_directory']}]: "
     ).strip()
     if proxies_dir:
         config["github"]["proxies_directory"] = proxies_dir
+
+    rule_providers_dir = input(
+        f"规则集文件目录 [{config['github']['rule_providers_directory']}]: "
+    ).strip()
+    if rule_providers_dir:
+        config["github"]["rule_providers_directory"] = rule_providers_dir
 
     rules_dir = input(f"规则文件目录 [{config['github']['rules_directory']}]: ").strip()
     if rules_dir:
