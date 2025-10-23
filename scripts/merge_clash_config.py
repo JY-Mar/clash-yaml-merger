@@ -22,7 +22,7 @@ root_dir = os.path.dirname(script_dir)
 sys.path.insert(0, root_dir)
 
 from utils.files_utils import load_yaml_content
-from utils.patterns import REMOTE_FILE_PATTERN, REMOTE_YAML_PATTERN, FCONFS_DIR_PATTERN
+from utils.patterns import BASE64_PATTERN, REMOTE_FILE_PATTERN, REMOTE_YAML_PATTERN, FCONFS_DIR_PATTERN
 from utils.config_utils import load_config
 from utils.merge_utils import deep_merge
 from utils.string_utils import (
@@ -861,20 +861,26 @@ def merger_gen_config():
                 proxy_providers_proxies_count = {}
                 for proxyProviderKey, proxyProviderValue in _proxy_providers.items():
                     proxyProviderUrl = proxyProviderValue.get("url", "")
+                    _count = 0
                     if proxyProviderUrl and isinstance(proxyProviderUrl, str) and re.fullmatch(REMOTE_FILE_PATTERN, proxyProviderUrl) is not None:
                         _response = requests.get(proxyProviderUrl)
                         if _response.status_code == 200:
                             file_content = _response.text
-                            yaml_content = load_yaml_content(file_content)
-                            if yaml_content and isinstance(yaml_content, dict):
-                                _proxies = yaml_content.get("proxies", [])
-                                proxy_providers_proxies_count.update({ proxyProviderKey: len(_proxies) })
-                            else:
-                                proxy_providers_proxies_count.update({ proxyProviderKey: 0 })
-                        else:
-                            proxy_providers_proxies_count.update({ proxyProviderKey: 0 })
-                    else:
-                        proxy_providers_proxies_count.update({ proxyProviderKey: 0 })
+                            if file_content and isinstance(file_content, str):
+                                if re.fullmatch(BASE64_PATTERN, file_content) is not None:
+                                    # base64
+                                    # 解码为字节
+                                    decoded_bytes = base64.b64decode(file_content)
+                                    # 如果你知道是 UTF-8 编码的文本，可以转为字符串
+                                    decoded_str = decoded_bytes.decode("utf-8")
+                                    _count = decoded_str.count("ssr://")
+                                else:
+                                    yaml_content = load_yaml_content(file_content)
+                                    if yaml_content and isinstance(yaml_content, dict):
+                                        _proxies = yaml_content.get("proxies", [])
+                                        _count = len(_proxies)
+                    
+                    proxy_providers_proxies_count.update({ proxyProviderKey: _count })
 
                 # proxies
                 _proxies = merged_config.get("proxies", [])

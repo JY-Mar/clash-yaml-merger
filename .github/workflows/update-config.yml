@@ -313,7 +313,7 @@ jobs:
                               dateStr = String(data.generated_at)
                           }
                           const _proxy_providers_proxies_count = data.proxy_providers_proxies_count || {}
-                          const _proxy_providers_proxies = Object.entries(_proxy_providers_proxies_count).map(([k, v]) => `<p><strong>&emsp;&emsp;&emsp;&emsp;${k}：</strong> ${v}</p>`).join('')
+                          const _proxy_providers_proxies = Object.entries(_proxy_providers_proxies_count).map(([k, v]) => `<p><strong>&emsp;&emsp;&emsp;&emsp;&emsp;${k}：</strong> ${v}</p>`).join('')
                           stats_DOM.innerHTML = `
                               <p><strong>代理集数量：</strong> ${data.proxy_providers_count}</p>
                               ${_proxy_providers_proxies}
