@@ -318,7 +318,7 @@ jobs:
                           
                           stats_DOM.innerHTML = `
                               <p><strong style="${label_style}">代理集数量：</strong> ${data.proxy_providers_count}</p>
-                              <p>${Object.entries(_proxy_providers_proxies_count).map(([k, v]) => '<strong style="' + ${label_style} + '"></strong> ' + k + '：' + v).join('<br />')}</p>
+                              <p>${Object.entries(_proxy_providers_proxies_count).map(([k, v]) => '<strong style="' + label_style + '"></strong> ' + k + '：' + v).join('<br />')}</p>
                               <p><strong style="${label_style}">代理节点数量：</strong> ${data.proxies_count}</p>
                               <p><strong style="${label_style}">策略组数量：</strong> ${data.proxy_groups_count}</p>
                               <p><strong style="${label_style}">规则集数量：</strong> ${data.rule_providers_count}</p>
