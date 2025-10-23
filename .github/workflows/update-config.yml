@@ -312,12 +312,15 @@ jobs:
                           } else {
                               dateStr = String(data.generated_at)
                           }
+                          const _proxy_providers_proxies_count = data.proxy_providers_proxies_count || {}
                           stats_DOM.innerHTML = `
                               <p><strong>代理集数量：</strong> ${data.proxy_providers_count}</p>
-                              <p><strong>各代理集代理节点数量：</strong> ${data.proxy_providers_proxies_count}</p>
+                              ${Object.entries(_proxy_providers_proxies_count).map(([k, v]) => '<p><strong>&emsp;&emsp;&emsp;&emsp;' + k + '：</strong> ' + v + '</p>').join('')}
+                              <p><strong>代理集数量：</strong> ${data.proxy_providers_count}</p>
+                              <p><strong>各代理集代理节点数量：</strong> ${proxy_providers_proxies_count}</p>
                               <p><strong>代理节点数量：</strong> ${data.proxies_count}</p>
                               <p><strong>策略组数量：</strong> ${data.proxy_groups_count}</p>
-                              <p><strong>规则集数量：</strong> ${data.rule_providers_count} （${data.rule_providers_used_count}项在rules中使用）</p>
+                              <p><strong>规则集数量：</strong> 载入 ${data.rule_providers_count} ，使用 ${data.rule_providers_used_count} 项</p>
                               <p><strong>规则数量：</strong> ${data.rules_count}</p>
                           `;
                           if (updateTime_DOM) {
