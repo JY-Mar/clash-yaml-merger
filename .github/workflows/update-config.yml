@@ -314,7 +314,7 @@ jobs:
                           }
                           const label_style = 'width: 120px; display: inline-block; text-align: right;'
                           const _proxy_providers_proxies_count = data.proxy_providers_proxies_count || {}
-                          const _proxy_providers_proxies = Object.entries(_proxy_providers_proxies_count).map(([k, v]) => `<div><strong　style="${label_style}">${k}：</strong> ${v}</div>`).join('')
+                          const _proxy_providers_proxies = Object.entries(_proxy_providers_proxies_count).map(([k, v]) => `${k}：${v}`).join('<br />')
                           
                           stats_DOM.innerHTML = `
                               <p><strong style="${label_style}">代理集数量：</strong> ${data.proxy_providers_count}</p>
