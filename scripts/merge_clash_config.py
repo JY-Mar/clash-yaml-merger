@@ -915,7 +915,7 @@ def merger_gen_config():
                 proxy_groups_count = len(_proxy_groups)
                 # rule-providers
                 _rule_providers = merged_config.get("rule-providers", {})
-                providers_count = len(_rule_providers)
+                rule_providers_count = len(_rule_providers)
                 # rules
                 _rules = merged_config.get("rules", [])
                 total_rules_count = len(_rules)
@@ -946,7 +946,7 @@ def merger_gen_config():
                         "indep_proxies_count": indep_proxies_count,
                         "proxy_providers__proxies__count": proxy_providers__proxies__count,
                         "proxy_groups_count": proxy_groups_count,
-                        "providers_count": providers_count,
+                        "rule_providers_count": rule_providers_count,
                         "total_rules_count": total_rules_count,
                         "rules__rule_set__count": rules__rule_set__count,
                         "indep_rules_count": indep_rules_count
