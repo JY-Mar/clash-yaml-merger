@@ -846,26 +846,28 @@ def merger_gen_config():
                 "generated_at": now_date_formatted,
                 # proxy-providers 个数
                 "proxy_providers_count": 0,
-                # 单 proxy-providers 中所包含的 proxies 个数
-                "proxy_providers_proxies_count": {},
+                # proxies 总个数 = sum(proxy_providers__proxies__count.values()) + indep_proxies_count
+                "total_proxies_count": 0,
                 # 独立的 proxies 个数
                 "indep_proxies_count": 0,
-                # proxies 总个数 = sum(proxy_providers_proxies_count.values()) + indep_proxies_count
-                "total_proxies_count": 0,
+                # 单 proxy-providers 中所包含的 proxies 个数
+                "proxy_providers__proxies__count": {},
                 # proxy-groups 个数
                 "proxy_groups_count": 0,
-                # 载入的 rule-providers 个数
+                # rule-providers 个数
                 "rule_providers_count": 0,
-                # 使用的 rule-providers 个数
-                "rule_providers_used_count": 0,
-                # rules 个数
-                "rules_count": 0,
+                # rules 总个数
+                "total_rules_count": 0,
+                # rules.RULE-SET 个数
+                "rules__rule_set__count": 0,
+                # 独立的 rules 个数
+                "indep_rules_count": 0
             }
             try:
                 # proxy-providers
                 _proxy_providers = merged_config.get("proxy-providers", {})
                 proxy_providers_count = len(_proxy_providers)
-                proxy_providers_proxies_count = {}
+                proxy_providers__proxies__count = {}
                 headers = {
                     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/115.0 Safari/537.36"
                 }
@@ -900,40 +902,54 @@ def merger_gen_config():
                                         _proxies = yaml_content.get("proxies", [])
                                         _count = len(_proxies)
 
-                    proxy_providers_proxies_count.update({proxyProviderKey: _count})
+                    proxy_providers__proxies__count.update({proxyProviderKey: _count})
 
                 # proxies
                 _proxies = merged_config.get("proxies", [])
                 indep_proxies_count = len(_proxies)
                 total_proxies_count = indep_proxies_count + sum(
-                    proxy_providers_proxies_count.values()
+                    proxy_providers__proxies__count.values()
                 )
                 # proxy-groups
                 _proxy_groups = merged_config.get("proxy-groups", [])
                 proxy_groups_count = len(_proxy_groups)
                 # rule-providers
                 _rule_providers = merged_config.get("rule-providers", {})
-                rule_providers_count = len(_rule_providers)
+                providers_count = len(_rule_providers)
                 # rules
                 _rules = merged_config.get("rules", [])
-                rule_providers_used_count = len(
-                    [
-                        s
-                        for s in _rules
-                        if isinstance(s, str) and s.strip().startswith("RULE-SET,")
-                    ]
+                total_rules_count = len(_rules)
+                # rules startsWith "RULE-SET,"
+                _rule_set_keys = []
+                PREFIX = "RULE-SET,"
+                for s in _rules:
+                    if isinstance(s, str) and s.strip().startswith(PREFIX):
+                        rest = s[len(PREFIX) :]
+                        parts = rest.split(",", 1)  # 只分割一次
+                        _rule_set_keys.append(parts[0])
+                rules__rule_set__count = len(
+                    list(
+                        set(
+                            _rule_providers.keys()
+                            if isinstance(_rule_providers, dict)
+                            else []
+                        )
+                        & set(_rule_set_keys)
+                    )
                 )
-                rules_count = len(_rules)
+                indep_rules_count = total_rules_count - rules__rule_set__count
+
                 stats.update(
                     {
                         "proxy_providers_count": proxy_providers_count,
-                        "proxy_providers_proxies_count": proxy_providers_proxies_count,
-                        "indep_proxies_count": indep_proxies_count,
                         "total_proxies_count": total_proxies_count,
+                        "indep_proxies_count": indep_proxies_count,
+                        "proxy_providers__proxies__count": proxy_providers__proxies__count,
                         "proxy_groups_count": proxy_groups_count,
-                        "rule_providers_count": rule_providers_count,
-                        "rule_providers_used_count": rule_providers_used_count,
-                        "rules_count": rules_count,
+                        "providers_count": providers_count,
+                        "total_rules_count": total_rules_count,
+                        "rules__rule_set__count": rules__rule_set__count,
+                        "indep_rules_count": indep_rules_count
                     }
                 )
             except Exception as e:
@@ -953,9 +969,7 @@ def merger_gen_config():
             except Exception as e:
                 logger.warning(f"保存统计信息失败: {e}")
 
-            logger.info(
-                f"✅ 任务完成! "
-            )
+            logger.info(f"✅ 任务完成! ")
             logger.info(
                 f"📁 配置文件: {settings_config['output']['config_filename']}{final_filename}-{{your-token}}.yaml"
             )
