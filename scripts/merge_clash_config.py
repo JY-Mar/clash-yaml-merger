@@ -22,7 +22,12 @@ root_dir = os.path.dirname(script_dir)
 sys.path.insert(0, root_dir)
 
 from utils.files_utils import load_yaml_content
-from utils.patterns import BASE64_PATTERN, REMOTE_FILE_PATTERN, REMOTE_YAML_PATTERN, FCONFS_DIR_PATTERN
+from utils.patterns import (
+    BASE64_PATTERN,
+    REMOTE_FILE_PATTERN,
+    REMOTE_YAML_PATTERN,
+    FCONFS_DIR_PATTERN,
+)
 from utils.config_utils import load_config
 from utils.merge_utils import deep_merge
 from utils.string_utils import (
@@ -843,8 +848,10 @@ def merger_gen_config():
                 "proxy_providers_count": 0,
                 # 单 proxy-providers 中所包含的 proxies 个数
                 "proxy_providers_proxies_count": {},
-                # 单 proxies 个数
-                "proxies_count": 0,
+                # 独立的 proxies 个数
+                "indep_proxies_count": 0,
+                # proxies 总个数 = sum(proxy_providers_proxies_count.values()) + indep_proxies_count
+                "total_proxies_count": 0,
                 # proxy-groups 个数
                 "proxy_groups_count": 0,
                 # 载入的 rule-providers 个数
@@ -859,15 +866,26 @@ def merger_gen_config():
                 _proxy_providers = merged_config.get("proxy-providers", {})
                 proxy_providers_count = len(_proxy_providers)
                 proxy_providers_proxies_count = {}
+                headers = {
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/115.0 Safari/537.36"
+                }
                 for proxyProviderKey, proxyProviderValue in _proxy_providers.items():
                     proxyProviderUrl = proxyProviderValue.get("url", "")
                     _count = 0
-                    if proxyProviderUrl and isinstance(proxyProviderUrl, str) and re.fullmatch(REMOTE_FILE_PATTERN, proxyProviderUrl) is not None:
-                        _response = requests.get(proxyProviderUrl)
+                    if (
+                        proxyProviderUrl
+                        and isinstance(proxyProviderUrl, str)
+                        and re.fullmatch(REMOTE_FILE_PATTERN, proxyProviderUrl)
+                        is not None
+                    ):
+                        _response = requests.get(proxyProviderUrl, headers=headers)
                         if _response.status_code == 200:
                             file_content = _response.text
                             if file_content and isinstance(file_content, str):
-                                if re.fullmatch(BASE64_PATTERN, file_content) is not None:
+                                if (
+                                    re.fullmatch(BASE64_PATTERN, file_content)
+                                    is not None
+                                ):
                                     # base64
                                     # 解码为字节
                                     decoded_bytes = base64.b64decode(file_content)
@@ -881,12 +899,15 @@ def merger_gen_config():
                                     if yaml_content and isinstance(yaml_content, dict):
                                         _proxies = yaml_content.get("proxies", [])
                                         _count = len(_proxies)
-                    
-                    proxy_providers_proxies_count.update({ proxyProviderKey: _count })
+
+                    proxy_providers_proxies_count.update({proxyProviderKey: _count})
 
                 # proxies
                 _proxies = merged_config.get("proxies", [])
-                proxies_count = len(_proxies)
+                indep_proxies_count = len(_proxies)
+                total_proxies_count = indep_proxies_count + sum(
+                    proxy_providers_proxies_count.values()
+                )
                 # proxy-groups
                 _proxy_groups = merged_config.get("proxy-groups", [])
                 proxy_groups_count = len(_proxy_groups)
@@ -896,14 +917,19 @@ def merger_gen_config():
                 # rules
                 _rules = merged_config.get("rules", [])
                 rule_providers_used_count = len(
-                    [s for s in _rules if isinstance(s, str) and s.strip().startswith("RULE-SET,")]
+                    [
+                        s
+                        for s in _rules
+                        if isinstance(s, str) and s.strip().startswith("RULE-SET,")
+                    ]
                 )
                 rules_count = len(_rules)
                 stats.update(
                     {
                         "proxy_providers_count": proxy_providers_count,
                         "proxy_providers_proxies_count": proxy_providers_proxies_count,
-                        "proxies_count": proxies_count,
+                        "indep_proxies_count": indep_proxies_count,
+                        "total_proxies_count": total_proxies_count,
                         "proxy_groups_count": proxy_groups_count,
                         "rule_providers_count": rule_providers_count,
                         "rule_providers_used_count": rule_providers_used_count,
@@ -928,7 +954,7 @@ def merger_gen_config():
                 logger.warning(f"保存统计信息失败: {e}")
 
             logger.info(
-                f"✅ 任务完成! 代理集: {stats['proxy_providers_count']}, 代理节点: {stats['proxies_count']}, 规则: {stats['rule_providers_count']}, 规则: {stats['rules_count']}"
+                f"✅ 任务完成! "
             )
             logger.info(
                 f"📁 配置文件: {settings_config['output']['config_filename']}{final_filename}-{{your-token}}.yaml"
