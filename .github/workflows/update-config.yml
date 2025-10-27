@@ -211,8 +211,15 @@ jobs:
                     white-space: nowrap;
                   }
                   .sub-label-class {
-                    margin-left: 120px;
+                    margin-left: 65px;
                     font-weight: 400;
+                  }
+                  .sub-label-class::before {
+                    content: "├──";
+                    margin-right: 5px;
+                  }
+                  .block-class:has(.label-class > .sub-label-class) + .block-class:has(.label-class > .sub-label-class) > .label-class > .sub-label-class::before {
+                    content: "└──";
                   }
                   .content-class {}
                   .dots-class {
