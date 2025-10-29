@@ -743,15 +743,20 @@ def merger_init() -> ClashConfigInitParams:
             )
 
         if fconfs_directories and isinstance(fconfs_directories, str):
-            fconfs_directories_2d_list = split_str_to_2d_array(
-                re.sub(FCONFS_DIR_PATTERN, r"\2", fconfs_directories)
-            )
             # 获取文件名，默认取“name|。。。”的name值，否则取第一个目录名
             fconfs_filenames = list(
-                map(lambda f_d: cut_fonfs_name(f_d), fconfs_directories_2d_list)
+                map(
+                    lambda f_d: cut_fonfs_name(f_d),
+                    # 这里需要groupName，不能去除，否则文件名取值可能出错
+                    split_str_to_2d_array(fconfs_directories),
+                )
             )
             fconfs_dirs = unshift_to_array(
-                fconfs_directories_2d_list, fconfs_remote_yamls_1d_list
+                # 通过正则去除groupName，将处理后的字符串转化为二维数组
+                split_str_to_2d_array(
+                    re.sub(FCONFS_DIR_PATTERN, r"\2", fconfs_directories)
+                ),
+                fconfs_remote_yamls_1d_list,
             )
 
         if proxy_providers_directory and isinstance(proxy_providers_directory, str):
@@ -861,7 +866,7 @@ def merger_gen_config():
                 # rules.RULE-SET 个数
                 "rules__rule_set__count": 0,
                 # 独立的 rules 个数
-                "indep_rules_count": 0
+                "indep_rules_count": 0,
             }
             try:
                 # proxy-providers
@@ -949,7 +954,7 @@ def merger_gen_config():
                         "rule_providers_count": rule_providers_count,
                         "total_rules_count": total_rules_count,
                         "rules__rule_set__count": rules__rule_set__count,
-                        "indep_rules_count": indep_rules_count
+                        "indep_rules_count": indep_rules_count,
                     }
                 )
             except Exception as e:

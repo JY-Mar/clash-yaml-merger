@@ -65,7 +65,7 @@ proxy:
     - name: '意大利'
       keywords: ['🇮🇹', '意大利', 'IT', 'Italy']
     - name: '荷兰'
-      keywords: ['🇳🇱', '荷兰', 'NL', 'Holland', 'Netherlands']
+      keywords: ['🇳🇱', '荷兰', 'NL', 'Netherlands']
     - name: '卢森堡'
       keywords: ['🇱🇺', '卢森堡', 'LU', 'Luxembourg', 'Luxemburg']
 
