@@ -285,22 +285,37 @@ jobs:
                       const configInfo = document.createElement('div');
                       configInfo.className = "config-info " + class_name.label;
 
-                      const title1 = document.createElement("h3");
-                      title1.textContent = "📊 配置统计 " + class_name.label + (class_name.remark ? "(" + class_name.remark + ")" : "");
+                      const title_main = document.createElement("h1");
+                      title_main.textContent = "🚀 配置文件 " + class_name.label + (class_name.remark ? "(" + class_name.remark + ")" : "");
+
+                      configInfo.appendChild(title_main);
+
+                      const title_for_subs = document.createElement("h3");
+                      title_for_subs.textContent = "📊 订阅详情";
+
+                      const subs = document.createElement("div");
+                      subs.id = "subs" + "-" + class_name.label;
+                      subs.textContent = "加载中...";
+
+                      configInfo.appendChild(title_for_subs);
+                      configInfo.appendChild(subs);
+
+                      const title_for_stats = document.createElement("h3");
+                      title_for_stats.textContent = "📊 统计信息";
 
                       const stats = document.createElement("div");
                       stats.id = "stats" + "-" + class_name.label;
                       stats.textContent = "加载中...";
 
-                      configInfo.appendChild(title1);
+                      configInfo.appendChild(title_for_stats);
                       configInfo.appendChild(stats);
 
                       // 创建使用方法区域
                       const successBox = document.createElement("div");
                       successBox.className = "success";
 
-                      const title2 = document.createElement("h3");
-                      title2.textContent = "📋 使用方法";
+                      const title_for_usage = document.createElement("h3");
+                      title_for_usage.textContent = "📋 使用方法";
 
                       const desc = document.createElement("p");
                       desc.textContent = "在 Clash 客户端中添加以下订阅链接：";
@@ -316,7 +331,7 @@ jobs:
                       tip.appendChild(small);
 
                       // 添加所有元素到 successBox
-                      successBox.appendChild(title2);
+                      successBox.appendChild(title_for_usage);
                       successBox.appendChild(desc);
                       successBox.appendChild(urlBox);
                       successBox.appendChild(tip);
@@ -332,6 +347,7 @@ jobs:
                     fetch('stats' + filename + '.json')
                       .then(response => response.json())
                       .then(data => {
+                          const subs_DOM = document.getElementById('subs' + filename);
                           const stats_DOM = document.getElementById('stats' + filename);
                           let dateStr = ''
                           const generateDate = new Date(data.generated_at)
@@ -353,8 +369,11 @@ jobs:
                           }
                           const _proxy_providers__proxies__count = data.proxy_providers__proxies__count || {}
                           
+                          subs_DOM.innerHTML = `
+                              ${Object.entries(_proxy_providers__proxies__count).map(([k, v], ki) => '<p class="block-class"><strong class="label-class">' + k + '：</strong><span class="dots-class"></span><span class="content-class">' + (v.useinfo || '') + '</span></p>').join('')}
+                          `;
+
                           stats_DOM.innerHTML = `
-                              ${Object.entries(_proxy_providers__proxies__count).map(([k, v], ki) => '<p class="block-class"><strong class="label-class">' + (ki === 0 ? '订阅信息：' : '') + '<strong class="sub-label-class">代理集[' + k + ']：</strong></strong><span class="dots-class"></span><span class="content-class">' + (v.useinfo || '') + '</span></p>').join('')}
                               <p class="block-class">
                                 <strong class="label-class">
                                   代理集数量：
@@ -433,6 +452,7 @@ jobs:
                       })
                       .catch((error) => {
                           console.error('Error:', error);
+                          document.getElementById('subs' + filename).innerHTML = '<p style="color: red;">加载订阅信息失败</p>';
                           document.getElementById('stats' + filename).innerHTML = '<p style="color: red;">加载统计信息失败</p>';
                       });
                   }
@@ -445,7 +465,9 @@ jobs:
                               intervals[class_name.label] = undefined;
                           };
                           intervals[class_name.label] = setInterval(() => {
-                              if (document.getElementById('stats' + '-' + class_name.label)) {
+                              const subs_DOM - document.getElementById('subs' + '-' + class_name.label)
+                              const stats_DOM - document.getElementById('stats' + '-' + class_name.label)
+                              if (subs_DOM && stats_DOM) {
                                   fetchStats('-' + class_name.label)
                                   clearInterval(intervals[class_name.label]);
                                   intervals[class_name.label] = null;
