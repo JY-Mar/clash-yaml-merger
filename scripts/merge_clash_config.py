@@ -21,6 +21,7 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 root_dir = os.path.dirname(script_dir)
 sys.path.insert(0, root_dir)
 
+from utils import files_utils
 from utils.files_utils import load_yaml_content
 from utils.patterns import (
     BASE64_PATTERN,
@@ -839,11 +840,6 @@ def merger_gen_config():
             # 使用token作为文件名的一部分进行认证
             config_filename = f"{settings_config['output']['config_filename']}{final_filename}-{ida.auth_token}.yaml"
             output_path = os.path.join(ida.output_dir, config_filename)
-            if not ida.merger or (
-                ida.merger
-                and not ida.merger.save_config_to_file(merged_config, output_path)
-            ):
-                sys.exit(1)
 
             # 生成统计信息
             now_date_formatted = datetime.now(timezone.utc).isoformat()
@@ -873,9 +869,7 @@ def merger_gen_config():
                 _proxy_providers = merged_config.get("proxy-providers", {})
                 proxy_providers_count = len(_proxy_providers)
                 proxy_providers__proxies__count = {}
-                headers = {
-                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/115.0 Safari/537.36"
-                }
+                
                 for proxyProviderKey, proxyProviderValue in _proxy_providers.items():
                     proxyProviderUrl = proxyProviderValue.get("url", "")
                     _count = 0
@@ -885,27 +879,57 @@ def merger_gen_config():
                         and re.fullmatch(REMOTE_FILE_PATTERN, proxyProviderUrl)
                         is not None
                     ):
-                        _response = requests.get(proxyProviderUrl, headers=headers)
-                        if _response.status_code == 200:
-                            file_content = _response.text
-                            if file_content and isinstance(file_content, str):
+                        url_content = files_utils.request_url_content(proxyProviderUrl)
+                        if url_content and isinstance(url_content, dict):
+                            text = url_content['content']
+                            if text and isinstance(text, str):
                                 if (
-                                    re.fullmatch(BASE64_PATTERN, file_content)
+                                    re.fullmatch(BASE64_PATTERN, text)
                                     is not None
                                 ):
                                     # base64
                                     # 解码为字节
-                                    decoded_bytes = base64.b64decode(file_content)
+                                    decoded_bytes = base64.b64decode(text)
                                     # 如果你知道是 UTF-8 编码的文本，可以转为字符串
                                     decoded_str = decoded_bytes.decode("utf-8")
                                     _count = decoded_str.count("ss://")
                                     _count += decoded_str.count("ssr://")
                                     _count += decoded_str.count("vmess://")
                                 else:
-                                    yaml_content = load_yaml_content(file_content)
+                                    yaml_content = load_yaml_content(text)
                                     if yaml_content and isinstance(yaml_content, dict):
                                         _proxies = yaml_content.get("proxies", [])
                                         _count = len(_proxies)
+                            
+                            userinfo_used = url_content.get("used", "")
+                            userinfo_total = url_content.get("total", "")
+                            userinfo_expire = url_content.get("expire", "")
+                            if userinfo_used and userinfo_total and userinfo_expire:
+                                if not merged_configs[filename]["proxies"]:
+                                    merged_configs[filename]["proxies"] = []
+
+                                merged_configs[filename]["proxies"].append(
+                                    {
+                                        "name": f"{proxyProviderKey} 流量使用：{userinfo_used}/{userinfo_total}",
+                                        "server": "",
+                                        "port": 8080,
+                                        "password": "",
+                                        "uuid": f"scat-proxy-{proxyProviderKey}-userinfo-used",
+                                        "tls": False,
+                                        "skip-cert-verify": True,
+                                        "udp": True
+                                    },
+                                    {
+                                        "name": f"{proxyProviderKey} 套餐到期：{userinfo_expire}",
+                                        "server": "",
+                                        "port": 8080,
+                                        "password": "",
+                                        "uuid": f"scat-proxy-{proxyProviderKey}-userinfo-expire",
+                                        "tls": False,
+                                        "skip-cert-verify": True,
+                                        "udp": True
+                                    }
+                                )
 
                     proxy_providers__proxies__count.update({proxyProviderKey: _count})
 
@@ -959,6 +983,14 @@ def merger_gen_config():
                 )
             except Exception as e:
                 logger.error(f"生成统计信息失败: {e}")
+
+            # #region 配置写入到文件“*.yaml”
+            if not ida.merger or (
+                ida.merger
+                and not ida.merger.save_config_to_file(merged_config, output_path)
+            ):
+                sys.exit(1)
+            # #endregion
 
             stats_path = os.path.join(
                 ida.output_dir,

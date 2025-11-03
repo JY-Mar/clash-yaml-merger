@@ -1,7 +1,7 @@
 '''
 Author       : Scientificat
 Date         : 2025-10-09 01:32:33
-LastEditTime : 2025-10-23 07:58:44
+LastEditTime : 2025-11-03 01:42:39
 LastEditors  : Scientificat
 Description  : Regular expression
 '''
@@ -20,3 +20,5 @@ FCONFS_DIR_PATTERN = r"([a-zA-Z][a-zA-Z0-9_-]*)\|([^;]+;?)"
 
 # base64正则表达式
 BASE64_PATTERN = r'^[A-Za-z0-9+/]+={0,2}$'
+
+SUB_HEADERS_PATTERN = r"upload=(\d+); download=(\d+); total=(\d+); expire=(\d+)"
