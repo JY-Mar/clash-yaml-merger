@@ -354,7 +354,7 @@ jobs:
                           const _proxy_providers__proxies__count = data.proxy_providers__proxies__count || {}
                           
                           stats_DOM.innerHTML = `
-                              ${Object.entries(_proxy_providers__proxies__count).map(([k, v]) => '<p class="block-class"><strong class="label-class">订阅信息：<strong class="sub-label-class">代理集[' + k + ']：</strong></strong><span class="dots-class"></span><span class="content-class">' + (v.overview || '') + '</span></p>').join('')}
+                              ${Object.entries(_proxy_providers__proxies__count).map(([k, v], ki) => '<p class="block-class"><strong class="label-class">' + (ki === 0 ? '订阅信息：' : '') + '<strong class="sub-label-class">代理集[' + k + ']：</strong></strong><span class="dots-class"></span><span class="content-class">' + (v.useinfo || '') + '</span></p>').join('')}
                               <p class="block-class">
                                 <strong class="label-class">
                                   代理集数量：
