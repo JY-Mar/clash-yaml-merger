@@ -211,7 +211,7 @@ jobs:
                     white-space: nowrap;
                   }
                   .sub-label-class {
-                    margin-left: 65px;
+                    margin-left: 2rem;
                     font-weight: 400;
                   }
                   .sub-label-class::before {
@@ -392,7 +392,7 @@ jobs:
                           const _proxy_providers__proxies__count = data.proxy_providers__proxies__count || {}
                           
                           subs_DOM.innerHTML = `
-                              ${Object.entries(_proxy_providers__proxies__count).map(([k, v]) => generateDesctiptionItem(k, v.useinfo || '')).join('')}
+                              ${Object.entries(_proxy_providers__proxies__count).map(([k, v]) => generateDesctiptionItem(k, '信息') + generateSubDesctiptionItem('使用用量', (v.useinfo.used || 'NaN') + ' / ' + (v.useinfo.total || '-')) + generateSubDesctiptionItem('到期日期', v.useinfo.expire || '-')).join('')}
                           `;
 
                           stats_DOM.innerHTML = `

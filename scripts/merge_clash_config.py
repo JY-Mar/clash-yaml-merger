@@ -879,7 +879,10 @@ def merger_gen_config():
                 for proxyProviderKey, proxyProviderValue in _proxy_providers.items():
                     proxyProviderUrl = proxyProviderValue.get("url", "")
                     _count = 0
-                    overview = ""
+                    userinfo_used = ""
+                    userinfo_total = ""
+                    userinfo_expire = ""
+                    userinfo_overview = ""
                     if (
                         proxyProviderUrl
                         and isinstance(proxyProviderUrl, str)
@@ -908,7 +911,7 @@ def merger_gen_config():
                             userinfo_used = url_content.get("used", "")
                             userinfo_total = url_content.get("total", "")
                             userinfo_expire = url_content.get("expire", "")
-                            overview = url_content.get("overview", "")
+                            userinfo_overview = url_content.get("overview", "")
                             logger.info(
                                 f"[{filename}] 🧾 {proxyProviderKey} 订阅信息：{userinfo_used}/{userinfo_total} {userinfo_expire}"
                             )
@@ -944,7 +947,7 @@ def merger_gen_config():
                                 )
 
                     proxy_providers__proxies__count.update(
-                        {proxyProviderKey: {"count": _count, "useinfo": overview}}
+                        {proxyProviderKey: {"count": _count, "useinfo": { "used": userinfo_used, "total": userinfo_total, "expire": userinfo_expire, "overview": userinfo_overview }}}
                     )
 
                 # proxies
