@@ -906,10 +906,10 @@ def merger_gen_config():
                             userinfo_expire = url_content.get("expire", "")
                             logger.info(f"{proxyProviderKey} 订阅信息：{userinfo_used}/{userinfo_total} {userinfo_expire}")
                             if userinfo_used and userinfo_total and userinfo_expire:
-                                if merged_configs[filename]["proxies"] is None:
-                                    merged_configs[filename]["proxies"] = []
+                                if merged_config["proxies"] is None:
+                                    merged_config["proxies"] = []
 
-                                merged_configs[filename]["proxies"].append(
+                                merged_config["proxies"].append(
                                     {
                                         "name": f"{proxyProviderKey} 流量使用：{userinfo_used}/{userinfo_total}",
                                         "server": "",
@@ -921,7 +921,7 @@ def merger_gen_config():
                                         "udp": True
                                     }
                                 )
-                                merged_configs[filename]["proxies"].append(
+                                merged_config["proxies"].append(
                                     {
                                         "name": f"{proxyProviderKey} 套餐到期：{userinfo_expire}",
                                         "server": "",
@@ -937,7 +937,7 @@ def merger_gen_config():
                     proxy_providers__proxies__count.update({proxyProviderKey: _count})
 
                 # proxies
-                _proxies = merged_config.get("proxies", [])
+                _proxies = list(filter(lambda o: not ("uuid" in o and isinstance(o["uuid"], str) and o["uuid"].startswith("scat-proxy-")), merged_config.get("proxies", [])))
                 indep_proxies_count = len(_proxies)
                 total_proxies_count = indep_proxies_count + sum(
                     proxy_providers__proxies__count.values()
