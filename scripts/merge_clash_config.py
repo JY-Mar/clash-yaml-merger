@@ -910,13 +910,13 @@ def merger_gen_config():
                             userinfo_expire = url_content.get("expire", "")
                             overview = url_content.get("overview", "")
                             logger.info(
-                                f"{proxyProviderKey} 订阅信息：{userinfo_used}/{userinfo_total} {userinfo_expire}"
+                                f"[{filename}] {proxyProviderKey} 订阅信息：{userinfo_used}/{userinfo_total} {userinfo_expire}"
                             )
                             if userinfo_used and userinfo_total and userinfo_expire:
                                 if "proxies" not in merged_config or ("proxies" in merged_config and merged_config["proxies"] is None):
                                     merged_config["proxies"] = []
 
-                                merged_config["proxies"].append(
+                                merged_config["proxies"].extend(
                                     [
                                         {
                                             "name": f"{proxyProviderKey} 流量使用：{userinfo_used}/{userinfo_total}",
