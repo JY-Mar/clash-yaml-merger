@@ -920,6 +920,7 @@ def merger_gen_config():
                                     [
                                         {
                                             "name": f"{proxyProviderKey} 流量使用：{userinfo_used}/{userinfo_total}",
+                                            "type": "trojan",
                                             "server": "127.0.0.1",
                                             "port": 8080,
                                             "password": "",
@@ -930,6 +931,7 @@ def merger_gen_config():
                                         },
                                         {
                                             "name": f"{proxyProviderKey} 套餐到期：{userinfo_expire}",
+                                            "type": "trojan",
                                             "server": "127.0.0.1",
                                             "port": 8080,
                                             "password": "",
