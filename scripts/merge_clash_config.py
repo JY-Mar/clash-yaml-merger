@@ -904,8 +904,9 @@ def merger_gen_config():
                             userinfo_used = url_content.get("used", "")
                             userinfo_total = url_content.get("total", "")
                             userinfo_expire = url_content.get("expire", "")
+                            print(f"{proxyProviderKey} 订阅信息：{userinfo_used}/{userinfo_total} {userinfo_expire}")
                             if userinfo_used and userinfo_total and userinfo_expire:
-                                if not merged_configs[filename]["proxies"]:
+                                if merged_configs[filename]["proxies"] is None:
                                     merged_configs[filename]["proxies"] = []
 
                                 merged_configs[filename]["proxies"].append(
@@ -918,7 +919,9 @@ def merger_gen_config():
                                         "tls": False,
                                         "skip-cert-verify": True,
                                         "udp": True
-                                    },
+                                    }
+                                )
+                                merged_configs[filename]["proxies"].append(
                                     {
                                         "name": f"{proxyProviderKey} 套餐到期：{userinfo_expire}",
                                         "server": "",
