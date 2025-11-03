@@ -95,6 +95,8 @@ def request_url_content(
                 return_info["used"] = None
                 return_info["total"] = None
                 return_info["expire"] = None
+
+            return return_info
         else:
             return None
     except requests.RequestException as e:

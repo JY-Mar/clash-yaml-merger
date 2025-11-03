@@ -839,7 +839,13 @@ def merger_gen_config():
             final_filename = f"-{filename}"
             # 使用token作为文件名的一部分进行认证
             config_filename = f"{settings_config['output']['config_filename']}{final_filename}-{ida.auth_token}.yaml"
+            # 配置文件保存路径
             output_path = os.path.join(ida.output_dir, config_filename)
+            # 统计文件保存路径
+            stats_path = os.path.join(
+                ida.output_dir,
+                f"{settings_config['output']['stats_filename']}{final_filename}.json",
+            )
 
             # 生成统计信息
             now_date_formatted = datetime.now(timezone.utc).isoformat()
@@ -869,7 +875,7 @@ def merger_gen_config():
                 _proxy_providers = merged_config.get("proxy-providers", {})
                 proxy_providers_count = len(_proxy_providers)
                 proxy_providers__proxies__count = {}
-                
+
                 for proxyProviderKey, proxyProviderValue in _proxy_providers.items():
                     proxyProviderUrl = proxyProviderValue.get("url", "")
                     _count = 0
@@ -881,12 +887,9 @@ def merger_gen_config():
                     ):
                         url_content = files_utils.request_url_content(proxyProviderUrl)
                         if url_content and isinstance(url_content, dict):
-                            text = url_content['content']
+                            text = url_content["content"]
                             if text and isinstance(text, str):
-                                if (
-                                    re.fullmatch(BASE64_PATTERN, text)
-                                    is not None
-                                ):
+                                if re.fullmatch(BASE64_PATTERN, text) is not None:
                                     # base64
                                     # 解码为字节
                                     decoded_bytes = base64.b64decode(text)
@@ -900,11 +903,13 @@ def merger_gen_config():
                                     if yaml_content and isinstance(yaml_content, dict):
                                         _proxies = yaml_content.get("proxies", [])
                                         _count = len(_proxies)
-                            
+
                             userinfo_used = url_content.get("used", "")
                             userinfo_total = url_content.get("total", "")
                             userinfo_expire = url_content.get("expire", "")
-                            logger.info(f"{proxyProviderKey} 订阅信息：{userinfo_used}/{userinfo_total} {userinfo_expire}")
+                            logger.info(
+                                f"{proxyProviderKey} 订阅信息：{userinfo_used}/{userinfo_total} {userinfo_expire}"
+                            )
                             if userinfo_used and userinfo_total and userinfo_expire:
                                 if merged_config["proxies"] is None:
                                     merged_config["proxies"] = []
@@ -918,7 +923,7 @@ def merger_gen_config():
                                         "uuid": f"scat-proxy-{proxyProviderKey}-userinfo-used",
                                         "tls": False,
                                         "skip-cert-verify": True,
-                                        "udp": True
+                                        "udp": True,
                                     }
                                 )
                                 merged_config["proxies"].append(
@@ -930,14 +935,23 @@ def merger_gen_config():
                                         "uuid": f"scat-proxy-{proxyProviderKey}-userinfo-expire",
                                         "tls": False,
                                         "skip-cert-verify": True,
-                                        "udp": True
+                                        "udp": True,
                                     }
                                 )
 
                     proxy_providers__proxies__count.update({proxyProviderKey: _count})
 
                 # proxies
-                _proxies = list(filter(lambda o: not ("uuid" in o and isinstance(o["uuid"], str) and o["uuid"].startswith("scat-proxy-")), merged_config.get("proxies", [])))
+                _proxies = list(
+                    filter(
+                        lambda o: not (
+                            "uuid" in o
+                            and isinstance(o["uuid"], str)
+                            and o["uuid"].startswith("scat-proxy-")
+                        ),
+                        merged_config.get("proxies", []),
+                    )
+                )
                 indep_proxies_count = len(_proxies)
                 total_proxies_count = indep_proxies_count + sum(
                     proxy_providers__proxies__count.values()
@@ -994,11 +1008,6 @@ def merger_gen_config():
             ):
                 sys.exit(1)
             # #endregion
-
-            stats_path = os.path.join(
-                ida.output_dir,
-                f"{settings_config['output']['stats_filename']}{final_filename}.json",
-            )
 
             try:
                 os.makedirs(ida.output_dir, exist_ok=True)
