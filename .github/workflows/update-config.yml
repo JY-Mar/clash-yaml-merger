@@ -291,7 +291,7 @@ jobs:
                       configInfo.appendChild(title_main);
 
                       const title_for_subs = document.createElement("h3");
-                      title_for_subs.textContent = "📊 订阅详情";
+                      title_for_subs.textContent = "📌 订阅详情";
 
                       const subs = document.createElement("div");
                       subs.id = "subs" + "-" + class_name.label;
@@ -345,7 +345,7 @@ jobs:
                   function generateDesctiptionItem(label, value) {
                     let _label = label
                     if (typeof label === 'string' && label) {
-                      if ((label.startsWith('<strong') && label.endsWith('</strong')) || label.endsWith('：')) {
+                      if ((label.startsWith('<strong') && label.endsWith('</strong>')) || label.endsWith('：')) {
                         _label = label
                       } else {
                         _label = `${label}：`
