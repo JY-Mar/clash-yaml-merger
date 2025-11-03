@@ -1,9 +1,9 @@
 name: Update Clash Config
 
 on:
-  # 定时触发 - 每天的 8 点、20 点（UTC+8） 各执行一次任务
+  # 定时触发 - 每天的 8 点（UTC+8） 各执行一次任务
   schedule:
-    - cron: "0 8,20 * * *"
+    - cron: "0 8 * * *"
 
   # 手动触发
   workflow_dispatch:
@@ -259,7 +259,7 @@ jobs:
                       <h3>⚠️ 重要提醒</h3>
                       <ul>
                           <li>此服务仅供个人使用，请勿分享配置链接</li>
-                          <li>配置文件每天 8 点、20 点（UTC+8）各更新一次</li>
+                          <li>配置文件每天 8 点（UTC+8）更新一次</li>
                           <li>访问配置需要正确的认证参数</li>
                       </ul>
                   </div>
@@ -354,6 +354,7 @@ jobs:
                           const _proxy_providers__proxies__count = data.proxy_providers__proxies__count || {}
                           
                           stats_DOM.innerHTML = `
+                              ${Object.entries(_proxy_providers__proxies__count).map(([k, v]) => '<p class="block-class"><strong class="label-class">订阅信息：<strong class="sub-label-class">代理集[' + k + ']：</strong></strong><span class="dots-class"></span><span class="content-class">' + (v.overview || '') + '</span></p>').join('')}
                               <p class="block-class">
                                 <strong class="label-class">
                                   代理集数量：
