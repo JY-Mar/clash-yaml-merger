@@ -433,8 +433,8 @@ jobs:
                               intervals[class_name.label] = undefined;
                           };
                           intervals[class_name.label] = setInterval(() => {
-                              const subs_DOM - document.getElementById('subs' + '-' + class_name.label)
-                              const stats_DOM - document.getElementById('stats' + '-' + class_name.label)
+                              const subs_DOM = document.getElementById('subs' + '-' + class_name.label)
+                              const stats_DOM = document.getElementById('stats' + '-' + class_name.label)
                               if (subs_DOM && stats_DOM) {
                                   fetchStats('-' + class_name.label)
                                   clearInterval(intervals[class_name.label]);
