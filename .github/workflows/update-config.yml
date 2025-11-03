@@ -342,6 +342,28 @@ jobs:
                           container.appendChild(successBox);
                       }
                   });
+                  function generateDesctiptionItem(label, value) {
+                    let _label = label
+                    if (typeof label === 'string' && label) {
+                      if ((label.startsWith('<strong') && label.endsWith('</strong')) || label.endsWith('：')) {
+                        _label = label
+                      } else {
+                        _label = `${label}：`
+                      }
+                    }
+                    return `
+                      <p class="block-class">
+                        <strong class="label-class">
+                          ${_label}
+                        </strong>
+                        <span class="dots-class"></span>
+                        <span class="content-class">${value}</span>
+                      </p>
+                    `;
+                  }
+                  function generateSubDesctiptionItem(label, value) {
+                    return generateDesctiptionItem(`<strong class="sub-label-class">${label}：</strong>`, value);
+                  }
                   // 加载统计信息
                   function fetchStats(filename) {
                     fetch('stats' + filename + '.json')
@@ -370,73 +392,19 @@ jobs:
                           const _proxy_providers__proxies__count = data.proxy_providers__proxies__count || {}
                           
                           subs_DOM.innerHTML = `
-                              ${Object.entries(_proxy_providers__proxies__count).map(([k, v], ki) => '<p class="block-class"><strong class="label-class">' + k + '：</strong><span class="dots-class"></span><span class="content-class">' + (v.useinfo || '') + '</span></p>').join('')}
+                              ${Object.entries(_proxy_providers__proxies__count).map(([k, v]) => generateDesctiptionItem(k, v.useinfo || '')).join('')}
                           `;
 
                           stats_DOM.innerHTML = `
-                              <p class="block-class">
-                                <strong class="label-class">
-                                  代理集数量：
-                                </strong>
-                                <span class="dots-class"></span>
-                                <span class="content-class">${data.proxy_providers_count}</span>
-                              </p>
-                              <p class="block-class">
-                                <strong class="label-class">
-                                  代理节点总数：
-                                </strong>
-                                <span class="dots-class"></span>
-                                <span class="content-class">${data.total_proxies_count}</span>
-                              </p>
-                              <p class="block-class">
-                                <strong class="label-class">
-                                  <strong class="sub-label-class">
-                                    独立节点：
-                                  </strong>
-                                </strong>
-                                <span class="dots-class"></span>
-                                <span class="content-class">${data.indep_proxies_count}</span>
-                              </p>
-                              ${Object.entries(_proxy_providers__proxies__count).map(([k, v]) => '<p class="block-class"><strong class="label-class"><strong class="sub-label-class">代理集[' + k + ']：</strong></strong><span class="dots-class"></span><span class="content-class">' + (v.count || 0) + '</span></p>').join('')}
-                              <p class="block-class">
-                                <strong class="label-class">
-                                  策略组数量：
-                                </strong>
-                                <span class="dots-class"></span>
-                                <span class="content-class">${data.proxy_groups_count}</span>
-                              </p>
-                              <p class="block-class">
-                                <strong class="label-class">
-                                  规则集数量：
-                                </strong>
-                                <span class="dots-class"></span>
-                                <span class="content-class">${data.rule_providers_count}</span>
-                              </p>
-                              <p class="block-class">
-                                <strong class="label-class">
-                                  规则总数：
-                                </strong>
-                                <span class="dots-class"></span>
-                                <span class="content-class">${data.total_rules_count}</span>
-                              </p>
-                              <p class="block-class">
-                                <strong class="label-class">
-                                  <strong class="sub-label-class">
-                                    独立规则：
-                                  </strong>
-                                </strong>
-                                <span class="dots-class"></span>
-                                <span class="content-class">${data.indep_rules_count}</span>
-                              </p>
-                              <p class="block-class">
-                                <strong class="label-class">
-                                  <strong class="sub-label-class">
-                                    规则集：
-                                  </strong>
-                                </strong>
-                                <span class="dots-class"></span>
-                                <span class="content-class">${data.rules__rule_set__count}</span>
-                              </p>
+                              ${generateDesctiptionItem('代理集数量', data.proxy_providers_count)}
+                              ${generateDesctiptionItem('代理节点总数', data.total_proxies_count)}
+                              ${generateSubDesctiptionItem('独立节点', data.indep_proxies_count)}
+                              ${Object.entries(_proxy_providers__proxies__count).map(([k, v]) => generateSubDesctiptionItem('代理集[' + k + ']', v.count || 0)).join('')}
+                              ${generateDesctiptionItem('策略组数量', data.proxy_groups_count)}
+                              ${generateDesctiptionItem('规则集数量', data.rule_providers_count)}
+                              ${generateDesctiptionItem('规则总数', data.total_rules_count)}
+                              ${generateSubDesctiptionItem('独立规则', data.indep_rules_count)}
+                              ${generateSubDesctiptionItem('规则集', data.rules__rule_set__count)}
                           `;
                           if (updateTime_DOM) {
                               updateTime_DOM.innerHTML = `
