@@ -352,7 +352,6 @@ jobs:
                               dateStr = String(data.generated_at)
                           }
                           const _proxy_providers__proxies__count = data.proxy_providers__proxies__count || {}
-                          const _proxy_providers_proxies = 
                           
                           stats_DOM.innerHTML = `
                               <p class="block-class">
@@ -378,7 +377,7 @@ jobs:
                                 <span class="dots-class"></span>
                                 <span class="content-class">${data.indep_proxies_count}</span>
                               </p>
-                              ${Object.entries(_proxy_providers__proxies__count).map(([k, v]) => '<p class="block-class"><strong class="label-class"><strong class="sub-label-class">代理集[' + k + ']：</strong></strong><span class="dots-class"></span><span class="content-class">' + v + '</span></p>').join('')}
+                              ${Object.entries(_proxy_providers__proxies__count).map(([k, v]) => '<p class="block-class"><strong class="label-class"><strong class="sub-label-class">代理集[' + k + ']：</strong></strong><span class="dots-class"></span><span class="content-class">' + (v.count || 0) + '</span></p>').join('')}
                               <p class="block-class">
                                 <strong class="label-class">
                                   策略组数量：

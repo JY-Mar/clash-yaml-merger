@@ -853,7 +853,7 @@ def merger_gen_config():
                 "generated_at": now_date_formatted,
                 # proxy-providers 个数
                 "proxy_providers_count": 0,
-                # proxies 总个数 = sum(proxy_providers__proxies__count.values()) + indep_proxies_count
+                # proxies 总个数 = sum(item["count"] for item in proxy_providers__proxies__count.values()) + indep_proxies_count
                 "total_proxies_count": 0,
                 # 独立的 proxies 个数
                 "indep_proxies_count": 0,
@@ -879,6 +879,7 @@ def merger_gen_config():
                 for proxyProviderKey, proxyProviderValue in _proxy_providers.items():
                     proxyProviderUrl = proxyProviderValue.get("url", "")
                     _count = 0
+                    overview = ""
                     if (
                         proxyProviderUrl
                         and isinstance(proxyProviderUrl, str)
@@ -907,6 +908,7 @@ def merger_gen_config():
                             userinfo_used = url_content.get("used", "")
                             userinfo_total = url_content.get("total", "")
                             userinfo_expire = url_content.get("expire", "")
+                            overview = url_content.get("overview", "")
                             logger.info(
                                 f"{proxyProviderKey} 订阅信息：{userinfo_used}/{userinfo_total} {userinfo_expire}"
                             )
@@ -915,31 +917,33 @@ def merger_gen_config():
                                     merged_config["proxies"] = []
 
                                 merged_config["proxies"].append(
-                                    {
-                                        "name": f"{proxyProviderKey} 流量使用：{userinfo_used}/{userinfo_total}",
-                                        "server": "",
-                                        "port": 8080,
-                                        "password": "",
-                                        "uuid": f"scat-proxy-{proxyProviderKey}-userinfo-used",
-                                        "tls": False,
-                                        "skip-cert-verify": True,
-                                        "udp": True,
-                                    }
-                                )
-                                merged_config["proxies"].append(
-                                    {
-                                        "name": f"{proxyProviderKey} 套餐到期：{userinfo_expire}",
-                                        "server": "",
-                                        "port": 8080,
-                                        "password": "",
-                                        "uuid": f"scat-proxy-{proxyProviderKey}-userinfo-expire",
-                                        "tls": False,
-                                        "skip-cert-verify": True,
-                                        "udp": True,
-                                    }
+                                    [
+                                        {
+                                            "name": f"{proxyProviderKey} 流量使用：{userinfo_used}/{userinfo_total}",
+                                            "server": "127.0.0.1",
+                                            "port": 8080,
+                                            "password": "",
+                                            "uuid": f"scat-proxy-{proxyProviderKey}-userinfo-used",
+                                            "tls": False,
+                                            "skip-cert-verify": True,
+                                            "udp": True,
+                                        },
+                                        {
+                                            "name": f"{proxyProviderKey} 套餐到期：{userinfo_expire}",
+                                            "server": "127.0.0.1",
+                                            "port": 8080,
+                                            "password": "",
+                                            "uuid": f"scat-proxy-{proxyProviderKey}-userinfo-expire",
+                                            "tls": False,
+                                            "skip-cert-verify": True,
+                                            "udp": True,
+                                        },
+                                    ]
                                 )
 
-                    proxy_providers__proxies__count.update({proxyProviderKey: _count})
+                    proxy_providers__proxies__count.update(
+                        {proxyProviderKey: {"count": _count, "useinfo": overview}}
+                    )
 
                 # proxies
                 _proxies = list(
@@ -954,7 +958,7 @@ def merger_gen_config():
                 )
                 indep_proxies_count = len(_proxies)
                 total_proxies_count = indep_proxies_count + sum(
-                    proxy_providers__proxies__count.values()
+                    item["count"] for item in proxy_providers__proxies__count.values()
                 )
                 # proxy-groups
                 _proxy_groups = merged_config.get("proxy-groups", [])
