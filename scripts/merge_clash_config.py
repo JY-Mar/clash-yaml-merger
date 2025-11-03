@@ -910,7 +910,7 @@ def merger_gen_config():
                             userinfo_expire = url_content.get("expire", "")
                             overview = url_content.get("overview", "")
                             logger.info(
-                                f"[{filename}] {proxyProviderKey} 订阅信息：{userinfo_used}/{userinfo_total} {userinfo_expire}"
+                                f"[{filename}] 🧾 {proxyProviderKey} 订阅信息：{userinfo_used}/{userinfo_total} {userinfo_expire}"
                             )
                             if userinfo_used and userinfo_total and userinfo_expire:
                                 if "proxies" not in merged_config or ("proxies" in merged_config and merged_config["proxies"] is None):
@@ -1003,7 +1003,7 @@ def merger_gen_config():
                     }
                 )
             except Exception as e:
-                logger.error(f"生成统计信息失败: {e}")
+                logger.error(f"[{filename}] ❌ 生成统计信息失败: {e}")
 
             # #region 配置写入到文件“*.yaml”
             if not ida.merger or (
@@ -1018,16 +1018,16 @@ def merger_gen_config():
                 with open(stats_path, "w", encoding="utf-8") as f:
                     json.dump(stats, f, indent=2, ensure_ascii=False)
 
-                logger.info(f"统计信息已保存到: {stats_path}")
+                logger.info(f"[{filename}] ℹ️ 统计信息已保存到: {stats_path}")
             except Exception as e:
-                logger.warning(f"保存统计信息失败: {e}")
+                logger.warning(f"[{filename}] ❌ 保存统计信息失败: {e}")
 
-            logger.info(f"✅ 任务完成! ")
+            logger.info(f"[{filename}] ✅ 任务完成! ")
             logger.info(
-                f"📁 配置文件: {settings_config['output']['config_filename']}{final_filename}-{{your-token}}.yaml"
+                f"[{filename}] 📁 配置文件: {settings_config['output']['config_filename']}{final_filename}-{{your-token}}.yaml"
             )
             if ida.local_mode:
-                logger.info(f"📁 输出路径: {output_path}")
+                logger.info(f"[{filename}] 📁 输出路径: {output_path}")
 
 
 def main():
