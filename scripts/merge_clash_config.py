@@ -913,7 +913,7 @@ def merger_gen_config():
                                 f"{proxyProviderKey} 订阅信息：{userinfo_used}/{userinfo_total} {userinfo_expire}"
                             )
                             if userinfo_used and userinfo_total and userinfo_expire:
-                                if merged_config["proxies"] is None:
+                                if "proxies" not in merged_config or ("proxies" in merged_config and merged_config["proxies"] is None):
                                     merged_config["proxies"] = []
 
                                 merged_config["proxies"].append(
