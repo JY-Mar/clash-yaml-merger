@@ -3,7 +3,7 @@ name: Update Clash Config
 on:
   # 定时触发 - 每天的 8 点、20 点（UTC+8） 各执行一次任务
   schedule:
-    - cron: "0 8,20 * * *"
+    - cron: "0 0,12 * * *"
 
   # 手动触发
   workflow_dispatch:
