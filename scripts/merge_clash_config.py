@@ -37,7 +37,11 @@ from utils.string_utils import (
     split_str_to_1d_array,
     split_str_to_2d_array,
 )
-from utils.array_utils import extract_valid_array, unshift_to_array, filter_valid_strings
+from utils.array_utils import (
+    extract_valid_array,
+    unshift_to_array,
+    filter_valid_strings,
+)
 from utils.object_utils import extract_valid_object, get_property, pick_properties
 
 # 设置默认编码
@@ -511,8 +515,12 @@ class ClashConfigMerger:
             )
             # 将已有 proxy-providers 与 外部 proxy-providers 合并
             merged_config["proxy-providers"] = deep_merge(
-                extract_valid_object(get_property(merged_config, "proxy-providers", {})),
-                extract_valid_object(get_property(merged_proxy_providers, "proxy-providers", {})),
+                extract_valid_object(
+                    get_property(merged_config, "proxy-providers", {})
+                ),
+                extract_valid_object(
+                    get_property(merged_proxy_providers, "proxy-providers", {})
+                ),
             )
 
         # MARK: 2.3 代理节点
@@ -570,7 +578,9 @@ class ClashConfigMerger:
             # 将已有 rule-providers 与 外部 rule-providers 合并
             merged_config["rule-providers"] = deep_merge(
                 extract_valid_object(get_property(merged_config, "rule-providers", {})),
-                extract_valid_object(get_property(merged_rule_providers, "rule-providers", {})),
+                extract_valid_object(
+                    get_property(merged_rule_providers, "rule-providers", {})
+                ),
             )
 
         # MARK: 2.5 规则
@@ -618,13 +628,16 @@ class ClashConfigMerger:
 
         return merged_config
 
-    def save_config_to_file(self, config: Dict[str, Any], output_path: str) -> bool:
+    def save_config_to_file(
+        self, config: Dict[str, Any], output_path: str, alias_name: str = "Clash"
+    ) -> bool:
         """
         保存配置到文件
 
         Args:
             config: 配置字典
             output_path: 输出文件路径
+            alias_name: 文件别名
 
         Returns:
             保存是否成功
@@ -647,7 +660,7 @@ class ClashConfigMerger:
 
                 # 插入头部内容
                 header = [
-                    "# Automatically generated `Clash` yaml file",
+                    f"# Automatically generated `{alias_name}` yaml file",
                     "# Do not modify manually",
                     f"# Last Update: {datetime.now(timezone.utc).isoformat()}",
                 ]
@@ -1052,7 +1065,9 @@ def merger_gen_config():
             # region 配置写入到文件“*.yaml”
             if not ida.merger or (
                 ida.merger
-                and not ida.merger.save_config_to_file(merged_config, output_path)
+                and not ida.merger.save_config_to_file(
+                    merged_config, output_path, filename
+                )
             ):
                 sys.exit(1)
             # endregion
