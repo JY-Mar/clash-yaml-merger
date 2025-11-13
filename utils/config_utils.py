@@ -19,7 +19,15 @@ def simple_load_config() -> Dict[str, Any]:
 
 
 def simple_save_config(config: Dict[str, Any]) -> None:
-    """简单保存配置文件"""
+    """
+    简单保存配置文件
+    
+    Args:
+        config: 配置内容
+
+    Returns:
+        None
+    """
     config_path = "config/settings.yaml"
     try:
         with open(config_path, "w", encoding="utf-8") as f:

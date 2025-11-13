@@ -17,6 +17,8 @@ from typing import Dict, List, Any, Optional
 import logging
 from functools import reduce
 
+from utils.object_utils import pick_properties
+
 script_dir = os.path.dirname(os.path.abspath(__file__))
 root_dir = os.path.dirname(script_dir)
 sys.path.insert(0, root_dir)
@@ -493,7 +495,7 @@ class ClashConfigMerger:
         for file_path in proxy_providers_files:
             content = self.get_file_content(file_path)
             if content:
-                config = load_yaml_content(content)
+                config = pick_properties(load_yaml_content(content), ["proxy-providers"])
                 if config:
                     configs_from_proxy_providers_files.append((config))
 
@@ -519,7 +521,7 @@ class ClashConfigMerger:
         for file_path in proxies_files:
             content = self.get_file_content(file_path)
             if content:
-                config = load_yaml_content(content)
+                config = pick_properties(load_yaml_content(content), ["proxies"])
                 if config:
                     configs_from_proxies_files.append((config))
 
@@ -543,7 +545,7 @@ class ClashConfigMerger:
         for file_path in rule_providers_files:
             content = self.get_file_content(file_path)
             if content:
-                config = load_yaml_content(content)
+                config = pick_properties(load_yaml_content(content), ["rule-providers"])
                 if config:
                     configs_from_rule_providers_files.append((config))
 
@@ -569,7 +571,7 @@ class ClashConfigMerger:
         for file_path in proxies_files:
             content = self.get_file_content(file_path)
             if content:
-                config = load_yaml_content(content)
+                config = pick_properties(load_yaml_content(content), ["rule-providers", "rules"])
                 if config:
                     configs_from_rules_files.append((config))
 
