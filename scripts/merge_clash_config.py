@@ -17,8 +17,6 @@ from typing import Dict, List, Any, Optional
 import logging
 from functools import reduce
 
-from utils.object_utils import pick_properties
-
 script_dir = os.path.dirname(os.path.abspath(__file__))
 root_dir = os.path.dirname(script_dir)
 sys.path.insert(0, root_dir)
@@ -40,6 +38,7 @@ from utils.string_utils import (
     split_str_to_2d_array,
 )
 from utils.array_utils import unshift_to_array, filter_valid_strings
+from utils.object_utils import pick_properties
 
 # 设置默认编码
 import codecs
