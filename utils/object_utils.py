@@ -22,3 +22,15 @@ def pick_properties(
       return d if isinstance(d, dict) else {}
 
     return {k: d[k] for k in keys if k in d} if isinstance(d, dict) else {}
+
+def extract_valid_object(object: Any = None) -> Dict[str, Any]:
+    """
+    萃取有效对象
+
+    Args:
+        object: 原始对象
+
+    Returns:
+        返回的必为对象
+    """
+    return object if isinstance(object, dict) and len(object) > 0 else {}

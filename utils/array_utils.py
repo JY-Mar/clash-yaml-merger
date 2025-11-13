@@ -1,4 +1,4 @@
-from typing import List
+from typing import Any, List
 
 
 def unshift_to_array(data: List[List[str]], prefix: str | List[str]) -> List[List[str]]:
@@ -52,3 +52,15 @@ def filter_valid_strings(s_list: List[str] | None) -> List[str]:
     valid_strings = list(filter(lambda s: isinstance(s, str) and s.strip(), s_list))
 
     return valid_strings
+
+def extract_valid_array(array: Any = None) -> List[Any]:
+    """
+    萃取有效列表
+
+    Args:
+        object: 原始列表
+
+    Returns:
+        返回的必为列表
+    """
+    return array if isinstance(array, list) and len(array) > 0 else []

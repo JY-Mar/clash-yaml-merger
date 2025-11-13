@@ -37,8 +37,8 @@ from utils.string_utils import (
     split_str_to_1d_array,
     split_str_to_2d_array,
 )
-from utils.array_utils import unshift_to_array, filter_valid_strings
-from utils.object_utils import pick_properties
+from utils.array_utils import extract_valid_array, unshift_to_array, filter_valid_strings
+from utils.object_utils import extract_valid_object, pick_properties
 
 # 设置默认编码
 import codecs
@@ -494,7 +494,9 @@ class ClashConfigMerger:
         for file_path in proxy_providers_files:
             content = self.get_file_content(file_path)
             if content:
-                config = pick_properties(load_yaml_content(content), ["proxy-providers"])
+                config = pick_properties(
+                    load_yaml_content(content), ["proxy-providers"]
+                )
                 if config:
                     configs_from_proxy_providers_files.append((config))
 
@@ -507,7 +509,11 @@ class ClashConfigMerger:
             merged_proxy_providers = reduce(
                 deep_merge, configs_from_proxy_providers_files
             )
-            merged_config["proxy-providers"] = merged_proxy_providers
+            # 将已有 proxy-providers 与 外部 proxy-providers 合并
+            merged_config["proxy-providers"] = deep_merge(
+                extract_valid_object(merged_config["proxy-providers"]),
+                extract_valid_object(merged_proxy_providers["proxy-providers"]),
+            )
 
         # MARK: 2.3 代理节点
         # 2.3.1 获取代理节点文件列表
@@ -531,7 +537,11 @@ class ClashConfigMerger:
         # 2.3.3 合并代理节点
         if configs_from_proxies_files:
             merged_proxies = reduce(deep_merge, configs_from_proxies_files)
-            merged_config["proxies"] = merged_proxies
+            # 将已有 proxies 与 外部 proxies 合并
+            merged_config["proxies"] = deep_merge(
+                extract_valid_array(merged_config["proxies"]),
+                extract_valid_array(merged_proxies["proxies"]),
+            )
 
         # MARK: 2.4 规则集
         # 2.4.1 获取规则集文件列表
@@ -557,7 +567,11 @@ class ClashConfigMerger:
             merged_rule_providers = reduce(
                 deep_merge, configs_from_rule_providers_files
             )
-            merged_config["rule-providers"] = merged_rule_providers
+            # 将已有 rule-providers 与 外部 rule-providers 合并
+            merged_config["rule-providers"] = deep_merge(
+                extract_valid_object(merged_config["rule-providers"]),
+                extract_valid_object(merged_rule_providers["rule-providers"]),
+            )
 
         # MARK: 2.5 规则
         # 2.5.1 获取规则文件列表
@@ -567,10 +581,12 @@ class ClashConfigMerger:
 
         # 2.5.2 加载所有规则配置
         configs_from_rules_files = []
-        for file_path in proxies_files:
+        for file_path in rules_files:
             content = self.get_file_content(file_path)
             if content:
-                config = pick_properties(load_yaml_content(content), ["rule-providers", "rules"])
+                config = pick_properties(
+                    load_yaml_content(content), ["rule-providers", "rules"]
+                )
                 if config:
                     configs_from_rules_files.append((config))
 
@@ -581,7 +597,16 @@ class ClashConfigMerger:
         # 2.5.3 合并规则
         if configs_from_rules_files:
             merged_rules = reduce(deep_merge, configs_from_rules_files)
-            merged_config["rules"] = merged_rules
+            # 将已有 rule-providers 与 外部 rule-providers 合并
+            merged_config["rule-providers"] = deep_merge(
+                extract_valid_object(merged_config["rule-providers"]),
+                extract_valid_object(merged_rules["rule-providers"]),
+            )
+            # 将已有 rules 与 外部 rules 合并，rules 优先级高于 fconfs 中的 rules
+            merged_config["rules"] = deep_merge(
+                extract_valid_array(merged_rules["rules"]),
+                extract_valid_array(merged_config["rules"]),
+            )
 
         # 3. 清理代理节点中的临时字段
         try:
@@ -917,7 +942,10 @@ def merger_gen_config():
                                 f"[{filename}] 🧾 {proxyProviderKey} 订阅信息：{userinfo_used}/{userinfo_total} {userinfo_expire}"
                             )
                             if userinfo_used and userinfo_total and userinfo_expire:
-                                if "proxies" not in merged_config or ("proxies" in merged_config and merged_config["proxies"] is None):
+                                if "proxies" not in merged_config or (
+                                    "proxies" in merged_config
+                                    and merged_config["proxies"] is None
+                                ):
                                     merged_config["proxies"] = []
 
                                 merged_config["proxies"].extend(
@@ -948,7 +976,17 @@ def merger_gen_config():
                                 )
 
                     proxy_providers__proxies__count.update(
-                        {proxyProviderKey: {"count": _count, "useinfo": { "used": userinfo_used, "total": userinfo_total, "expire": userinfo_expire, "overview": userinfo_overview }}}
+                        {
+                            proxyProviderKey: {
+                                "count": _count,
+                                "useinfo": {
+                                    "used": userinfo_used,
+                                    "total": userinfo_total,
+                                    "expire": userinfo_expire,
+                                    "overview": userinfo_overview,
+                                },
+                            }
+                        }
                     )
 
                 # proxies
@@ -1011,13 +1049,13 @@ def merger_gen_config():
             except Exception as e:
                 logger.error(f"[{filename}] ❌ 生成统计信息失败: {e}")
 
-            # #region 配置写入到文件“*.yaml”
+            # region 配置写入到文件“*.yaml”
             if not ida.merger or (
                 ida.merger
                 and not ida.merger.save_config_to_file(merged_config, output_path)
             ):
                 sys.exit(1)
-            # #endregion
+            # endregion
 
             try:
                 os.makedirs(ida.output_dir, exist_ok=True)
