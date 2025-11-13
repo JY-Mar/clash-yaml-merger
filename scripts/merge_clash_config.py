@@ -38,7 +38,7 @@ from utils.string_utils import (
     split_str_to_2d_array,
 )
 from utils.array_utils import extract_valid_array, unshift_to_array, filter_valid_strings
-from utils.object_utils import extract_valid_object, pick_properties
+from utils.object_utils import extract_valid_object, get_property, pick_properties
 
 # 设置默认编码
 import codecs
@@ -511,8 +511,8 @@ class ClashConfigMerger:
             )
             # 将已有 proxy-providers 与 外部 proxy-providers 合并
             merged_config["proxy-providers"] = deep_merge(
-                extract_valid_object(merged_config["proxy-providers"]),
-                extract_valid_object(merged_proxy_providers["proxy-providers"]),
+                extract_valid_object(get_property(merged_config, "proxy-providers", {})),
+                extract_valid_object(get_property(merged_proxy_providers, "proxy-providers", {})),
             )
 
         # MARK: 2.3 代理节点
@@ -539,8 +539,8 @@ class ClashConfigMerger:
             merged_proxies = reduce(deep_merge, configs_from_proxies_files)
             # 将已有 proxies 与 外部 proxies 合并
             merged_config["proxies"] = deep_merge(
-                extract_valid_array(merged_config["proxies"]),
-                extract_valid_array(merged_proxies["proxies"]),
+                extract_valid_array(get_property(merged_config, "proxies", [])),
+                extract_valid_array(get_property(merged_proxies, "proxies", [])),
             )
 
         # MARK: 2.4 规则集
@@ -569,8 +569,8 @@ class ClashConfigMerger:
             )
             # 将已有 rule-providers 与 外部 rule-providers 合并
             merged_config["rule-providers"] = deep_merge(
-                extract_valid_object(merged_config["rule-providers"]),
-                extract_valid_object(merged_rule_providers["rule-providers"]),
+                extract_valid_object(get_property(merged_config, "rule-providers", {})),
+                extract_valid_object(get_property(merged_rule_providers, "rule-providers", {})),
             )
 
         # MARK: 2.5 规则
@@ -599,13 +599,13 @@ class ClashConfigMerger:
             merged_rules = reduce(deep_merge, configs_from_rules_files)
             # 将已有 rule-providers 与 外部 rule-providers 合并
             merged_config["rule-providers"] = deep_merge(
-                extract_valid_object(merged_config["rule-providers"]),
-                extract_valid_object(merged_rules["rule-providers"]),
+                extract_valid_object(get_property(merged_config, "rule-providers", {})),
+                extract_valid_object(get_property(merged_rules, "rule-providers", {})),
             )
             # 将已有 rules 与 外部 rules 合并，rules 优先级高于 fconfs 中的 rules
             merged_config["rules"] = deep_merge(
-                extract_valid_array(merged_rules["rules"]),
-                extract_valid_array(merged_config["rules"]),
+                extract_valid_array(get_property(merged_rules, "rules", [])),
+                extract_valid_array(get_property(merged_config, "rules", [])),
             )
 
         # 3. 清理代理节点中的临时字段

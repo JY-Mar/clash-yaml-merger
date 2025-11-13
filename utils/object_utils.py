@@ -34,3 +34,16 @@ def extract_valid_object(object: Any = None) -> Dict[str, Any]:
         返回的必为对象
     """
     return object if isinstance(object, dict) and len(object) > 0 else {}
+
+def get_property(d: Dict[str, Any] | None, key: str | None = None, defaultValue: Any = None) -> Any:
+    """
+    获取字典中指定的属性
+
+    Args:
+        d: 原始字典
+        key: 属性名
+
+    Returns:
+        属性值
+    """
+    return d[key] if isinstance(d, dict) and key in d else defaultValue
