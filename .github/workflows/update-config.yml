@@ -401,7 +401,7 @@ jobs:
                           stats_DOM.innerHTML = `
                               ${generateDesctiptionItem('代理集数量', data.proxy_providers_count)}
                               ${generateDesctiptionItem('代理节点总数', data.total_proxies_count)}
-                              ${generateDesctiptionItem('独立节点', data.indep_proxies_count)}
+                              ${generateSubDesctiptionItem('独立节点', data.indep_proxies_count)}
                               ${generateDesctiptionItem('策略组数量', data.proxy_groups_count)}
                               ${generateDesctiptionItem('规则集数量', data.rule_providers_count)}
                               ${generateDesctiptionItem('规则总数', data.total_rules_count)}
