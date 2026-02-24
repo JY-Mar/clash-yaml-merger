@@ -391,21 +391,24 @@ jobs:
                           }
                           const _proxy_providers__proxies__count = data.proxy_providers__proxies__count || {}
                           
+                          // subs_DOM.innerHTML = `
+                          //     ${Object.entries(_proxy_providers__proxies__count).map(([k, v]) => generateDesctiptionItem(k, '👇') + generateSubDesctiptionItem('使用用量', (v.useinfo.used || 'NaN') + ' / ' + (v.useinfo.total || '-')) + generateSubDesctiptionItem('到期日期', v.useinfo.expire || '-')).join('')}
+                          // `;
                           subs_DOM.innerHTML = `
-                              ${Object.entries(_proxy_providers__proxies__count).map(([k, v]) => generateDesctiptionItem(k, '👇') + generateSubDesctiptionItem('使用用量', (v.useinfo.used || 'NaN') + ' / ' + (v.useinfo.total || '-')) + generateSubDesctiptionItem('到期日期', v.useinfo.expire || '-')).join('')}
+                              ${Object.entries(_proxy_providers__proxies__count).map(([k, v]) => generateDesctiptionItem(k, '✅')).join('')}
                           `;
 
                           stats_DOM.innerHTML = `
                               ${generateDesctiptionItem('代理集数量', data.proxy_providers_count)}
                               ${generateDesctiptionItem('代理节点总数', data.total_proxies_count)}
-                              ${generateSubDesctiptionItem('独立节点', data.indep_proxies_count)}
-                              ${Object.entries(_proxy_providers__proxies__count).map(([k, v]) => generateSubDesctiptionItem('代理集[' + k + ']', v.count || 0)).join('')}
+                              ${generateDesctiptionItem('独立节点', data.indep_proxies_count)}
                               ${generateDesctiptionItem('策略组数量', data.proxy_groups_count)}
                               ${generateDesctiptionItem('规则集数量', data.rule_providers_count)}
                               ${generateDesctiptionItem('规则总数', data.total_rules_count)}
                               ${generateSubDesctiptionItem('独立规则', data.indep_rules_count)}
                               ${generateSubDesctiptionItem('规则集', data.rules__rule_set__count)}
                           `;
+
                           if (updateTime_DOM) {
                               updateTime_DOM.innerHTML = `
                                   <p class="block-class">

@@ -915,78 +915,79 @@ def merger_gen_config():
                 proxy_providers_count = len(_proxy_providers)
                 proxy_providers__proxies__count = {}
 
+                # 暂时移除订阅用量/剩余统计代码
                 for proxyProviderKey, proxyProviderValue in _proxy_providers.items():
-                    proxyProviderUrl = proxyProviderValue.get("url", "")
+                    #     proxyProviderUrl = proxyProviderValue.get("url", "")
                     _count = 0
                     userinfo_used = ""
                     userinfo_total = ""
                     userinfo_expire = ""
                     userinfo_overview = ""
-                    if (
-                        proxyProviderUrl
-                        and isinstance(proxyProviderUrl, str)
-                        and re.fullmatch(REMOTE_FILE_PATTERN, proxyProviderUrl)
-                        is not None
-                    ):
-                        url_content = files_utils.request_url_content(proxyProviderUrl)
-                        if url_content and isinstance(url_content, dict):
-                            text = url_content["content"]
-                            if text and isinstance(text, str):
-                                if re.fullmatch(BASE64_PATTERN, text) is not None:
-                                    # base64
-                                    # 解码为字节
-                                    decoded_bytes = base64.b64decode(text)
-                                    # 如果你知道是 UTF-8 编码的文本，可以转为字符串
-                                    decoded_str = decoded_bytes.decode("utf-8")
-                                    _count = decoded_str.count("ss://")
-                                    _count += decoded_str.count("ssr://")
-                                    _count += decoded_str.count("vmess://")
-                                else:
-                                    yaml_content = load_yaml_content(text)
-                                    if yaml_content and isinstance(yaml_content, dict):
-                                        _proxies = yaml_content.get("proxies", [])
-                                        _count = len(_proxies)
+                    #     if (
+                    #         proxyProviderUrl
+                    #         and isinstance(proxyProviderUrl, str)
+                    #         and re.fullmatch(REMOTE_FILE_PATTERN, proxyProviderUrl)
+                    #         is not None
+                    #     ):
+                    #         url_content = files_utils.request_url_content(proxyProviderUrl)
+                    #         if url_content and isinstance(url_content, dict):
+                    #             text = url_content["content"]
+                    #             if text and isinstance(text, str):
+                    #                 if re.fullmatch(BASE64_PATTERN, text) is not None:
+                    #                     # base64
+                    #                     # 解码为字节
+                    #                     decoded_bytes = base64.b64decode(text)
+                    #                     # 如果你知道是 UTF-8 编码的文本，可以转为字符串
+                    #                     decoded_str = decoded_bytes.decode("utf-8")
+                    #                     _count = decoded_str.count("ss://")
+                    #                     _count += decoded_str.count("ssr://")
+                    #                     _count += decoded_str.count("vmess://")
+                    #                 else:
+                    #                     yaml_content = load_yaml_content(text)
+                    #                     if yaml_content and isinstance(yaml_content, dict):
+                    #                         _proxies = yaml_content.get("proxies", [])
+                    #                         _count = len(_proxies)
 
-                            userinfo_used = url_content.get("used", "")
-                            userinfo_total = url_content.get("total", "")
-                            userinfo_expire = url_content.get("expire", "")
-                            userinfo_overview = url_content.get("overview", "")
-                            logger.info(
-                                f"[{filename}] 🧾 {proxyProviderKey} 订阅信息：{userinfo_used}/{userinfo_total} {userinfo_expire}"
-                            )
-                            if userinfo_used and userinfo_total and userinfo_expire:
-                                if "proxies" not in merged_config or (
-                                    "proxies" in merged_config
-                                    and merged_config["proxies"] is None
-                                ):
-                                    merged_config["proxies"] = []
+                    #             userinfo_used = url_content.get("used", "")
+                    #             userinfo_total = url_content.get("total", "")
+                    #             userinfo_expire = url_content.get("expire", "")
+                    #             userinfo_overview = url_content.get("overview", "")
+                    #             logger.info(
+                    #                 f"[{filename}] 🧾 {proxyProviderKey} 订阅信息：{userinfo_used}/{userinfo_total} {userinfo_expire}"
+                    #             )
+                    #             if userinfo_used and userinfo_total and userinfo_expire:
+                    #                 if "proxies" not in merged_config or (
+                    #                     "proxies" in merged_config
+                    #                     and merged_config["proxies"] is None
+                    #                 ):
+                    #                     merged_config["proxies"] = []
 
-                                merged_config["proxies"].extend(
-                                    [
-                                        {
-                                            "name": f"{proxyProviderKey} 流量使用：{userinfo_used}/{userinfo_total}",
-                                            "type": "trojan",
-                                            "server": "127.0.0.1",
-                                            "port": 8080,
-                                            "password": "",
-                                            "uuid": f"scat-proxy-{proxyProviderKey}-userinfo-used",
-                                            "tls": False,
-                                            "skip-cert-verify": True,
-                                            "udp": True,
-                                        },
-                                        {
-                                            "name": f"{proxyProviderKey} 套餐到期：{userinfo_expire}",
-                                            "type": "trojan",
-                                            "server": "127.0.0.1",
-                                            "port": 8080,
-                                            "password": "",
-                                            "uuid": f"scat-proxy-{proxyProviderKey}-userinfo-expire",
-                                            "tls": False,
-                                            "skip-cert-verify": True,
-                                            "udp": True,
-                                        },
-                                    ]
-                                )
+                    #                 merged_config["proxies"].extend(
+                    #                     [
+                    #                         {
+                    #                             "name": f"{proxyProviderKey} 流量使用：{userinfo_used}/{userinfo_total}",
+                    #                             "type": "trojan",
+                    #                             "server": "127.0.0.1",
+                    #                             "port": 8080,
+                    #                             "password": "",
+                    #                             "uuid": f"scat-proxy-{proxyProviderKey}-userinfo-used",
+                    #                             "tls": False,
+                    #                             "skip-cert-verify": True,
+                    #                             "udp": True,
+                    #                         },
+                    #                         {
+                    #                             "name": f"{proxyProviderKey} 套餐到期：{userinfo_expire}",
+                    #                             "type": "trojan",
+                    #                             "server": "127.0.0.1",
+                    #                             "port": 8080,
+                    #                             "password": "",
+                    #                             "uuid": f"scat-proxy-{proxyProviderKey}-userinfo-expire",
+                    #                             "tls": False,
+                    #                             "skip-cert-verify": True,
+                    #                             "udp": True,
+                    #                         },
+                    #                     ]
+                    #                 )
 
                     proxy_providers__proxies__count.update(
                         {
