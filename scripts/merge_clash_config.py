@@ -25,6 +25,7 @@ from utils import files_utils
 from utils.files_utils import load_yaml_content
 from utils.patterns import (
     BASE64_PATTERN,
+    RELATIVE_YAML_PATTERN,
     REMOTE_FILE_PATTERN,
     REMOTE_YAML_PATTERN,
     FCONFS_DIR_PATTERN,
@@ -160,6 +161,58 @@ class ClashConfigMerger:
                 return None
             except Exception as e:
                 logger.error(f"解析文件失败 {file_path}: {e}")
+                return None
+            
+    def get_directory_file(self, file_path: str) -> str | None:
+        """
+        获取指定文件路径（支持本地和GitHub模式）
+
+        Args:
+            file_path: 文件路径
+
+        Returns:
+            文件路径
+        """
+        if self.local_mode:
+            # 本地模式：扫描本地目录
+            try:
+                if not os.path.exists(file_path):
+                    logger.warning(f"本地文件不存在: {file_path}")
+                    return None
+
+                if file_path.endswith(".yaml") or file_path.endswith(".yml"):
+                    logger.info(
+                        f"发现YAML本地文件: {file_path}"
+                    )
+                    return file_path
+                else:
+                    logger.warning(f"未发现YAML本地文件: {file_path}")
+                    return None
+
+            except Exception as e:
+                logger.error(f"识别本地文件失败 {file_path}: {e}")
+                return None
+        else:
+            # GitHub模式：通过API获取
+            try:
+                url = f"{self.base_url}/{file_path}"
+                response = requests.get(url, headers=self.headers)
+                response.raise_for_status()
+
+                file_info = response.json()
+                if file_info["type"] == "file" and file_info["name"].endswith(
+                    ".yaml"
+                ):
+                    logger.info(
+                        f"发现YAML文件: {file_info['path']}"
+                    )
+                    return file_info["path"]
+                else:
+                    logger.warning(f"未发现YAML文件: {file_info['path']}")
+                    return None
+
+            except requests.exceptions.RequestException as e:
+                logger.error(f"识别文件失败 {file_path}: {e}")
                 return None
 
     def get_directory_files(self, directory_path: str) -> List[str]:
@@ -465,6 +518,10 @@ class ClashConfigMerger:
             for fconf_directory in fconfs_directories:
                 if re.fullmatch(REMOTE_YAML_PATTERN, fconf_directory) is not None:
                     fconfs_files.extend([fconf_directory])
+                elif re.fullmatch(RELATIVE_YAML_PATTERN, fconf_directory) is not None:
+                    _res = self.get_directory_file(fconf_directory)
+                    if _res is not None:
+                        fconfs_files.extend([_res])
                 else:
                     fconfs_files.extend(self.get_directory_files(fconf_directory))
         if not fconfs_files:

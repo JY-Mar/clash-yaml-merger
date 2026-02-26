@@ -1,7 +1,7 @@
 '''
 Author       : Scientificat
 Date         : 2025-10-09 01:32:33
-LastEditTime : 2025-11-03 01:42:39
+LastEditTime : 2026-02-26 15:30:58
 LastEditors  : Scientificat
 Description  : Regular expression
 '''
@@ -12,8 +12,8 @@ REMOTE_YAML_PATTERN = r"^https:\/\/.+\.yaml$"
 # 远程文件正则表达式
 REMOTE_FILE_PATTERN = r"^http(s)?:\/\/.+$"
 
-# YAML文件正则表达式
-YAML_PATTERN = r".+\.yaml$"
+# 相对位置的YAML文件正则表达式
+RELATIVE_YAML_PATTERN = r"^(?!(?i)(https?:\/\/|ftp:\/\/|file:\/\/\/)).+\.yaml$"
 
 # settings.yaml fconfs目录配置正则表达式
 FCONFS_DIR_PATTERN = r"([a-zA-Z][a-zA-Z0-9_-]*)\|([^;]+;?)"
