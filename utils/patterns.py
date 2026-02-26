@@ -1,8 +1,8 @@
 '''
 Author       : Scientificat
 Date         : 2025-10-09 01:32:33
-LastEditTime : 2026-02-26 15:30:58
-LastEditors  : Scientificat
+LastEditTime : 2026-02-26 15:58:07
+LastEditors  : JY-Mar mjyjy@outlook.com
 Description  : Regular expression
 '''
 
@@ -13,7 +13,7 @@ REMOTE_YAML_PATTERN = r"^https:\/\/.+\.yaml$"
 REMOTE_FILE_PATTERN = r"^http(s)?:\/\/.+$"
 
 # 相对位置的YAML文件正则表达式
-RELATIVE_YAML_PATTERN = r"^(?!(?i)(https?:\/\/|ftp:\/\/|file:\/\/\/)).+\.yaml$"
+RELATIVE_YAML_PATTERN = r"^(?!(https?://|ftp://|file:///)).+\.yaml$"
 
 # settings.yaml fconfs目录配置正则表达式
 FCONFS_DIR_PATTERN = r"([a-zA-Z][a-zA-Z0-9_-]*)\|([^;]+;?)"
