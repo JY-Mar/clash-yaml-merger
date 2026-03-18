@@ -1,4 +1,4 @@
-name: Update Clash Config
+name: Generate Merged Clash Yamls
 
 on:
   # 定时触发 - 每天的 00 点 01 分（UTC+8） 执行一次任务
@@ -13,9 +13,22 @@ on:
         required: false
         default: false
         type: boolean
+      message:
+        description: "触发备注"
+        required: false
+        default: ""
+        type: string
+
+  # 仓库 scat-proxy 触发
+  repository_dispatch:
+    types:
+      - trigger-from-scat-proxy
+      - trigger-from-scat-proxy-sub
 
   # 当脚本文件更新时触发
   push:
+    branches:
+      - main
     paths:
       - "scripts/**"
       - ".github/workflows/update-config.yml"
