@@ -162,7 +162,7 @@ class ClashConfigMerger:
             except Exception as e:
                 logger.error(f"解析文件失败 {file_path}: {e}")
                 return None
-            
+
     def get_directory_file(self, file_path: str) -> str | None:
         """
         获取指定文件路径（支持本地和GitHub模式）
@@ -181,9 +181,7 @@ class ClashConfigMerger:
                     return None
 
                 if file_path.endswith(".yaml") or file_path.endswith(".yml"):
-                    logger.info(
-                        f"发现YAML本地文件: {file_path}"
-                    )
+                    logger.info(f"发现YAML本地文件: {file_path}")
                     return file_path
                 else:
                     logger.warning(f"未发现YAML本地文件: {file_path}")
@@ -200,12 +198,8 @@ class ClashConfigMerger:
                 response.raise_for_status()
 
                 file_info = response.json()
-                if file_info["type"] == "file" and file_info["name"].endswith(
-                    ".yaml"
-                ):
-                    logger.info(
-                        f"发现YAML文件: {file_info['path']}"
-                    )
+                if file_info["type"] == "file" and file_info["name"].endswith(".yaml"):
+                    logger.info(f"发现YAML文件: {file_info['path']}")
                     return file_info["path"]
                 else:
                     logger.warning(f"未发现YAML文件: {file_info['path']}")
@@ -775,6 +769,43 @@ class ClashConfigInitParams:
         self.rules_dir = rules_dir
         self.auth_token = auth_token
 
+        self.rules_dir = rules_dir
+        self.auth_token = auth_token
+
+
+class CustomJSONEncoder(json.JSONEncoder):
+    """自定义JSON编码器，优化数组缩进格式"""
+
+    def encode(self, o):
+        """重写encode方法，确保数组项正确缩进"""
+        if isinstance(o, (list, tuple)):
+            # 对数组进行特殊处理，确保每个元素正确缩进
+            result = []
+            for item in o:
+                # 对每个数组元素单独编码并添加缩进
+                encoded_item = super().encode(item)
+                result.append(encoded_item)
+
+            # 手动构建格式化的数组字符串，处理self.indent的类型
+            indent_value = self.indent if isinstance(self.indent, int) else 2
+            indent_str = " " * indent_value
+            # 确保数组项有正确的缩进格式
+            if result:
+                return (
+                    "[\n" + ",\n".join(f"{indent_str}{item}" for item in result) + "\n]"
+                )
+            else:
+                return "[]"
+
+        # 对于字典中的数组值，需要递归处理
+        elif isinstance(o, dict):
+            result = {}
+            for key, value in o.items():
+                result[key] = self.encode(value)
+            return super().encode(result)
+
+        return super().encode(o)
+
 
 def merger_init() -> ClashConfigInitParams:
     """
@@ -1133,7 +1164,9 @@ def merger_gen_config():
             try:
                 os.makedirs(ida.output_dir, exist_ok=True)
                 with open(stats_path, "w", encoding="utf-8") as f:
-                    json.dump(stats, f, indent=2, ensure_ascii=False)
+                    json.dump(
+                        stats, f, indent=2, ensure_ascii=False, cls=CustomJSONEncoder
+                    )
 
                 logger.info(f"[{filename}] ℹ️ 统计信息已保存到: {stats_path}")
             except Exception as e:
