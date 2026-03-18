@@ -49,9 +49,12 @@ def filter_valid_strings(s_list: List[str] | None) -> List[str]:
     if not isinstance(s_list, list):
         return []
 
-    valid_strings = list(filter(lambda s: isinstance(s, str) and s.strip(), s_list))
+    valid_strings = [
+        "".join(s.split()) for s in s_list if isinstance(s, str) and s.strip()
+    ]
 
     return valid_strings
+
 
 def extract_valid_array(array: Any = None) -> List[Any]:
     """

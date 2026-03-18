@@ -94,8 +94,14 @@ jobs:
           # 验证生成的文件编码
           echo "=== ↓↓↓ 检查生成的文件 ↓↓↓ ==="
 
+          # 1. 先去除换行符 \n 和 \r (Windows 兼容)
+          # 2. 再去除所有空格
+          cleaned_dirs="${FCONFS_DIRECTORIES//$'\n'/}"
+          cleaned_dirs="${cleaned_dirs//$'\r'/}"
+          cleaned_dirs="${cleaned_dirs// /}"
+
           # 先按 ; 分割
-          IFS=';' read -ra groups <<< "$FCONFS_DIRECTORIES"
+          IFS=';' read -ra groups <<< "$cleaned_dirs"
           NEW_PARAMS=()
           for group in "${groups[@]}"; do
             # 每个 group 再按 | 分割
@@ -275,7 +281,7 @@ jobs:
                   if (container && updateTime_DOM) {
                       container.appendChild(updateTime_DOM);
                   }
-                  const class_names = (window.ENV.FCONFS_DIRECTORIES || '').split(';').map((v) => (v || '').split('|')?.[0]).filter((v) => v !== undefined && v !== null && v !== '').map((v) => ({ label: v }));
+                  const class_names = (window.ENV.FCONFS_DIRECTORIES || '').replace(/\n/g, '').replace(/\r/g, '').replace(/\s/g, '').split(';').map((v) => (v || '').split('|')?.[0]).filter((v) => v !== undefined && v !== null && v !== '').map((v) => ({ label: v }));
                   class_names.forEach((class_name) => {
                       const dom = document.querySelector('.config-info.' + class_name.label);
                       if (dom) {
