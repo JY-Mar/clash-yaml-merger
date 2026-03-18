@@ -31,8 +31,9 @@ on:
       - main
     paths:
       - "scripts/**"
-      - ".github/workflows/update-config.yml"
       - "config/**"
+      - "utils/**"
+      - "templates/**"
 
 # 设置权限
 permissions:
