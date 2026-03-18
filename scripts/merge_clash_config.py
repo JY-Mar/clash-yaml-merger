@@ -701,6 +701,7 @@ class ClashConfigMerger:
                 # 使用自定义的YAML输出格式，确保中文正确显示
                 yaml_content = yaml.dump(
                     config,
+                    Dumper=YamlIndentDumper,
                     default_flow_style=False,
                     allow_unicode=True,
                     sort_keys=False,
@@ -773,38 +774,9 @@ class ClashConfigInitParams:
         self.auth_token = auth_token
 
 
-class CustomJSONEncoder(json.JSONEncoder):
-    """自定义JSON编码器，优化数组缩进格式"""
-
-    def encode(self, o):
-        """重写encode方法，确保数组项正确缩进"""
-        if isinstance(o, (list, tuple)):
-            # 对数组进行特殊处理，确保每个元素正确缩进
-            result = []
-            for item in o:
-                # 对每个数组元素单独编码并添加缩进
-                encoded_item = super().encode(item)
-                result.append(encoded_item)
-
-            # 手动构建格式化的数组字符串，处理self.indent的类型
-            indent_value = self.indent if isinstance(self.indent, int) else 2
-            indent_str = " " * indent_value
-            # 确保数组项有正确的缩进格式
-            if result:
-                return (
-                    "[\n" + ",\n".join(f"{indent_str}{item}" for item in result) + "\n]"
-                )
-            else:
-                return "[]"
-
-        # 对于字典中的数组值，需要递归处理
-        elif isinstance(o, dict):
-            result = {}
-            for key, value in o.items():
-                result[key] = self.encode(value)
-            return super().encode(result)
-
-        return super().encode(o)
+class YamlIndentDumper(yaml.SafeDumper):
+    def increase_indent(self, flow=False, indentless=False):
+        return super(YamlIndentDumper, self).increase_indent(flow, False)
 
 
 def merger_init() -> ClashConfigInitParams:
@@ -1164,9 +1136,7 @@ def merger_gen_config():
             try:
                 os.makedirs(ida.output_dir, exist_ok=True)
                 with open(stats_path, "w", encoding="utf-8") as f:
-                    json.dump(
-                        stats, f, indent=2, ensure_ascii=False, cls=CustomJSONEncoder
-                    )
+                    json.dump(stats, f, indent=2, ensure_ascii=False)
 
                 logger.info(f"[{filename}] ℹ️ 统计信息已保存到: {stats_path}")
             except Exception as e:
