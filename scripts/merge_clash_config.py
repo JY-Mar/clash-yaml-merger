@@ -12,7 +12,7 @@ import yaml
 import requests
 import base64
 import json
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from typing import Dict, List, Any, Optional
 import logging
 from functools import reduce
@@ -947,9 +947,14 @@ def merger_gen_config():
             )
 
             # 生成统计信息
-            now_date_formatted = datetime.now(timezone.utc).isoformat()
+            # 1. 定义东八区时区 (UTC+8)
+            tz_utc_8 = timezone(timedelta(hours=8))
+            # 2. 获取当前东八区时间
+            now_tz_utc_8 = datetime.now(tz_utc_8)
+            # 3. 格式化输出
+            now_tz_utc_8_formatted_time = now_tz_utc_8.strftime('%Y-%m-%d %H:%M:%S TZ=UTC+8:00')
             stats = {
-                "generated_at": now_date_formatted,
+                "generated_timestamp": now_tz_utc_8_formatted_time,
                 # proxy-providers 个数
                 "proxy_providers_count": 0,
                 # proxies 总个数 = sum(item["count"] for item in proxy_providers__proxies__count.values()) + indep_proxies_count
@@ -1053,12 +1058,6 @@ def merger_gen_config():
                         {
                             proxyProviderKey: {
                                 "count": _count,
-                                "useinfo": {
-                                    "used": userinfo_used,
-                                    "total": userinfo_total,
-                                    "expire": userinfo_expire,
-                                    "overview": userinfo_overview,
-                                },
                             }
                         }
                     )
