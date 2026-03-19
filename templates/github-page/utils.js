@@ -66,3 +66,60 @@ function render(container, tagName, properties, children) {
 
   return ele
 }
+
+let messageTimer = null
+
+function clearMessageTimer() {
+  if (document.getElementById('tmp__message')) {
+    document.getElementById('tmp__message').remove()
+    clearTimeout(messageTimer)
+    messageTimer = null
+  }
+}
+
+const message = {
+  success: (msg) => {
+    clearMessageTimer()
+    const ele = document.createElement('div')
+    ele.id = 'tmp__message'
+    ele.textContent = msg
+    ele.className = 'copy-alert theme-success'
+    document.body.appendChild(ele)
+    messageTimer = setTimeout(() => {
+      clearMessageTimer()
+    }, String(msg).length > 100 ? 4000 : 2500)
+  },
+  warn: (msg) => {
+    clearMessageTimer()
+    const ele = document.createElement('div')
+    ele.id = 'tmp__message'
+    ele.textContent = msg
+    ele.className = 'copy-alert theme-warning'
+    document.body.appendChild(ele)
+    messageTimer = setTimeout(() => {
+      clearMessageTimer()
+    }, String(msg).length > 100 ? 4000 : 2500)
+  },
+  error: (msg) => {
+    clearMessageTimer()
+    const ele = document.createElement('div')
+    ele.id = 'tmp__message'
+    ele.textContent = msg
+    ele.className = 'copy-alert theme-danger'
+    document.body.appendChild(ele)
+    messageTimer = setTimeout(() => {
+      clearMessageTimer()
+    }, String(msg).length > 100 ? 4000 : 2500)
+  },
+  info: (msg) => {
+    clearMessageTimer()
+    const ele = document.createElement('div')
+    ele.id = 'tmp__message'
+    ele.textContent = msg
+    ele.className = 'copy-alert theme-normal'
+    document.body.appendChild(ele)
+    messageTimer = setTimeout(() => {
+      clearMessageTimer()
+    }, String(msg).length > 100 ? 4000 : 2500)
+  }
+}
