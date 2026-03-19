@@ -103,7 +103,7 @@ def validate_setup():
     # 检查必要文件
     required_files = [
         "scripts/merge_clash_config.py",
-        ".github/workflows/update-config.yml",
+        ".github/workflows/run-jobs.yml",
         "config/settings.yaml",
         "requirements.txt",
     ]

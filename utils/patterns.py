@@ -1,8 +1,6 @@
 '''
-Author       : Scientificat
 Date         : 2025-10-09 01:32:33
-LastEditTime : 2026-02-26 15:58:07
-LastEditors  : JY-Mar mjyjy@outlook.com
+LastEditTime : 2026-03-19 10:37:10
 Description  : Regular expression
 '''
 
@@ -21,4 +19,5 @@ FCONFS_DIR_PATTERN = r"([a-zA-Z][a-zA-Z0-9_-]*)\|([^;]+;?)"
 # base64正则表达式
 BASE64_PATTERN = r'^[A-Za-z0-9+/]+={0,2}$'
 
+# 订阅报文头正则表达式
 SUB_HEADERS_PATTERN = r"upload=(\d+); download=(\d+); total=(\d+); expire=(\d+)"

@@ -15,7 +15,7 @@
 
 ```
 ├── .github/workflows/
-│   └── update-config.yml      # GitHub Actions工作流
+│   └── run-jobs.yml           # GitHub Actions工作流
 ├── scripts/
 │   └── merge_clash_config.py  # 核心合并脚本
 ├── config/
@@ -77,7 +77,7 @@
 
 ```yaml
 jobs:
-   generate-config:
+   generate-and-merge-config:
       runs-on: ubuntu-latest
       environment: github-pages
       ...
