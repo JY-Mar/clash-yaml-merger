@@ -13,13 +13,13 @@ function getClassNames(content) {
   }
 }
 
-function generateDesctiptionItem(label, value) {
+function generateDesctiptionItem(label, value, colon = false) {
   let _label = label
   if (typeof label === 'string' && label) {
     if ((label.startsWith('<strong') && label.endsWith('</strong>')) || label.endsWith('：')) {
       _label = label
     } else {
-      _label = `${label}：`
+      _label = `${label}${colon ? '：' : ''}`
     }
   }
   return `
@@ -33,8 +33,8 @@ function generateDesctiptionItem(label, value) {
                     `
 }
 
-function generateSubDesctiptionItem(label, value) {
-  return generateDesctiptionItem(`<strong class="sub-label-class">${label}：</strong>`, value)
+function generateSubDesctiptionItem(label, value, colon = false) {
+  return generateDesctiptionItem(`<strong class="sub-label-class">${label}${colon ? '：' : ''}</strong>`, value)
 }
 
 function render(container, tagName, properties, children) {

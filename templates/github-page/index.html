@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Clash 配置服务</title>
+    <title>Clash Configuration Merger</title>
     <script src="./utils.js"></script>
     <style>
       body {
@@ -118,16 +118,16 @@
   <body>
     <div class="container">
       <div class="header">
-        <h1>🚀 Clash 配置整合服务</h1>
-        <p>自动整合多个订阅源的 Clash 配置文件</p>
+        <h1>🚀 Clash Configuration Merger</h1>
+        <p>Automatically merge multiple Clash configuration files</p>
       </div>
 
       <div class="warning">
-        <h3>⚠️ 重要提醒</h3>
+        <h3>⚠️ Warning</h3>
         <ul>
-          <li>此服务仅供个人使用，请勿分享配置链接</li>
+          <li>This service is for personal use only, please do not share the configuration link</li>
           <!-- <li>配置文件每天的 00 点 01 分（UTC+8）更新一次</li> -->
-          <li>访问配置需要正确的认证参数</li>
+          <li>To access the configuration, you need to provide the correct authentication parameters</li>
         </ul>
       </div>
     </div>
@@ -165,9 +165,9 @@
         const usageModule = render(undefined, 'div', { className: 'usage-module success' })
 
         render(usageModule, 'h3', '📋 Usage')
-        render(usageModule, 'p', '在 Clash 客户端中添加以下订阅链接：')
+        render(usageModule, 'p', 'Add the following subscription link to your Clash client:')
         render(usageModule, 'div', { id: 'config-url', className: 'url-box', textContent: 'https://jy-mar.github.io/clash-yaml-merger/clash-' + class_name.label + '-{your-token}.yaml' })
-        render(usageModule, 'p', undefined, [render(undefined, 'small', '请将 {your-token} 替换为您的实际token')])
+        render(usageModule, 'p', undefined, [render(undefined, 'small', 'Replace "{your-token}" with your actual token')])
 
         if (container) {
           container.appendChild(usageModule)
@@ -184,7 +184,7 @@
             const _generated_timestamp = String(data.generated_timestamp)
             const _matched = _generated_timestamp.match(/^(\d{4}|\d{2})-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}/)
             if (_matched.length && _matched[0]) {
-              dateStr = _matched[0]
+              dateStr = _generated_timestamp
             } else {
               const generateDate = new Date(_generated_timestamp)
               if (typeof generateDate === 'object' && generateDate instanceof Date) {
@@ -209,14 +209,14 @@
                           `
 
             stats_DOM.innerHTML = `
-                              ${generateDesctiptionItem('代理集数量', data.proxy_providers_count)}
-                              ${generateDesctiptionItem('代理节点总数', data.total_proxies_count)}
-                              ${generateSubDesctiptionItem('独立节点', data.indep_proxies_count)}
-                              ${generateDesctiptionItem('策略组数量', data.proxy_groups_count)}
-                              ${generateDesctiptionItem('规则集数量', data.rule_providers_count)}
-                              ${generateDesctiptionItem('规则总数', data.total_rules_count)}
-                              ${generateSubDesctiptionItem('独立规则', data.indep_rules_count)}
-                              ${generateSubDesctiptionItem('规则集', data.rules__rule_set__count)}
+                              ${generateDesctiptionItem('Proxy Providers', data.proxy_providers_count)}
+                              ${generateDesctiptionItem('Proxies', data.total_proxies_count)}
+                              ${generateSubDesctiptionItem('Independent Proxies', data.indep_proxies_count)}
+                              ${generateDesctiptionItem('Proxy Groups', data.proxy_groups_count)}
+                              ${generateDesctiptionItem('Rules Providers', data.rule_providers_count)}
+                              ${generateDesctiptionItem('Rules', data.total_rules_count)}
+                              ${generateSubDesctiptionItem('Independent Rules', data.indep_rules_count)}
+                              ${generateSubDesctiptionItem('Rules Providers', data.rules__rule_set__count)}
                           `
 
             if (timeModule) {
@@ -233,8 +233,8 @@
           })
           .catch((error) => {
             console.error('Error:', error)
-            document.getElementById('subs' + filename).innerHTML = '<p style="color: red;">加载订阅信息失败</p>'
-            document.getElementById('stats' + filename).innerHTML = '<p style="color: red;">加载统计信息失败</p>'
+            document.getElementById('subs' + filename).innerHTML = '<p style="color: red;">Load subscriptions failed</p>'
+            document.getElementById('stats' + filename).innerHTML = '<p style="color: red;">Load statistics failed</p>'
           })
       }
       const intervals = Object.fromEntries(class_names.map((class_name) => [class_name.label, null]))
