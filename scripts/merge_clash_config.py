@@ -24,9 +24,7 @@ sys.path.insert(0, root_dir)
 from utils import files_utils
 from utils.files_utils import load_yaml_content
 from utils.patterns import (
-    BASE64_PATTERN,
     RELATIVE_YAML_PATTERN,
-    REMOTE_FILE_PATTERN,
     REMOTE_YAML_PATTERN,
     FCONFS_DIR_PATTERN,
 )
@@ -39,7 +37,6 @@ from utils.string_utils import (
     split_str_to_2d_array,
 )
 from utils.array_utils import (
-    break_down_multi_dirs,
     extract_valid_array,
     unshift_to_array,
     filter_valid_strings,
@@ -868,9 +865,9 @@ def merger_init() -> ClashConfigInitParams:
             )
             fconfs_dirs = unshift_to_array(
                 # 通过正则去除groupName，将处理后的字符串转化为二维数组
-                break_down_multi_dirs(split_str_to_2d_array(
+                split_str_to_2d_array(
                     re.sub(FCONFS_DIR_PATTERN, r"\2", fconfs_directories)
-                )),
+                ),
                 fconfs_remote_tpls_1d_list,
             )
         # endregion

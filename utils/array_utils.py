@@ -69,10 +69,10 @@ def extract_valid_array(array: Any = None) -> List[Any]:
     """
     return array if isinstance(array, list) and len(array) > 0 else []
 
-
 def break_down_multi_dirs(s_list: List[List[str]]) -> List[List[str]]:
     """
     将包含多个文件名的字符串列表拆分成多个字符串列表
+    deprecated暂不使用
 
     Args:
         s_list: 包含多个文件名的字符串列表
