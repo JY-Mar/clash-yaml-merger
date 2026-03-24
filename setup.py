@@ -29,11 +29,11 @@ def setup_github_config():
     if repo:
         config["github"]["repository"] = repo
 
-    fconfs_yamls = input(
-        f"远程完整配置文件 [{config['github']['fconfs_remote_yamls']}]: "
+    fconfs_tpls = input(
+        f"远程完整配置文件 [{config['github']['fconfs_remote_tpls']}]: "
     ).strip()
-    if fconfs_yamls:
-        config["github"]["fconfs_remote_yamls"] = fconfs_yamls
+    if fconfs_tpls:
+        config["github"]["fconfs_remote_tpls"] = fconfs_tpls
 
     fconfs_dirs = input(
         f"完整配置文件目录 [{config['github']['fconfs_directories']}]: "
@@ -41,11 +41,11 @@ def setup_github_config():
     if fconfs_dirs:
         config["github"]["fconfs_directories"] = fconfs_dirs
 
-    proxy_providers_dir = input(
-        f"代理集文件目录 [{config['github']['proxy_providers_directory']}]: "
+    proxy_providers_dirs = input(
+        f"代理集文件目录 [{config['github']['proxy_providers_directories']}]: "
     ).strip()
-    if proxy_providers_dir:
-        config["github"]["proxy_providers_directory"] = proxy_providers_dir
+    if proxy_providers_dirs:
+        config["github"]["proxy_providers_directories"] = proxy_providers_dirs
 
     proxies_dir = input(
         f"代理节点文件目录 [{config['github']['proxies_directory']}]: "

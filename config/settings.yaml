@@ -7,12 +7,17 @@ github:
   # 私有仓库名称
   repository: 'clash-config'
   # 远程全量配置文件，支持多个远程公开仓库的yaml文件，以“,”符号分隔
-  fconfs_remote_yamls: ''
+  fconfs_remote_tpls: ''
   # 全量配置文件目录，支持以“;”符号分隔生成多个文件，支持以“,”符号分隔多个目录或远程公开仓库的yaml文件合并为一个文件
+  # 同路径前缀支持用“{}”包裹
   # 格式：<生成文件名>|<合并配置1>,<合并配置2>...;<生成文件名>|<合并配置1>,<合并配置2>...
+  # 示例1：Conf01|Clash/fconf/01.yaml
+  # - 说明：将 Clash/fconf/01.yaml 与 模板文件合并生成clash-Conf01-{your-token}.yaml文件
+  # 示例2：Conf02|Clash/fconf/01.yaml,Clash/fconf/02
+  # - 说明：将 Clash/fconf/01.yaml、Clash/fconf/02目录下yaml所有文件 与 模板文件合并生成clash-Conf02-{your-token}.yaml文件
   fconfs_directories: ''
   # 代理集文件目录
-  proxy_providers_directory: 'Clash/proxy-providers'
+  proxy_providers_directories: 'Clash/proxy-providers'
   # 代理节点文件目录
   proxies_directory: 'Clash/proxies'
   # 规则集文件目录

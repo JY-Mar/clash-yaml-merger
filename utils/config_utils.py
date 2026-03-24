@@ -53,13 +53,17 @@ def load_config() -> Dict[str, Any]:
             if repo:
                 config["github"]["repository"] = repo
 
-            fconfs_yamls = f"{config['github']['fconfs_remote_yamls']}".strip()
-            if fconfs_yamls:
-                config["github"]["fconfs_remote_yamls"] = fconfs_yamls
+            fconfs_tpls = f"{config['github']['fconfs_remote_tpls']}".strip()
+            if fconfs_tpls:
+                config["github"]["fconfs_remote_tpls"] = fconfs_tpls
 
             fconfs_dirs = f"{config['github']['fconfs_directories']}".strip()
             if fconfs_dirs:
                 config["github"]["fconfs_directories"] = fconfs_dirs
+
+            proxy_providers_dirs = f"{config['github']['proxy_providers_directories']}".strip()
+            if proxy_providers_dirs:
+                config["github"]["proxy_providers_directories"] = proxy_providers_dirs
 
             proxies_dir = f"{config['github']['proxies_directory']}".strip()
             if proxies_dir:

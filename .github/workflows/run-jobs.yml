@@ -90,8 +90,8 @@ jobs:
           REPO_OWNER: ${{ secrets.CLASH_REPO_OWNER }}
           REPO_NAME: ${{ secrets.CLASH_REPO_NAME }}
           AUTH_TOKEN: ${{ secrets.CLASH_AUTH_TOKEN }}
-          REMOTE_YAMLS: ${{ vars.CLASH_ENV_REMOTE_YAMLS }}
-          FCONFS_DIRECTORIES: ${{ vars.CLASH_ENV_FCONFS_DIRECTORIES }}
+          REMOTE_TPLS: ${{ vars.CLASH_ENV_REMOTE_TPLS }}
+          FCONFS_DIRS: ${{ vars.CLASH_ENV_FCONFS_DIRS }}
           OUTPUT_DIR: docs
           PYTHONIOENCODING: utf-8
           PYTHONLEGACYWINDOWSFSENCODING: utf-8
@@ -112,7 +112,7 @@ jobs:
 
           # 1. 先去除换行符 \n 和 \r (Windows 兼容)
           # 2. 再去除所有空格
-          cleaned_dirs="${FCONFS_DIRECTORIES//$'\n'/}"
+          cleaned_dirs="${FCONFS_DIRS//$'\n'/}"
           cleaned_dirs="${cleaned_dirs//$'\r'/}"
           cleaned_dirs="${cleaned_dirs// /}"
 
@@ -129,8 +129,8 @@ jobs:
           len=${#NEW_PARAMS[@]}
           ls -la docs/
           for ((i=0; i<len; i++)); do
-            temp=${NEW_PARAMS[$i]}
-            CONFIG_FILE="docs/clash-${temp}-${AUTH_TOKEN}.yaml"
+            subtype=${NEW_PARAMS[$i]}
+            CONFIG_FILE="docs/clash-${subtype}-${AUTH_TOKEN}.yaml"
             if [ -f "$CONFIG_FILE" ]; then
               file "$CONFIG_FILE"
               head -3 "$CONFIG_FILE"
@@ -145,7 +145,7 @@ jobs:
 
       - name: Generate "index.html" from template
         env:
-          FCONFS_DIRECTORIES: ${{ vars.CLASH_ENV_FCONFS_DIRECTORIES }}
+          FCONFS_DIRS: ${{ vars.CLASH_ENV_FCONFS_DIRS }}
           LAST_UPDATE_TIME: ${{ github.event.head_commit.timestamp }}
         run: |
           # 确保输出目录存在
@@ -153,7 +153,7 @@ jobs:
           cp templates/github-page/utils.js docs/utils.js
           # 读取模板，替换变量，输出到最终位置
           # 注意：使用 envsubst 时，可以指定只替换特定的变量，防止干扰 HTML 里的其他 $ 符号
-          envsubst '$FCONFS_DIRECTORIES $LAST_UPDATE_TIME' < templates/github-page/index.html > docs/index.html
+          envsubst '$FCONFS_DIRS $LAST_UPDATE_TIME' < templates/github-page/index.html > docs/index.html
 
       - name: Create authentication wrapper
         env:

@@ -66,12 +66,21 @@
 
 2. 在您的仓库设置中添加以下 Environment Variables：
 
-| Variable 名称            | 说明                                                                  | 示例值                                                          |
-| ------------------------ | --------------------------------------------------------------------- | --------------------------------------------------------------- |
-| `CLASH_ENV_REMOTE_YAMLS` | 远程全量配置文件，支持多个远程**公开仓库**的 yaml 文件，以“,”符号分隔 | `https://example.com/conf1.yaml,https://example.com/conf2.yaml` |
-| `CLASH_ENV_FCONFS_DIRECTORIES` | 全量配置文件目录，支持以“;”符号分隔生成多个文件，支持以“,”符号分隔多个目录或远程公开仓库的yaml文件合并为一个文件（格式：<生成文件名>|<合并配置1>,<合并配置2>...;<生成文件名>|<合并配置1>,<合并配置2>...） | `AB\|Clash/fconfs/A,Clash/fconfs/B;C\|Clash/fconfs/C;https://example.com/conf1.yaml;https://example.com/conf2.yaml` |
+| Variable 名称           | 说明                                                                                                                                                                                                                                        | 示例值                                                                                                              |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `CLASH_ENV_REMOTE_TPLS` | 远程全量配置文件，支持多个远程**公开仓库**的 yaml 文件，以“,”符号分隔                                                                                                                                                                       | `https://example.com/conf1.yaml,https://example.com/conf2.yaml`                                                     |
+| `CLASH_ENV_FCONFS_DIRS` | 全量配置文件目录，支持以“;”符号分隔生成多个文件，支持以“,”符号分隔多个目录或远程公开仓库的yaml文件合并为一个文件，多文件同路径前缀支持用“\{\}”包裹并以“,”分割<br>（格式：`<生成文件名>\|<合并配置1>,<合并配置2>...;<生成文件名>\|<合并配置1>,<合并配置2>...`） | `AB\|Clash/fconfs/A,Clash/fconfs/B;C\|Clash/fconfs/C;https://example.com/conf1.yaml;https://example.com/conf2.yaml` |
 
-3. 在您的 workflows 作业中指定所使用的 environment：
+> CLASH_ENV_REMOTE_TPLS 配置示例：
+> 示例1：`Conf01|Clash/fconf/01.yaml`
+>
+> - 说明：将 `Clash/fconf/01.yaml` 与 模板文件合并生成 `clash-Conf01-{your-token}.yaml` 文件
+>
+> 示例2：`Conf02|Clash/fconf/01.yaml,Clash/fconf/02`
+>
+> - 说明：将 `Clash/fconf/01.yaml` 、 `Clash/fconf/02` 目录下yaml所有文件 与 模板文件合并生成 `clash-Conf02-{your-token}.yaml` 文件
+
+1. 在您的 workflows 作业中指定所使用的 environment：
 
 示例：
 
@@ -86,8 +95,8 @@ jobs:
          -  name: Generate Clash Config
             env:
                ...
-               REMOTE_YAMLS: ${{ vars.CLASH_ENV_REMOTE_YAMLS }}
-               FCONFS_DIRECTORIES: ${{ vars.CLASH_ENV_FCONFS_DIRECTORIES }}
+               REMOTE_TPLS: ${{ vars.CLASH_ENV_REMOTE_TPLS }}
+               FCONFS_DIRS: ${{ vars.CLASH_ENV_FCONFS_DIRS }}
             ...
          ...
    ...
@@ -101,8 +110,8 @@ jobs:
 ```python
 import os
 
-remote_yamls = os.getenv("REMOTE_YAMLS", "")
-fconfs_dirs = os.getenv("FCONFS_DIRECTORIES", "")
+remote_tpls = os.getenv("REMOTE_TPLS", "")
+fconfs_dirs = os.getenv("FCONFS_DIRS", "")
 ```
 
 ### 4. 启用 GitHub Pages
@@ -213,13 +222,11 @@ payload:
 ### 常见问题
 
 1. **配置文件生成失败**
-
    - 检查 GitHub Token 权限
    - 确认私有仓库路径正确
    - 查看 Actions 日志获取详细错误信息
 
 2. **访问被拒绝**
-
    - 确认认证 token 正确
    - 检查 URL 参数格式
 

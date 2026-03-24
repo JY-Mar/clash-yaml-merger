@@ -199,8 +199,8 @@
       if (container && timeModule) {
         container.appendChild(timeModule)
       }
-      const FCONFS_DIRECTORIES = `$FCONFS_DIRECTORIES`
-      const class_names = getClassNames(FCONFS_DIRECTORIES)
+      const FCONFS_DIRS = `$FCONFS_DIRS`
+      const class_names = getClassNames(FCONFS_DIRS)
       class_names.forEach((class_name) => {
         const dom = document.querySelector('.conf-module.' + class_name.label)
         if (dom) {
