@@ -149,14 +149,13 @@ jobs:
       - name: Generate "index.html" from template
         env:
           FCONFS_DIRS: ${{ vars.CLASH_ENV_FCONFS_DIRS }}
-          LAST_UPDATE_TIME: ${{ github.event.head_commit.timestamp }}
         run: |
           # 确保输出目录存在
           mkdir -p docs
           cp templates/github-page/utils.js docs/utils.js
           # 读取模板，替换变量，输出到最终位置
           # 注意：使用 envsubst 时，可以指定只替换特定的变量，防止干扰 HTML 里的其他 $ 符号
-          envsubst '$FCONFS_DIRS $LAST_UPDATE_TIME' < templates/github-page/index.html > docs/index.html
+          envsubst '$FCONFS_DIRS' < templates/github-page/index.html > docs/index.html
 
       - name: Create authentication wrapper
         env:
