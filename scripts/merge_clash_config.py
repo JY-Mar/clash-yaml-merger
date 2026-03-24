@@ -558,8 +558,8 @@ class ClashConfigMerger:
                 if config:
                     _filecontents__proxy_providers.append((config))
 
-        if not _filecontents__proxy_providers:
-            logger.error(f"未能加载任何有效的代理节点配置文件")
+        # if not _filecontents__proxy_providers:
+        #     logger.error(f"未能加载任何有效的代理节点配置文件")
             # return {}
 
         # 合并文件
@@ -939,8 +939,11 @@ def merger_gen_config():
         for i, dirs in enumerate(ida.fconfs_dirs):
             attr = ida.fconfs_filenames[i]
             dirs_desensitize = list(map(lambda dir: desensitize_url(dir), dirs))
+            # logger.info(
+            #     f"=== [{i + 1} / {len(ida.fconfs_dirs)}] 开始合并 {attr} <== {dirs_desensitize} ==="
+            # )
             logger.info(
-                f"=== [{i + 1} / {len(ida.fconfs_dirs)}] 开始合并 {attr} <== {dirs_desensitize} ==="
+                f"=== [{i + 1} / {len(ida.fconfs_dirs)}] 处理中 ==="
             )
             merged_configs[attr] = _merger.generate_merged_config(
                 dirs,
@@ -949,7 +952,7 @@ def merger_gen_config():
                 ida.rule_providers_dir,
                 ida.rules_dir,
             )
-            logger.info(f"=== [{i + 1} / {len(ida.fconfs_dirs)}] 合并完成 {attr}  ===")
+            # logger.info(f"=== [{i + 1} / {len(ida.fconfs_dirs)}] 合并完成 {attr} ===")
         logger.info(f"=== ↑↑↑ 配置合并完成 ↑↑↑ ===")
     else:
         merged_configs = {}
