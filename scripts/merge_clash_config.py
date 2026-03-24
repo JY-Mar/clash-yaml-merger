@@ -136,8 +136,8 @@ class ClashConfigMerger:
                         yaml_raw_content = None
                         logger.error(f"解析失败：不是合法的 JSON 格式: {e}")
 
-                    if yaml_raw_content:
-                        logger.info(f"成功获取文件: {desensitize_url(filepath)}")
+                    # if yaml_raw_content:
+                    #     logger.info(f"成功获取文件: {desensitize_url(filepath)}")
 
                     return yaml_raw_content
                 else:
@@ -148,17 +148,17 @@ class ClashConfigMerger:
 
                 if file_data["encoding"] == "base64":
                     content = base64.b64decode(file_data["content"]).decode("utf-8")
-                    logger.info(f"成功获取文件: {desensitize_url(filepath)}")
+                    # logger.info(f"成功获取文件: {desensitize_url(filepath)}")
                     return content
                 else:
                     logger.error(f"不支持的编码格式: {file_data['encoding']}")
                     return None
 
             except requests.exceptions.RequestException as e:
-                logger.error(f"获取文件失败 {filepath}: {e}")
+                # logger.error(f"获取文件失败 {filepath}: {e}")
                 return None
             except Exception as e:
-                logger.error(f"解析文件失败 {filepath}: {e}")
+                # logger.error(f"解析文件失败 {filepath}: {e}")
                 return None
 
     def get_file_path(self, filepath: str) -> str | None:
@@ -179,7 +179,7 @@ class ClashConfigMerger:
                     return None
 
                 if filepath.endswith(".yaml") or filepath.endswith(".yml"):
-                    logger.info(f"发现YAML本地文件: {filepath}")
+                    # logger.info(f"发现YAML本地文件: {filepath}")
                     return filepath
                 else:
                     logger.warning(f"未发现YAML本地文件: {filepath}")
@@ -197,7 +197,7 @@ class ClashConfigMerger:
 
                 file_info = response.json()
                 if file_info["type"] == "file" and file_info["name"].endswith(".yaml"):
-                    logger.info(f"发现YAML文件: {file_info['path']}")
+                    # logger.info(f"发现YAML文件: {file_info['path']}")
                     return file_info["path"]
                 else:
                     logger.warning(f"未发现YAML文件: {file_info['path']}")
@@ -230,9 +230,9 @@ class ClashConfigMerger:
                         _filepath = os.path.join(directory_path, filename)
                         _filepaths.append(_filepath)
 
-                logger.info(
-                    f"发现 {len(_filepaths)} 个YAML文件在本地目录: {directory_path}"
-                )
+                # logger.info(
+                #     f"发现 {len(_filepaths)} 个YAML文件在本地目录: {directory_path}"
+                # )
                 return _filepaths
 
             except Exception as e:
@@ -254,14 +254,14 @@ class ClashConfigMerger:
                     ):
                         _filepaths.append(file_info["path"])
 
-                if len(_filepaths) == 0:
-                    logger.warning(
-                        f"发现 {len(_filepaths)} 个YAML文件在目录: {directory_path}"
-                    )
-                else:
-                    logger.info(
-                        f"发现 {len(_filepaths)} 个YAML文件在目录: {directory_path}"
-                    )
+                # if len(_filepaths) == 0:
+                #     logger.warning(
+                #         f"发现 {len(_filepaths)} 个YAML文件在目录: {directory_path}"
+                #     )
+                # else:
+                #     logger.info(
+                #         f"发现 {len(_filepaths)} 个YAML文件在目录: {directory_path}"
+                #     )
                 return _filepaths
 
             except requests.exceptions.RequestException as e:
@@ -519,8 +519,8 @@ class ClashConfigMerger:
                         _filepaths__fconfs.extend([_res])
                 else:
                     _filepaths__fconfs.extend(self.get_directory_files(_dir))
-        if not _filepaths__fconfs:
-            logger.warning(f"未找到全量配置文件在目录: {fconfs_directories}")
+        # if not _filepaths__fconfs:
+        #     logger.warning(f"未找到全量配置文件在目录: {fconfs_directories}")
 
         # 加载文件
         _filecontents__fconfs: List[Dict[str, Any]] = []
@@ -544,8 +544,8 @@ class ClashConfigMerger:
         # region 2.3 代理集
         # 探索文件
         _filepaths__proxy_providers = self.get_directory_files(proxy_providers_directories)
-        if not _filepaths__proxy_providers:
-            logger.warning(f"未找到代理集文件在目录: {proxy_providers_directories}")
+        # if not _filepaths__proxy_providers:
+        #     logger.warning(f"未找到代理集文件在目录: {proxy_providers_directories}")
 
         # 加载文件
         _filecontents__proxy_providers: List[Dict[str, Any]] = []
@@ -581,8 +581,8 @@ class ClashConfigMerger:
         # region 2.4 代理节点
         # 探索文件
         _filepaths__proxies = self.get_directory_files(proxies_directory)
-        if not _filepaths__proxies:
-            logger.warning(f"未找到代理节点文件在目录: {proxies_directory}")
+        # if not _filepaths__proxies:
+        #     logger.warning(f"未找到代理节点文件在目录: {proxies_directory}")
 
         # 加载文件
         _filecontents__proxies = []
@@ -593,8 +593,8 @@ class ClashConfigMerger:
                 if config:
                     _filecontents__proxies.append((config))
 
-        if not _filecontents__proxies:
-            logger.error(f"未能加载任何有效的代理节点配置文件")
+        # if not _filecontents__proxies:
+        #     logger.error(f"未能加载任何有效的代理节点配置文件在目录: {proxies_directory}")
             # return {}
 
         # 合并文件
@@ -610,8 +610,8 @@ class ClashConfigMerger:
         # region 2.5 规则集
         # 探索文件
         _filepaths__rule_providers = self.get_directory_files(rule_providers_directory)
-        if not _filepaths__rule_providers:
-            logger.warning(f"未找到规则集文件在目录: {rule_providers_directory}")
+        # if not _filepaths__rule_providers:
+        #     logger.warning(f"未找到规则集文件在目录: {rule_providers_directory}")
 
         # 加载文件
         _filecontents__rule_providers = []
@@ -622,8 +622,8 @@ class ClashConfigMerger:
                 if config:
                     _filecontents__rule_providers.append((config))
 
-        if not _filecontents__rule_providers:
-            logger.error(f"未能加载任何有效的规则集配置文件")
+        # if not _filecontents__rule_providers:
+        #     logger.error(f"未能加载任何有效的规则集配置文件在目录: {rule_providers_directory}")
             # return {}
 
         # 合并文件
@@ -643,8 +643,8 @@ class ClashConfigMerger:
         # region 2.6 规则
         # 探索文件
         _filepaths__rules = self.get_directory_files(rules_directory)
-        if not _filepaths__rules:
-            logger.warning(f"未找到规则文件在目录: {rules_directory}")
+        # if not _filepaths__rules:
+        #     logger.warning(f"未找到规则文件在目录: {rules_directory}")
 
         # 加载文件
         _filecontents__rules = []
@@ -657,8 +657,8 @@ class ClashConfigMerger:
                 if config:
                     _filecontents__rules.append((config))
 
-        if not _filecontents__rules:
-            logger.error(f"未能加载任何有效的规则配置文件")
+        # if not _filecontents__rules:
+        #     logger.error(f"未能加载任何有效的规则配置文件在目录: {rules_directory}")
             # return {}
 
         # 合并文件

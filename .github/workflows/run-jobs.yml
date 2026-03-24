@@ -133,7 +133,10 @@ jobs:
             CONFIG_FILE="docs/clash-${subtype}-${AUTH_TOKEN}.yaml"
             if [ -f "$CONFIG_FILE" ]; then
               file "$CONFIG_FILE"
-              head -3 "$CONFIG_FILE"
+              # 打印前三行
+              # head -3 "$CONFIG_FILE"
+              # 仅打印第三行
+              sed -n '3p' "$CONFIG_FILE"
               echo "配置文件生成成功: $CONFIG_FILE"
             else
               echo "错误: 配置文件 $CONFIG_FILE 未生成"
