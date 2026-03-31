@@ -127,7 +127,7 @@ class ClashConfigMerger:
             # GitHub模式：通过API获取
             try:
                 if re.fullmatch(REMOTE_YAML_PATTERN, filepath) is not None:
-                    # 是yaml文件路径直接读取
+                    # 是 yaml 文件路径直接读取
                     url = filepath
                     response = requests.get(url)
                     try:
