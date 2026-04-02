@@ -130,7 +130,7 @@ jobs:
           ls -la docs/
           for ((i=0; i<len; i++)); do
             subtype=${NEW_PARAMS[$i]}
-            CONFIG_FILE="docs/clash-${subtype}-${AUTH_TOKEN}.yaml"
+            CONFIG_FILE="docs/Clash/${AUTH_TOKEN}/${subtype}.yaml"
             if [ -f "$CONFIG_FILE" ]; then
               file "$CONFIG_FILE"
               # 打印前三行

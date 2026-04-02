@@ -15,15 +15,16 @@
 
 ```
 ├── .github/workflows/
-│   └── run-jobs.yml           # GitHub Actions工作流
+│   └── run-jobs.yml              # GitHub Actions工作流
 ├── scripts/
-│   └── merge_clash_config.py  # 核心合并脚本
+│   └── merge_clash_config.py     # 核心合并脚本
 ├── config/
-│   └── settings.yaml          # 配置文件
-├── docs/                      # GitHub Pages输出目录
-│   ├── index.html             # 主页面
-│   ├── <your_clash_config_filename>.yaml            # 生成的配置文件
-│   └── stats.json             # 统计信息
+│   └── settings.yaml             # 配置文件
+├── docs/                         # GitHub Pages输出目录
+│   ├── index.html                # 主页面
+│   └── Clash                     # 最终生成 Clash 配置文件目录
+│       ├── <filename>.yaml       # 生成的配置文件
+│       └── <filename>-stats.json # 生成的统计信息
 └── README.md
 ```
 
@@ -74,11 +75,11 @@
 > CLASH_ENV_REMOTE_TPLS 配置示例：
 > 示例1：`Conf01|Clash/fconf/01.yaml`
 >
-> - 说明：将 `Clash/fconf/01.yaml` 与 模板文件合并生成 `clash-Conf01-{your-token}.yaml` 文件
+> - 说明：将 `Clash/fconf/01.yaml` 与 模板文件合并生成 `Clash/{your-token}/Conf01.yaml` 文件
 >
 > 示例2：`Conf02|Clash/fconf/01.yaml,Clash/fconf/02`
 >
-> - 说明：将 `Clash/fconf/01.yaml` 、 `Clash/fconf/02` 目录下yaml所有文件 与 模板文件合并生成 `clash-Conf02-{your-token}.yaml` 文件
+> - 说明：将 `Clash/fconf/01.yaml` 、 `Clash/fconf/02` 目录下yaml所有文件 与 模板文件合并生成 `Clash/{your-token}/Conf02.yaml` 文件
 
 1. 在您的 workflows 作业中指定所使用的 environment：
 

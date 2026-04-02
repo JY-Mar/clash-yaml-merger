@@ -29,10 +29,10 @@ github:
 output:
   # 输出目录
   directory: 'docs'
-  # 配置文件名
-  config_filename: 'clash'
-  # 统计文件名
-  stats_filename: 'stats'
+  # 配置文件目录名
+  clash_yaml_directory: 'Clash'
+  # 统计文件目录名
+  stats_json_filename: 'stats'
 
 # 认证配置
 authentication:

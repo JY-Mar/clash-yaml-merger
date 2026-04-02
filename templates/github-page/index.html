@@ -222,7 +222,8 @@
 
         render(usageModule, 'h3', '📋 Usage')
         render(usageModule, 'p', 'Add the following subscription link to your Clash client:')
-        const fileUrl = 'https://jy-mar.github.io/clash-yaml-merger/clash-' + class_name.label + '-{your-token}.yaml'
+        const href = window.location.href
+        const fileUrl = href + (href.endsWith('/') ? '' : '/') + 'Clash/{your-token}/' + class_name.label + '.yaml'
         const copyBtn = render(undefined, 'div', { id: 'url-box-icon-copy-' + class_name.label, className: 'url-box-icon-copy', textContent: '📃', title: 'Copy', 'data-clipboard-text': fileUrl })
         copyBtn.setAttribute('data-clipboard-text', fileUrl)
         render(usageModule, 'div', { id: 'url-box-' + class_name.label, className: 'url-box url-box-' + class_name.label, textContent: fileUrl }, [copyBtn])
@@ -245,11 +246,11 @@
       })
       // 加载统计信息
       function fetchStats(filename) {
-        fetch('stats' + filename + '.json')
+        fetch('Clash/' + filename + '-stats.json')
           .then((response) => response.json())
           .then((data) => {
-            const subs_DOM = document.getElementById('subs' + filename)
-            const stats_DOM = document.getElementById('stats' + filename)
+            const subs_DOM = document.getElementById('subs-' + filename)
+            const stats_DOM = document.getElementById('stats-' + filename)
             let dateStr = ''
             const _generated_timestamp = String(data.generated_timestamp)
             const _matched = _generated_timestamp.match(/^(\d{4}|\d{2})-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}/)
@@ -319,7 +320,7 @@
             const subs_DOM = document.getElementById('subs-' + class_name.label)
             const stats_DOM = document.getElementById('stats-' + class_name.label)
             if (subs_DOM && stats_DOM) {
-              fetchStats('-' + class_name.label)
+              fetchStats(class_name.label)
               clearInterval(intervals[class_name.label])
               intervals[class_name.label] = null
             }

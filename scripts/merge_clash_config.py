@@ -323,9 +323,7 @@ class ClashConfigMerger:
                 rule_data = load_yaml_content(content)
                 logger.info(f"规则文件 {filepath}")
                 if rule_data and "payload" in rule_data:
-                    rule_file_name = os.path.basename(filepath).replace(
-                        ".yaml", ""
-                    )
+                    rule_file_name = os.path.basename(filepath).replace(".yaml", "")
                     logger.info(f"处理规则文件: {rule_file_name}")
 
                     for rule in rule_data["payload"]:
@@ -543,7 +541,9 @@ class ClashConfigMerger:
 
         # region 2.3 代理集
         # 探索文件
-        _filepaths__proxy_providers = self.get_directory_files(proxy_providers_directories)
+        _filepaths__proxy_providers = self.get_directory_files(
+            proxy_providers_directories
+        )
         # if not _filepaths__proxy_providers:
         #     logger.warning(f"未找到代理集文件在目录: {proxy_providers_directories}")
 
@@ -560,7 +560,7 @@ class ClashConfigMerger:
 
         # if not _filecontents__proxy_providers:
         #     logger.error(f"未能加载任何有效的代理节点配置文件")
-            # return {}
+        #     return {}
 
         # 合并文件
         if _filecontents__proxy_providers:
@@ -595,7 +595,7 @@ class ClashConfigMerger:
 
         # if not _filecontents__proxies:
         #     logger.error(f"未能加载任何有效的代理节点配置文件在目录: {proxies_directory}")
-            # return {}
+        #     return {}
 
         # 合并文件
         if _filecontents__proxies:
@@ -624,13 +624,11 @@ class ClashConfigMerger:
 
         # if not _filecontents__rule_providers:
         #     logger.error(f"未能加载任何有效的规则集配置文件在目录: {rule_providers_directory}")
-            # return {}
+        #     return {}
 
         # 合并文件
         if _filecontents__rule_providers:
-            merged_rule_providers = reduce(
-                deep_merge, _filecontents__rule_providers
-            )
+            merged_rule_providers = reduce(deep_merge, _filecontents__rule_providers)
             # 将已有 rule-providers 与 外部 rule-providers 合并
             merged_config["rule-providers"] = deep_merge(
                 extract_valid_object(get_property(merged_config, "rule-providers", {})),
@@ -659,7 +657,7 @@ class ClashConfigMerger:
 
         # if not _filecontents__rules:
         #     logger.error(f"未能加载任何有效的规则配置文件在目录: {rules_directory}")
-            # return {}
+        # return {}
 
         # 合并文件
         if _filecontents__rules:
@@ -942,9 +940,7 @@ def merger_gen_config():
             # logger.info(
             #     f"=== [{i + 1} / {len(ida.fconfs_dirs)}] 开始合并 {attr} <== {dirs_desensitize} ==="
             # )
-            logger.info(
-                f"=== [{i + 1} / {len(ida.fconfs_dirs)}] 处理中 ==="
-            )
+            logger.info(f"=== [{i + 1} / {len(ida.fconfs_dirs)}] 处理中 ===")
             merged_configs[attr] = _merger.generate_merged_config(
                 dirs,
                 ida.proxy_providers_dirs,
@@ -963,15 +959,23 @@ def merger_gen_config():
 
     for filename, merged_config in merged_configs.items():
         if filename and merged_config:
-            final_filename = f"-{filename}"
             # 使用token作为文件名的一部分进行认证
-            config_filename = f"{settings_config['output']['config_filename']}{final_filename}-{ida.auth_token}.yaml"
+            config_filename = f"{filename}.yaml"
             # 配置文件保存路径
-            output_path = os.path.join(ida.output_dir, config_filename)
+            output_path = os.path.join(
+                ida.output_dir,
+                settings_config["output"]["clash_yaml_directory"],
+                ida.auth_token,
+                config_filename,
+            )
             # 统计文件保存路径
+            stats_filename = (
+                f"{filename}-{settings_config['output']['stats_json_filename']}.json"
+            )
             stats_path = os.path.join(
                 ida.output_dir,
-                f"{settings_config['output']['stats_filename']}{final_filename}.json",
+                settings_config["output"]["clash_yaml_directory"],
+                stats_filename,
             )
 
             # 生成统计信息
@@ -1097,16 +1101,25 @@ def merger_gen_config():
                 with open(stats_path, "w", encoding="utf-8") as f:
                     json.dump(stats, f, indent=2, ensure_ascii=False)
 
-                logger.info(f"[{filename}] ℹ️ 统计信息已保存到: {stats_path}")
+                _stats_path = os.path.join(
+                    ida.output_dir,
+                    settings_config["output"]["clash_yaml_directory"],
+                    stats_filename,
+                )
+                logger.info(f"[{filename}] ℹ️ 统计信息已保存到: {_stats_path}")
             except Exception as e:
                 logger.warning(f"[{filename}] ❌ 保存统计信息失败: {e}")
 
             logger.info(f"[{filename}] ✅ 任务完成! ")
-            logger.info(
-                f"[{filename}] 📁 配置文件: {settings_config['output']['config_filename']}{final_filename}-{{your-token}}.yaml"
-            )
+            logger.info(f"[{filename}] 📁 配置文件: {config_filename}")
             if ida.local_mode:
-                logger.info(f"[{filename}] 📁 输出路径: {output_path}")
+                _output_path = os.path.join(
+                    ida.output_dir,
+                    settings_config["output"]["clash_yaml_directory"],
+                    "{" + "your-token" + "}",
+                    config_filename,
+                )
+                logger.info(f"[{filename}] 📁 输出路径: {_output_path}")
 
 
 def main():
