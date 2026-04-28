@@ -19,11 +19,11 @@ on:
         default: ''
         type: string
 
-  # 仓库 scat-proxy 触发
+  # 仓库 PxyRes 触发
   repository_dispatch:
     types:
-      - trigger-from-scat-proxy
-      - trigger-from-scat-proxy-sub
+      - trigger-from-PxyRes
+      - trigger-from-PxySub
 
   # 当脚本文件更新时触发
   push:

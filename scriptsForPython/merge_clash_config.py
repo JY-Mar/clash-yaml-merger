@@ -1032,7 +1032,7 @@ def merger_gen_config():
                         lambda o: not (
                             "uuid" in o
                             and isinstance(o["uuid"], str)
-                            and o["uuid"].startswith("scat-proxy-")
+                            and o["uuid"].startswith("PxyRes-")
                         ),
                         merged_config.get("proxies", []),
                     )
