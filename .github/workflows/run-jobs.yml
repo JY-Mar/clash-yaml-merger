@@ -1,4 +1,4 @@
-name: Generate Merged Clash Yamls
+name: Merge Clash Configurations
 
 on:
   # 定时触发 - 每天的 00 点 01 分（UTC+8） 执行一次任务
