@@ -16,7 +16,7 @@
 ```
 ├── .github/workflows/
 │   └── run-jobs.yml              # GitHub Actions工作流
-├── scripts/
+├── scriptsForPython/
 │   └── merge_clash_config.py     # 核心合并脚本
 ├── config/
 │   └── settings.yaml             # 配置文件
