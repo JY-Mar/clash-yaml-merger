@@ -80,9 +80,12 @@ jobs:
           python -m pip install --upgrade pip
           pip install PyYAML requests
 
-      - name: 🗃️ Create output directory
+      - name: 🗃️ Create output directory and copy something
         run: |
           mkdir -p docs
+          mkdir -p docs/Loon
+          curl -L "https://jy-mar.github.io/PxyRes/Loon/Config/scat.lcf" -o "docs/Loon/scat.lcf"
+          curl -L "https://jy-mar.github.io/PxyRes/Loon/Config/scat-ad.lcf" -o "docs/Loon/scat-ad.lcf"
 
       - name: 🧠 Generate merged config
         env:
