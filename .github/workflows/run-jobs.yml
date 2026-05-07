@@ -22,8 +22,8 @@ on:
   # 仓库 PxyRes 触发
   repository_dispatch:
     types:
-      - trigger-from-PxyRes
-      - trigger-from-PxySub
+      - Triggered From JY-Mar/PxyRes
+      - Triggered From JY-Mar/PxySub
 
   # 当脚本文件更新时触发
   push:
